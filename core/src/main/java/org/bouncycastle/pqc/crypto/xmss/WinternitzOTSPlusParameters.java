@@ -6,6 +6,9 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
 
 /**
  * Parameters for the WOTS+ one-time signature system as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
+ * 
+ * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class WinternitzOTSPlusParameters {
 
@@ -25,12 +28,12 @@ public class WinternitzOTSPlusParameters {
 	private int winternitzParameter;
 	
 	/**
-	 * len1
+	 * len1.
 	 */
 	private int len1;
 	
 	/**
-	 * len2
+	 * len2.
 	 */
 	private int len2;
 	
@@ -41,6 +44,7 @@ public class WinternitzOTSPlusParameters {
 	
 	/**
 	 * Constructor...
+	 * @param digest The digest used for WOTS+.
 	 */
 	public WinternitzOTSPlusParameters(Digest digest) {
 		super();
@@ -58,6 +62,8 @@ public class WinternitzOTSPlusParameters {
 	
 	/**
 	 * Checks whether the digest is allowed according to draft-irtf-cfrg-xmss-hash-based-signatures-06.
+	 * @param digest The digest to be validated.
+	 * @return true if digest is valid false else.
 	 */
 	private boolean isValidDigest(Digest digest) {
 		if (digest instanceof SHA256Digest || digest instanceof SHA512Digest) {
@@ -76,42 +82,48 @@ public class WinternitzOTSPlusParameters {
 	}
 
 	/**
-	 * digest getter.
+	 * Getter digest.
+	 * @return digest.
 	 */
 	public Digest getDigest() {
 		return digest;
 	}
 	
 	/**
-	 * digestSize getter.
+	 * Getter digestSize.
+	 * @return digestSize.
 	 */
 	public int getDigestSize() {
 		return digestSize;
 	}
 	
 	/**
-	 * winternitzParameter getter.
+	 * Getter WinternitzParameter.
+	 * @return winternitzParameter.
 	 */
 	public int getWinternitzParameter() {
 		return winternitzParameter;
 	}
 	
 	/**
-	 * len1 getter.
+	 * Getter len1.
+	 * @return len1.
 	 */
 	public int getLen1() {
 		return len1;
 	}
 	
 	/**
-	 * len2 getter.
+	 * Getter len2.
+	 * @return len2.
 	 */
 	public int getLen2() {
 		return len2;
 	}
 	
 	/**
-	 * len getter
+	 * Getter len.
+	 * @return len.
 	 */
 	public int getLen() {
 		return len;
