@@ -20,7 +20,7 @@ public class XMSSUtil {
         }
         return log;
     }
-    
+
     /**
      * Convert Integer to byte array.
      * @param value Integer value.
