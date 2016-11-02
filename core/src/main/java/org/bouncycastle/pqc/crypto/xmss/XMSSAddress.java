@@ -8,7 +8,7 @@ package org.bouncycastle.pqc.crypto.xmss;
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public abstract class XMSSAddress {
-	
+
 	public enum XMSSAdressType {
 		OTS, LTree, HashTree;
 	}
