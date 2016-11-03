@@ -5,7 +5,6 @@ package org.bouncycastle.pqc.crypto.xmss;
  * as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class WinternitzOTSPlus {
 

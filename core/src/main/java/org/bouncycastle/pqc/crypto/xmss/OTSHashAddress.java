@@ -5,52 +5,52 @@ package org.bouncycastle.pqc.crypto.xmss;
  * OTS Hash address.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class OTSHashAddress extends XMSSAddress {
 	
-	private Integer otsAddress;
-	private Integer chainAddress;
-	private Integer hashAddress;
+	private int otsAddress;
+	private int chainAddress;
+	private int hashAddress;
 	
 	public OTSHashAddress() {
-		super(XMSSAdressType.OTS);
+		super(0x00);
 	}
 	
-	public OTSHashAddress(Integer layerAddress, Long treeAddress, Integer keyAndMask, Integer otsAddress, Integer chainAddress, Integer hashAddress) {
-		super(layerAddress, treeAddress, XMSSAdressType.OTS, keyAndMask);
-		this.otsAddress = otsAddress;
-		this.chainAddress = chainAddress;
-		this.hashAddress = hashAddress;
-	}
-
 	@Override
-	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
-		return null;
+	protected void parseByteArraySpecific(byte[] address) {
+		otsAddress = XMSSUtil.bytesToIntBigEndian(address, 16);
+		chainAddress = XMSSUtil.bytesToIntBigEndian(address, 20);
+		hashAddress = XMSSUtil.bytesToIntBigEndian(address, 24);
 	}
 	
-	public Integer getOtsAddress() {
+	@Override
+	protected void toByteArraySpecific(byte[] out) {
+		XMSSUtil.intToBytesBigEndianOffset(out, otsAddress, 16);
+		XMSSUtil.intToBytesBigEndianOffset(out, chainAddress, 20);
+		XMSSUtil.intToBytesBigEndianOffset(out, hashAddress, 24);
+	}
+	
+	public int getOTSAddress() {
 		return otsAddress;
 	}
 
-	public void setOtsAddress(Integer otsAddress) {
+	public void setOTSAddress(int otsAddress) {
 		this.otsAddress = otsAddress;
 	}
 
-	public Integer getChainAddress() {
+	public int getChainAddress() {
 		return chainAddress;
 	}
 
-	public void setChainAddress(Integer chainAddress) {
+	public void setChainAddress(int chainAddress) {
 		this.chainAddress = chainAddress;
 	}
 
-	public Integer getHashAddress() {
+	public int getHashAddress() {
 		return hashAddress;
 	}
 
-	public void setHashAddress(Integer hashAddress) {
+	public void setHashAddress(int hashAddress) {
 		this.hashAddress = hashAddress;
 	}
 }

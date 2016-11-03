@@ -7,7 +7,6 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
  * Crypto related functions for XMSS.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class KeyedHashFunction {
 
@@ -18,9 +17,9 @@ public class KeyedHashFunction {
 		this.digest = digest;
 	}
 	
-	private byte[] coreDigest(int fixedValue, byte[] key, byte[] addr) {
-		if (addr.length != 32) {
-			throw new IllegalArgumentException("addr needs to be 32 byte");
+	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
+		if (index.length != 32) {
+			throw new IllegalArgumentException("index needs to be 32 byte");
 		}
 		int n = digest.getDigestSize();	// 32 / 64 byte
 		if (key.length != n && key.length != 3*n) {
@@ -37,8 +36,8 @@ public class KeyedHashFunction {
 			buffer[in.length + i] = key[i];
 		}
 		// add addr
-		for (int i = 0; i < addr.length; i++) {
-			buffer[in.length + key.length + i] = addr[i];
+		for (int i = 0; i < index.length; i++) {
+			buffer[in.length + key.length + i] = index[i];
 		}
 		digest.update(buffer, 0, buffer.length);
 		byte[] out = new byte[n];
@@ -46,19 +45,19 @@ public class KeyedHashFunction {
 		return out;
 	}
 	
-	public byte[] F(byte[] key, byte[] addr) {
-		return coreDigest(0, key, addr);
+	public byte[] F(byte[] key, byte[] index) {
+		return coreDigest(0, key, index);
 	}
 	
-	public byte[] H(byte[] key, byte[] addr) {
-		return coreDigest(1, key, addr);
+	public byte[] H(byte[] key, byte[] index) {
+		return coreDigest(1, key, index);
 	}
 	
-	public byte[] HMsg(byte[] key, byte[] addr) {
-		return coreDigest(2, key, addr);
+	public byte[] HMsg(byte[] key, byte[] index) {
+		return coreDigest(2, key, index);
 	}
 	
-	public byte[] PRF(byte[] seed, byte[] addr) {
-		return coreDigest(3, seed, addr);
+	public byte[] PRF(byte[] key, byte[] index) {
+		return coreDigest(3, key, index);
 	}
 }

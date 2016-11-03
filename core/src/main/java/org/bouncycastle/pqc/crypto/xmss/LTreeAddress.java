@@ -5,52 +5,52 @@ package org.bouncycastle.pqc.crypto.xmss;
  * XMSS L-tree address.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class LTreeAddress extends XMSSAddress {
 	
-	private Integer lTreeAddress;
-	private Integer treeHeight;
-	private Integer treeIndex;
+	private int lTreeAddress;
+	private int treeHeight;
+	private int treeIndex;
 	
 	public LTreeAddress() {
-		super(XMSSAdressType.LTree);
-	}
-	
-	public LTreeAddress(Integer layerAddress, Long treeAddress, Integer keyAndMask, Integer lTreeAddress, Integer treeHeight, Integer treeIndex) {
-		super(layerAddress, treeAddress, XMSSAdressType.LTree, keyAndMask);
-		this.lTreeAddress = lTreeAddress;
-		this.treeHeight = treeHeight;
-		this.treeIndex = treeIndex;
+		super(0x01);
 	}
 
 	@Override
-	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
-		return null;
+	protected void parseByteArraySpecific(byte[] address) {
+		lTreeAddress = XMSSUtil.bytesToIntBigEndian(address, 16);
+		treeHeight = XMSSUtil.bytesToIntBigEndian(address, 20);
+		treeIndex = XMSSUtil.bytesToIntBigEndian(address, 24);
 	}
 	
-	public Integer getlTreeAddress() {
+	@Override
+	protected void toByteArraySpecific(byte[] out) {
+		XMSSUtil.intToBytesBigEndianOffset(out, lTreeAddress, 16);
+		XMSSUtil.intToBytesBigEndianOffset(out, treeHeight, 20);
+		XMSSUtil.intToBytesBigEndianOffset(out, treeIndex, 24);
+	}
+	
+	public int getLTreeAddress() {
 		return lTreeAddress;
 	}
 
-	public void setlTreeAddress(Integer lTreeAddress) {
+	public void setLTreeAddress(int lTreeAddress) {
 		this.lTreeAddress = lTreeAddress;
 	}
 
-	public Integer getTreeHeight() {
+	public int getTreeHeight() {
 		return treeHeight;
 	}
 
-	public void setTreeHeight(Integer treeHeight) {
+	public void setTreeHeight(int treeHeight) {
 		this.treeHeight = treeHeight;
 	}
 
-	public Integer getTreeIndex() {
+	public int getTreeIndex() {
 		return treeIndex;
 	}
 
-	public void setTreeIndex(Integer treeIndex) {
+	public void setTreeIndex(int treeIndex) {
 		this.treeIndex = treeIndex;
 	}
 }

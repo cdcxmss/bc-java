@@ -8,7 +8,6 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
  * Parameters for the WOTS+ one-time signature system as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class WinternitzOTSPlusParameters {
 
