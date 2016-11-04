@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
+
 /**
  * 
  * XMSS Hash Tree address.
@@ -8,27 +10,41 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class HashTreeAddress extends XMSSAddress {
 	
+	private static final int TYPE = 2;
+	private static final int PADDING = 0x00;
+	
 	private int padding;
 	private int treeHeight;
 	private int treeIndex;
 	
 	public HashTreeAddress() {
-		super(0x02);
-		padding = 0;
+		super(TYPE);
+		padding = PADDING;
 	}
 
 	@Override
-	protected void parseByteArraySpecific(byte[] address) {
-		padding = XMSSUtil.bytesToIntBigEndian(address, 16);
+	public void parseByteArray(byte[] address) throws ParseException {
+		int type = XMSSUtil.bytesToIntBigEndian(address, 12);
+		if (type != TYPE) {
+			throw new ParseException("type needs to be " + TYPE, 12);
+		}
+		setType(type);
+		int padding = XMSSUtil.bytesToIntBigEndian(address, 16);
+		if (padding != PADDING) {
+			throw new ParseException("padding needs to be " + PADDING, 16);
+		}
 		treeHeight = XMSSUtil.bytesToIntBigEndian(address, 20);
 		treeIndex = XMSSUtil.bytesToIntBigEndian(address, 24);
+		super.parseByteArray(address);
 	}
 	
 	@Override
-	protected void toByteArraySpecific(byte[] out) {
-		XMSSUtil.intToBytesBigEndianOffset(out, padding, 16);
-		XMSSUtil.intToBytesBigEndianOffset(out, treeHeight, 20);
-		XMSSUtil.intToBytesBigEndianOffset(out, treeIndex, 24);
+	public byte[] toByteArray() {
+		byte[] byteRepresentation = getByteRepresentation();
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, padding, 16);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, treeHeight, 20);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, treeIndex, 24);
+		return super.toByteArray();
 	}
 	
 	public int getPadding() {

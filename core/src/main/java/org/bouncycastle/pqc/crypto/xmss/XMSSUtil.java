@@ -124,7 +124,7 @@ public class XMSSUtil {
     
     private static long bytesToXBigEndian(byte[] in, int offset, int size) {
 		long res = 0;
-		for (int i = offset; i < offset + size; i++) {
+		for (int i = offset; i < (offset + size); i++) {
 		   res = (res << 8) | (in[i] & 0xff);
 		}
 		return res;

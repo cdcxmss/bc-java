@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
+
 /**
  * 
  * XMSS L-tree address.
@@ -8,26 +10,35 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class LTreeAddress extends XMSSAddress {
 	
+	private static final int TYPE = 1;
 	private int lTreeAddress;
 	private int treeHeight;
 	private int treeIndex;
 	
 	public LTreeAddress() {
-		super(0x01);
+		super(TYPE);
 	}
 
 	@Override
-	protected void parseByteArraySpecific(byte[] address) {
+	public void parseByteArray(byte[] address) throws ParseException {
+		int type = XMSSUtil.bytesToIntBigEndian(address, 12);
+		if (type != TYPE) {
+			throw new ParseException("type needs to be " + TYPE, 12);
+		}
+		setType(type);
 		lTreeAddress = XMSSUtil.bytesToIntBigEndian(address, 16);
 		treeHeight = XMSSUtil.bytesToIntBigEndian(address, 20);
 		treeIndex = XMSSUtil.bytesToIntBigEndian(address, 24);
+		super.parseByteArray(address);
 	}
-	
+
 	@Override
-	protected void toByteArraySpecific(byte[] out) {
-		XMSSUtil.intToBytesBigEndianOffset(out, lTreeAddress, 16);
-		XMSSUtil.intToBytesBigEndianOffset(out, treeHeight, 20);
-		XMSSUtil.intToBytesBigEndianOffset(out, treeIndex, 24);
+	public byte[] toByteArray() {
+		byte[] byteRepresentation = getByteRepresentation();
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, lTreeAddress, 16);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, treeHeight, 20);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, treeIndex, 24);
+		return super.toByteArray();
 	}
 	
 	public int getLTreeAddress() {

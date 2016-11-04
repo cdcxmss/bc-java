@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
+
 /**
  * 
  * XMSS Address.
@@ -12,33 +14,28 @@ public abstract class XMSSAddress {
 	private long treeAddress;
 	private int type;
 	private int keyAndMask;
+	private byte[] byteRepresentation;
 	
 	public XMSSAddress(int type) {
 		this.type = type;
+		byteRepresentation = new byte[32];
 	}
 	
-	protected abstract void parseByteArraySpecific(byte[] address);
-	protected abstract void toByteArraySpecific(byte[] out);
-	
-	public final void parseByteArray(byte[] address) {
+	public void parseByteArray(byte[] address) throws ParseException {
 		if (address.length != 32) {
 			throw new IllegalArgumentException("address needs to be 32 byte");
 		}
 		layerAddress = XMSSUtil.bytesToIntBigEndian(address, 0);
 		treeAddress = XMSSUtil.bytesToLongBigEndian(address, 4);
-		type = XMSSUtil.bytesToIntBigEndian(address, 12);
-		parseByteArraySpecific(address);
 		keyAndMask = XMSSUtil.bytesToIntBigEndian(address, 28);
 	}
 
-	public final byte[] toByteArray() {
-		byte[] out = new byte[32];
-		XMSSUtil.intToBytesBigEndianOffset(out, layerAddress, 0);
-		XMSSUtil.longToBytesBigEndianOffset(out, treeAddress, 4);
-		XMSSUtil.intToBytesBigEndianOffset(out, type, 12);
-		toByteArraySpecific(out);
-		XMSSUtil.intToBytesBigEndianOffset(out, keyAndMask, 28);
-		return out;
+	public byte[] toByteArray() {
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, layerAddress, 0);
+		XMSSUtil.longToBytesBigEndianOffset(byteRepresentation, treeAddress, 4);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, type, 12);
+		XMSSUtil.intToBytesBigEndianOffset(byteRepresentation, keyAndMask, 28);
+		return byteRepresentation;
 	}
 	
 	public int getLayerAddress() {
@@ -60,6 +57,10 @@ public abstract class XMSSAddress {
 	public int getType() {
 		return type;
 	}
+	
+	protected void setType(int type) {
+		this.type = type;
+	}
 
 	public int getKeyAndMask() {
 		return keyAndMask;
@@ -67,5 +68,9 @@ public abstract class XMSSAddress {
 
 	public void setKeyAndMask(int keyAndMask) {
 		this.keyAndMask = keyAndMask;
+	}
+	
+	protected byte[] getByteRepresentation() {
+		return byteRepresentation;
 	}
 }
