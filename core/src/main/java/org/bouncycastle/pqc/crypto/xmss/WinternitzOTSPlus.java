@@ -12,7 +12,15 @@ public class WinternitzOTSPlus {
 	 * The WOTS+ parameters
 	 */
 	private WinternitzOTSPlusParameters params;
-
+	/**
+	 * WOTS+ private key.
+	 */
+	private byte[][] privateKey;
+	/**
+	 * WOTS+ public key.
+	 */
+	private byte[][] publicKey;
+	
 	/**
 	 * Constructs a new WOTS+ one-time signature system based
 	 * on the given WOTS+ parameters.
@@ -23,5 +31,29 @@ public class WinternitzOTSPlus {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
+		int len = params.getLen();
+		int n = params.getDigestSize();
+		privateKey = new byte[len][n];
+		int winternitzParameter = params.getWinternitzParameter();
+		publicKey = new byte[len][winternitzParameter];
+	}
+	
+	public void genKeyPair() {
+		genPrivateKey();
+		genPublicKey();
+	}
+	
+	private void genPrivateKey() {
+		for (int i = 0; i < params.getLen(); i++) {
+			params.getPRNG().nextBytes(privateKey[i]);
+		}
+	}
+	
+	private void genPublicKey() {
+		
+	}
+	
+	public byte[][] getPrivateKey() {
+		return privateKey;
 	}
 }

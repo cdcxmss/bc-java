@@ -122,6 +122,13 @@ public class XMSSUtil {
 		return bytesToXBigEndian(in, offset, 8);
 	}
     
+    /**
+     * Generic convert from big endian byte array to long.
+     * @param x-byte array
+     * @param offset.
+     * @param size.
+     * @return Long.
+     */
     private static long bytesToXBigEndian(byte[] in, int offset, int size) {
 		long res = 0;
 		for (int i = offset; i < (offset + size); i++) {

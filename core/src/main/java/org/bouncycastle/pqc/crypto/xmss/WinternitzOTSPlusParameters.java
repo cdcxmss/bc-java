@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.SecureRandom;
+
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
@@ -20,6 +22,11 @@ public class WinternitzOTSPlusParameters {
 	 * The message digest size.
 	 */
 	private int digestSize;
+	
+	/**
+	 * Secure Random Number Generator.
+	 */
+	private SecureRandom prng;
 	
 	/**
 	 * The Winternitz parameter (currently fixed to 16).
@@ -45,16 +52,20 @@ public class WinternitzOTSPlusParameters {
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
 	 */
-	public WinternitzOTSPlusParameters(Digest digest) {
+	public WinternitzOTSPlusParameters(Digest digest, SecureRandom prng) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
+		}
+		if (prng == null) {
+			throw new NullPointerException("prng == null");
 		}
 		if (!isValidDigest(digest)) {
 			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
 		};
 		this.digest = digest;
 		digestSize = digest.getDigestSize();
+		this.prng = prng;
 		winternitzParameter = 16;
 		setLen();
 	}
@@ -96,6 +107,14 @@ public class WinternitzOTSPlusParameters {
 		return digestSize;
 	}
 	
+	/**
+	 * Getter PRNG.
+	 * @return PRNG.
+	 */
+	public SecureRandom getPRNG() {
+		return prng;
+	}
+
 	/**
 	 * Getter WinternitzParameter.
 	 * @return winternitzParameter.
