@@ -9,7 +9,7 @@ package org.bouncycastle.pqc.crypto.xmss;
 public class WinternitzOTSPlus {
 
 	/**
-	 * The WOTS+ parameters
+	 * WOTS+ parameters.
 	 */
 	private WinternitzOTSPlusParameters params;
 	/**

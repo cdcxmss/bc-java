@@ -24,7 +24,7 @@ public class WinternitzOTSPlusParameters {
 	private int digestSize;
 	
 	/**
-	 * Secure Random Number Generator.
+	 * PRNG.
 	 */
 	private SecureRandom prng;
 	

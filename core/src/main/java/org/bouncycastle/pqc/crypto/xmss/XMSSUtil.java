@@ -21,7 +21,7 @@ public class XMSSUtil {
     }
 
     /**
-     * Convert int to byte array.
+     * Convert int to n-byte array.
      * @param value Integer value.
      * @param sizeInByte Size of byte array in byte.
      * @return Integer as big-endian byte array of size {@code sizeInByte}.
@@ -31,16 +31,12 @@ public class XMSSUtil {
     		throw new IllegalArgumentException("size has to be at least as big as size of integer");
     	}
     	byte[] out = new byte[sizeInByte];
-    	int startIndex = sizeInByte - 4;
-    	out[startIndex] = (byte)((value >> 24) & 0xff);
-    	out[startIndex + 1] = (byte)((value >> 16) & 0xff);
-    	out[startIndex + 2] = (byte)((value >> 8) & 0xff);
-    	out[startIndex + 3] = (byte)((value) & 0xff);
+    	intToBytesBigEndianOffset(out, value, sizeInByte - 4);
     	return out;
     }
 
     /**
-     * Convert long to byte array.
+     * Convert long to n-byte array.
      * @param value Long value.
      * @param sizeInByte Size of byte array in byte.
      * @return Long as big-endian byte array of size {@code sizeInByte}.
@@ -50,15 +46,7 @@ public class XMSSUtil {
     		throw new IllegalArgumentException("size has to be at least as big as size of long");
     	}
     	byte[] out = new byte[sizeInByte];
-    	int startIndex = sizeInByte - 8;
-    	out[startIndex] = (byte)((value >> 56) & 0xff);
-    	out[startIndex + 1] = (byte)((value >> 48) & 0xff);
-    	out[startIndex + 2] = (byte)((value >> 40) & 0xff);
-    	out[startIndex + 3] = (byte)((value >> 32) & 0xff);
-    	out[startIndex + 4] = (byte)((value >> 24) & 0xff);
-    	out[startIndex + 5] = (byte)((value >> 16) & 0xff);
-    	out[startIndex + 6] = (byte)((value >> 8) & 0xff);
-    	out[startIndex + 7] = (byte)((value) & 0xff);
+    	longToBytesBigEndianOffset(out, value, sizeInByte - 8);
     	return out;
     }
 
