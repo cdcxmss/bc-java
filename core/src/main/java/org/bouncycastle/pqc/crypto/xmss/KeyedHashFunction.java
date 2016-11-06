@@ -18,14 +18,8 @@ public class KeyedHashFunction {
 	}
 	
 	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
-		if (index.length != 32) {
-			throw new IllegalArgumentException("index needs to be 32 byte");
-		}
 		int n = digest.getDigestSize();	// 32 / 64 byte
-		if (key.length != n && key.length != 3*n) {
-			throw new IllegalArgumentException("key size not valid");
-		}
-		byte[] buffer = new byte[(2 * n) + 32];
+		byte[] buffer = new byte[(2 * n) + index.length];
 		byte[] in = XMSSUtil.intToBytesBigEndian(fixedValue, n);
 		// fill first n byte of out buffer
 		for (int i = 0; i < in.length; i++) {
@@ -45,19 +39,42 @@ public class KeyedHashFunction {
 		return out;
 	}
 	
-	public byte[] F(byte[] key, byte[] index) {
-		return coreDigest(0, key, index);
+	public byte[] F(byte[] key, byte[] in) {
+		int n = digest.getDigestSize();
+		if (key.length != n) {
+			throw new IllegalArgumentException("wrong key length");
+		}
+		if (in.length != n) {
+			throw new IllegalArgumentException("wrong in length");
+		}
+		return coreDigest(0, key, in);
 	}
 	
-	public byte[] H(byte[] key, byte[] index) {
-		return coreDigest(1, key, index);
+	public byte[] H(byte[] key, XMSSAddress index) {
+		if (index == null) {
+			throw new NullPointerException("index == null");
+		}
+		byte[] address = index.toByteArray();
+		return coreDigest(1, key, address);
 	}
 	
-	public byte[] HMsg(byte[] key, byte[] index) {
-		return coreDigest(2, key, index);
+	public byte[] HMsg(byte[] key, XMSSAddress index) {
+		if (index == null) {
+			throw new NullPointerException("index == null");
+		}
+		byte[] address = index.toByteArray();
+		return coreDigest(2, key, address);
 	}
 	
-	public byte[] PRF(byte[] key, byte[] index) {
-		return coreDigest(3, key, index);
+	public byte[] PRF(byte[] key, XMSSAddress index) {
+		int n = digest.getDigestSize();
+		if (key.length != n) {
+			throw new IllegalArgumentException("wrong key length");
+		}
+		if (index == null) {
+			throw new NullPointerException("index == null");
+		}
+		byte[] address = index.toByteArray();
+		return coreDigest(3, key, address);
 	}
 }

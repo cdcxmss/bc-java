@@ -87,14 +87,18 @@
     
     <target name="build" depends="init">
         <ant antfile="ant/bc+-build.xml" dir="." />
+        <ant antfile="ant/bc+-build.xml" dir="." target="javadoc-lw" />
+        <ant antfile="ant/bc+-build.xml" dir="." target="javadoc-libraries" />
     </target>
 
     <target name="build-lw" depends="init">
         <ant antfile="ant/bc+-build.xml" dir="." target="build-lw" />
+        <ant antfile="ant/bc+-build.xml" dir="." target="javadoc-lw" />
     </target>
 
     <target name="build-provider" depends="init, checkstyle-on, checkstyle-off">
         <ant antfile="ant/bc+-build.xml" dir="." target="build-provider" />
+        <ant antfile="ant/bc+-build.xml" dir="." target="javadoc-provider" />
     </target>
 
     <target name="build-test" depends="init">

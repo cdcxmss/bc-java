@@ -27,6 +27,7 @@ public class AllTests
         suite.addTestSuite(NTRUSignatureKeyTest.class);
         suite.addTestSuite(NTRUSignerTest.class);
         suite.addTestSuite(NTRUSigningParametersTest.class);
+        suite.addTestSuite(WinternitzOTSPlusTest.class);
         suite.addTestSuite(WinternitzOTSPlusParametersTest.class);
         suite.addTestSuite(XMSSAddressTest.class);
         suite.addTestSuite(XMSSUtilTest.class);

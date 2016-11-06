@@ -27,6 +27,6 @@ else
     if ant -f ant/jdk15+.xml build-provider
     then
         ant -f ant/jdk15+.xml build
-        ant -f ant/jdk15+.xml zip-src
+#        ant -f ant/jdk15+.xml zip-src
     fi
 fi
