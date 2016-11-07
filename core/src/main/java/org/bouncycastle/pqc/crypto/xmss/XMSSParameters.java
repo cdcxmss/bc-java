@@ -7,48 +7,38 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 
 public class XMSSParameters {
 	
-	private WinternitzOTSPlusParameters wotsPlusParams;
+	/**
+	 * WOTS+ scheme.
+	 */
+	private WinternitzOTSPlus wotsPlus;
+
+	/**
+	 * The height (number of levels - 1) of the tree.
+	 */
+	private int height;
 	
 	/**
-	 * the length in bytes of the message digest as well as of each node
+	 * Keyed Hash Function.
 	 */
-	private int n;
+	private KeyedHashFunction khf;
 	
 	/**
-	 * the height (number of levels - 1) of the tree
+	 * XMSS Constructor...
+	 * @param height Height of tree.
+	 * @param digest Digest to use.
+	 * @param prng PRNG.
 	 */
-	private int h;
-	
-//	private SecureRandom prng;
-//	
-//	private Digest digest;
-	
-	/**
-	 * Constructor
-	 * @param n length in bytes of the message digest as well as of each node
-	 * @param h the height (number of levels - 1) of the tree
-	 * @param w the Winternitz parameter {4, 16}
-	 */
-	public XMSSParameters(int n, int h, int w, Digest digest, SecureRandom prng){
-		this.n = n;
-		this.h = h;
-//		digest = new SHA256Digest();
-//		prng = new SecureRandom();
-		wotsPlusParams = new WinternitzOTSPlusParameters(digest, prng);
-	}
-
-	public WinternitzOTSPlusParameters getWotsPlusParams() {
-		return wotsPlusParams;
-	}
-
-	public int getN() {
-		return n;
-	}
-
-	public int getH() {
-		return h;
+	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
+		super();
+		if (prng == null) {
+			throw new NullPointerException("prng == null");
+		}
+		WinternitzOTSPlusParameters wotsPlusParams = new WinternitzOTSPlusParameters(digest, prng);
+		wotsPlus = new WinternitzOTSPlus(wotsPlusParams);
+		khf = new KeyedHashFunction(wotsPlus.getParams().getDigest());
 	}
 	
-	
-
+	public WinternitzOTSPlus getWotsPlus() {
+		return wotsPlus;
+	}
 }
