@@ -19,21 +19,13 @@ public class XMSSParameters {
 	 */
 	private int h;
 	
-//	private SecureRandom prng;
-//	
-//	private Digest digest;
-	
 	/**
 	 * Constructor
-	 * @param n length in bytes of the message digest as well as of each node
 	 * @param h the height (number of levels - 1) of the tree
-	 * @param w the Winternitz parameter {4, 16}
 	 */
-	public XMSSParameters(int n, int h, int w, Digest digest, SecureRandom prng){
-		this.n = n;
+	public XMSSParameters(int h, Digest digest, SecureRandom prng){
+		this.n = digest.getDigestSize();
 		this.h = h;
-//		digest = new SHA256Digest();
-//		prng = new SecureRandom();
 		wotsPlusParams = new WinternitzOTSPlusParameters(digest, prng);
 	}
 
