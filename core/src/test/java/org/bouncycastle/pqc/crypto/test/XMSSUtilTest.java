@@ -19,21 +19,14 @@ public class XMSSUtilTest extends TestCase {
 		assertEquals(26, XMSSUtil.log2(100010124));
 	}
 	
-	public void testIntToBytesBigEndianException() {
-		try {
-			XMSSUtil.intToBytesBigEndian(1, 3);
-			fail();
-		} catch (Exception ex) { }
-	}
-	
 	public void testIntToBytesBigEndian() {
-		byte[] b = XMSSUtil.intToBytesBigEndian(1, 4);
+		byte[] b = XMSSUtil.toBytesBigEndian(1, 4);
 		assertEquals(4, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);
 		assertEquals((byte) 0x00, b[2]);
 		assertEquals((byte) 0x01, b[3]);
-		b = XMSSUtil.intToBytesBigEndian(1, 6);
+		b = XMSSUtil.toBytesBigEndian(1, 6);
 		assertEquals(6, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);
@@ -41,12 +34,12 @@ public class XMSSUtilTest extends TestCase {
 		assertEquals((byte) 0x00, b[3]);
 		assertEquals((byte) 0x00, b[4]);
 		assertEquals((byte) 0x01, b[5]);
-		b = XMSSUtil.intToBytesBigEndian(1, 32);
+		b = XMSSUtil.toBytesBigEndian(1, 32);
 		assertEquals(32, b.length);
 		for (int i = 0; i < 31; i++) {
 			assertEquals((byte) 0x00, b[i]);
 		}
-		b = XMSSUtil.intToBytesBigEndian(12345, 5);
+		b = XMSSUtil.toBytesBigEndian(12345, 5);
 		assertEquals(5, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);
@@ -55,15 +48,8 @@ public class XMSSUtilTest extends TestCase {
 		assertEquals((byte) 0x39, b[4]);
 	}
 	
-	public void testLongToBytesBigEndianException() {
-		try {
-			XMSSUtil.longToBytesBigEndian(1, 7);
-			fail();
-		} catch (Exception ex) { }
-	}
-	
 	public void testLongToBytesBigEndian() {
-		byte[] b = XMSSUtil.longToBytesBigEndian(1, 8);
+		byte[] b = XMSSUtil.toBytesBigEndian(1, 8);
 		assertEquals(8, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);
@@ -73,7 +59,7 @@ public class XMSSUtilTest extends TestCase {
 		assertEquals((byte) 0x00, b[5]);
 		assertEquals((byte) 0x00, b[6]);
 		assertEquals((byte) 0x01, b[7]);
-		b = XMSSUtil.intToBytesBigEndian(1, 10);
+		b = XMSSUtil.toBytesBigEndian(1, 10);
 		assertEquals(10, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);
@@ -85,12 +71,12 @@ public class XMSSUtilTest extends TestCase {
 		assertEquals((byte) 0x00, b[7]);
 		assertEquals((byte) 0x00, b[8]);
 		assertEquals((byte) 0x01, b[9]);
-		b = XMSSUtil.intToBytesBigEndian(1, 32);
+		b = XMSSUtil.toBytesBigEndian(1, 32);
 		for (int i = 0; i < 31; i++) {
 			assertEquals((byte) 0x00, b[i]);
 		}
 		assertEquals((byte) 0x01, b[31]);
-		b = XMSSUtil.longToBytesBigEndian(12345, 9);
+		b = XMSSUtil.toBytesBigEndian(12345, 9);
 		assertEquals(9, b.length);
 		assertEquals((byte) 0x00, b[0]);
 		assertEquals((byte) 0x00, b[1]);

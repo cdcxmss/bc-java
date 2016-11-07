@@ -21,32 +21,17 @@ public class XMSSUtil {
     }
 
     /**
-     * Convert int to n-byte array.
-     * @param value Integer value.
+     * Convert int/long to n-byte array.
+     * @param value int/long value.
      * @param sizeInByte Size of byte array in byte.
-     * @return Integer as big-endian byte array of size {@code sizeInByte}.
+     * @return int/long as big-endian byte array of size {@code sizeInByte}.
      */
-    public static byte[] intToBytesBigEndian(int value, int sizeInByte) {
-    	if (sizeInByte < 4) {
-    		throw new IllegalArgumentException("size has to be at least as big as size of integer");
-    	}
+    public static byte[] toBytesBigEndian(long value, int sizeInByte) {
     	byte[] out = new byte[sizeInByte];
-    	intToBytesBigEndianOffset(out, value, sizeInByte - 4);
-    	return out;
-    }
-
-    /**
-     * Convert long to n-byte array.
-     * @param value Long value.
-     * @param sizeInByte Size of byte array in byte.
-     * @return Long as big-endian byte array of size {@code sizeInByte}.
-     */
-    public static byte[] longToBytesBigEndian(long value, int sizeInByte) {
-    	if (sizeInByte < 8) {
-    		throw new IllegalArgumentException("size has to be at least as big as size of long");
+    	for (int i = (sizeInByte - 1); i >= 0; i--) {
+    		out[i] = (byte)value;
+    		value >>>= 8;
     	}
-    	byte[] out = new byte[sizeInByte];
-    	longToBytesBigEndianOffset(out, value, sizeInByte - 8);
     	return out;
     }
 

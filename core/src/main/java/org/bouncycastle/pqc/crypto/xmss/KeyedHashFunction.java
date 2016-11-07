@@ -20,7 +20,7 @@ public class KeyedHashFunction {
 	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
 		int n = digest.getDigestSize();	// 32 / 64 byte
 		byte[] buffer = new byte[(2 * n) + index.length];
-		byte[] in = XMSSUtil.intToBytesBigEndian(fixedValue, n);
+		byte[] in = XMSSUtil.toBytesBigEndian(fixedValue, n);
 		// fill first n byte of out buffer
 		for (int i = 0; i < in.length; i++) {
 			buffer[i] = in[i];
