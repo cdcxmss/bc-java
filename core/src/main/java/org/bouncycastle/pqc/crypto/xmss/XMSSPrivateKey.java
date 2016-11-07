@@ -11,12 +11,31 @@ import java.util.List;
  */
 public class XMSSPrivateKey {
 
+	/**
+	 * WOTS+ private keys
+	 */
 	private List<byte[]> wotsPlusPrivateKeys;
+	
+	/**
+	 * The leaf index idx of the next WOTS+ private key that has not yet been used
+	 */
 	private int index;
 	byte[] secretKey;
+	
+	/**
+	 * the root node of the tree
+	 */
 	byte[] root;
+	
+	/**
+	 * n-byte public seed used to pseudorandomly generate bitmasks and hash function keys
+	 */
 	byte[] publicSeed;
 	
+	/**
+	 * Constructor
+	 * @param xmssParams The parameters used for XMSS
+	 */
 	public XMSSPrivateKey(XMSSParameters xmssParams) {
 		super();
 		if (xmssParams == null) {
