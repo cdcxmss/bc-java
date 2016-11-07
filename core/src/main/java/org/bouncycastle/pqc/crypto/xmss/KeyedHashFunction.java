@@ -14,6 +14,9 @@ public class KeyedHashFunction {
 	
 	public KeyedHashFunction(Digest digest) {
 		super();
+		if (digest == null) {
+			throw new NullPointerException("digest == null");
+		}
 		this.digest = digest;
 	}
 	
@@ -50,31 +53,31 @@ public class KeyedHashFunction {
 		return coreDigest(0, key, in);
 	}
 	
-	public byte[] H(byte[] key, XMSSAddress index) {
-		if (index == null) {
-			throw new NullPointerException("index == null");
+	public byte[] H(byte[] key, XMSSAddress address) {
+		if (address == null) {
+			throw new NullPointerException("address == null");
 		}
-		byte[] address = index.toByteArray();
-		return coreDigest(1, key, address);
+		byte[] addressBytes = address.toByteArray();
+		return coreDigest(1, key, addressBytes);
 	}
 	
-	public byte[] HMsg(byte[] key, XMSSAddress index) {
-		if (index == null) {
-			throw new NullPointerException("index == null");
+	public byte[] HMsg(byte[] key, XMSSAddress address) {
+		if (address == null) {
+			throw new NullPointerException("address == null");
 		}
-		byte[] address = index.toByteArray();
-		return coreDigest(2, key, address);
+		byte[] addressBytes = address.toByteArray();
+		return coreDigest(2, key, addressBytes);
 	}
 	
-	public byte[] PRF(byte[] key, XMSSAddress index) {
+	public byte[] PRF(byte[] key, XMSSAddress address) {
 		int n = digest.getDigestSize();
 		if (key.length != n) {
 			throw new IllegalArgumentException("wrong key length");
 		}
-		if (index == null) {
-			throw new NullPointerException("index == null");
+		if (address == null) {
+			throw new NullPointerException("address == null");
 		}
-		byte[] address = index.toByteArray();
-		return coreDigest(3, key, address);
+		byte[] addressBytes = address.toByteArray();
+		return coreDigest(3, key, addressBytes);
 	}
 }
