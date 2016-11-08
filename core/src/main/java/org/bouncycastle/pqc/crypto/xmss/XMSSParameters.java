@@ -38,6 +38,7 @@ public class XMSSParameters {
 		};
 		this.height = height;
 		this.digest = digest;
+		this.digestSize = digest.getDigestSize();
 		this.prng = prng;
 		khf = new KeyedHashFunctions(digest);
 		winternitzParameter = 16;

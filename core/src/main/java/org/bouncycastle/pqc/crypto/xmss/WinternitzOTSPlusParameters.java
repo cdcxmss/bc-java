@@ -53,7 +53,7 @@ public class WinternitzOTSPlusParameters {
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
 	 */
-	public WinternitzOTSPlusParameters(Digest digest, SecureRandom prng) {
+	public WinternitzOTSPlusParameters(Digest digest, SecureRandom prng, int w) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
@@ -67,7 +67,7 @@ public class WinternitzOTSPlusParameters {
 		this.digest = digest;
 		digestSize = digest.getDigestSize();
 		this.prng = prng;
-		winternitzParameter = 16;
+		winternitzParameter = w;
 		setLen();
 	}
 	
