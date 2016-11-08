@@ -12,10 +12,16 @@ public class XMSSNode {
 	
 	public XMSSNode(int height, byte[] value) {
 		super();
+		this.height = height;
+		this.value = value;
 	}
 
 	public int getHeight() {
 		return height;
+	}
+	
+	public void setHeight(int height) {
+		this.height = height;
 	}
 
 	public byte[] getValue() {

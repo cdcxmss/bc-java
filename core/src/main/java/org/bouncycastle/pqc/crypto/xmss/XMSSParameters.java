@@ -27,6 +27,13 @@ public class XMSSParameters {
 	 */
 	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
 		super();
+		/*
+		 * if height is greater than 30 integers overflow e.g. in loops...
+		 * the current maximum supported is 2^30 signatures accordingly.
+		 */
+		if (height > 30) {
+			throw new IllegalArgumentException("maximum height is 30");
+		}
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
@@ -38,6 +45,7 @@ public class XMSSParameters {
 		};
 		this.height = height;
 		this.digest = digest;
+		this.digestSize = digest.getDigestSize();
 		this.prng = prng;
 		khf = new KeyedHashFunctions(digest);
 		winternitzParameter = 16;

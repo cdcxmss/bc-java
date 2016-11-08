@@ -32,7 +32,7 @@ public class KeyedHashFunctions {
 		for (int i = 0; i < key.length; i++) {
 			buffer[in.length + i] = key[i];
 		}
-		// add addr
+		// add index
 		for (int i = 0; i < index.length; i++) {
 			buffer[in.length + key.length + i] = index[i];
 		}

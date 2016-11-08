@@ -20,7 +20,7 @@ public class AllTests
 
         suite.addTestSuite(BitStringTest.class);
         suite.addTestSuite(EncryptionKeyTest.class);
-        //suite.addTestSuite(KeyedHashFunctionsTest.class);
+        suite.addTestSuite(KeyedHashFunctionsTest.class);
         suite.addTestSuite(NTRUEncryptionParametersTest.class);
         suite.addTestSuite(NTRUEncryptTest.class);
         suite.addTestSuite(NTRUSignatureParametersTest.class);
@@ -31,6 +31,7 @@ public class AllTests
         suite.addTestSuite(WinternitzOTSPlusParametersTest.class);
         suite.addTestSuite(XMSSAddressTest.class);
         suite.addTestSuite(XMSSUtilTest.class);
+        suite.addTestSuite(XMSSTest.class);
         suite.addTestSuite(AllTests.SimpleTestTest.class);
 
         return new BCTestSetup(suite);

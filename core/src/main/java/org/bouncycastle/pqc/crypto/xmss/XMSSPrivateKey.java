@@ -40,6 +40,9 @@ public class XMSSPrivateKey {
 	}
 	
 	public void setIndex(int index) {
+		if (index > (1 << xmss.getParams().getHeight()) - 1) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
 		this.index = index;
 	}
 
@@ -61,7 +64,7 @@ public class XMSSPrivateKey {
 	
 	public void setRoot(byte[] root) {
 		if (root.length != xmss.getParams().getDigestSize()) {
-			throw new IllegalArgumentException("size of root needs to be equal size of diget");
+			throw new IllegalArgumentException("size of root needs to be equal size of digest");
 		}
 		this.root = root;
 	}

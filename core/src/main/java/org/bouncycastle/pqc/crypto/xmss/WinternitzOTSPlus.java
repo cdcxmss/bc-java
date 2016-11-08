@@ -59,15 +59,18 @@ public class WinternitzOTSPlus {
 	
 	public void genKeyPair() {
 		genSecretKeySeed();
-		genPublicKey();
+		genPublicKey(new OTSHashAddress());
 	}
 	
-	public void genKeyPair(byte[] secretKeySeed) {
+	public void genKeyPair(byte[] secretKeySeed, OTSHashAddress address) {
 		if (secretKeySeed.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("length of secretKeySeed must be size of digest");
 		}
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
 		this.secretKeySeed = secretKeySeed;
-		genPublicKey();
+		genPublicKey(address);
 	}
 	
 	private void genSecretKeySeed() {
@@ -81,8 +84,10 @@ public class WinternitzOTSPlus {
 		return khf.PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
 	}
 	
-	private void genPublicKey() {
-		OTSHashAddress address = new OTSHashAddress();
+	private void genPublicKey(OTSHashAddress address) {
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
 			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, address);
@@ -90,13 +95,7 @@ public class WinternitzOTSPlus {
 	}
 	
 	public byte[][] sign(byte[] message) {
-		// create message digest
-		byte messageDigest[] = new byte[params.getDigestSize()];
-		Digest digest = params.getDigest();
-		digest.update(message, 0, message.length);
-		digest.doFinal(messageDigest, 0);
-		
-		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
+		List<Integer> baseWMessage = convertToBaseW(message, params.getWinternitzParameter(), params.getLen1());
 
 		// create checksum
 		int checksum = 0;
@@ -124,14 +123,7 @@ public class WinternitzOTSPlus {
 		if (signature.length != params.getLen()) {
 			throw new IllegalArgumentException("wrong signature size");
 		}
-		
-		// create message digest
-		byte messageDigest[] = new byte[params.getDigestSize()];
-		Digest digest = params.getDigest();
-		digest.update(message, 0, message.length);
-		digest.doFinal(messageDigest, 0);
-		
-		byte[][] tmpPublicKey = getPublicKeyFromSignature(messageDigest, signature);
+		byte[][] tmpPublicKey = getPublicKeyFromSignature(message, signature);
 		for (int i = 0; i < tmpPublicKey.length; i++) {
 			for (int j = 0; j < tmpPublicKey[i].length; j++) {
 				if (tmpPublicKey[i][j] != publicKey[i][j]) {
@@ -142,8 +134,8 @@ public class WinternitzOTSPlus {
 		return true;
 	}
 	
-	private byte[][] getPublicKeyFromSignature(byte[] messageDigest, byte[][] signature) {
-		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
+	private byte[][] getPublicKeyFromSignature(byte[] message, byte[][] signature) {
+		List<Integer> baseWMessage = convertToBaseW(message, params.getWinternitzParameter(), params.getLen1());
 		// create checksum
 		int checksum = 0;
 		for (int i = 0; i < params.getLen1(); i++) {
