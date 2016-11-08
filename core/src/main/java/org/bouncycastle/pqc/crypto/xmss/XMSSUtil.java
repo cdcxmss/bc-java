@@ -115,6 +115,17 @@ public class XMSSUtil {
 		return res;
     }
     
+	public static byte[][] cloneArray(byte[][] in) {
+		byte[][] out = new byte[in.length][];
+		for (int i = 0; i < in.length; i++) {
+			out[i] = new byte[in[i].length];
+			for (int j = 0; j < in[i].length; j++) {
+				out[i][j] = in[i][j];
+			}
+		}
+		return out;
+	}
+	
 	/**
 	 * Checks whether the digest is allowed according to draft-irtf-cfrg-xmss-hash-based-signatures-06.
 	 * @param digest The digest to be validated.
