@@ -10,7 +10,7 @@ public class XMSSPublicKey {
 	private byte[] root;
 	private byte[] publicSeed;
 	
-	public XMSSPublicKey(XMSS xmss, byte[] root, byte[] publicSeed) {
+	public XMSSPublicKey(XMSS xmss, byte[] root) {
 		super();
 		if (xmss == null) {
 			throw new NullPointerException("xmss == null");
@@ -19,11 +19,8 @@ public class XMSSPublicKey {
 		if (root.length != n) {
 			throw new IllegalArgumentException("length of root must be equal to length of digest");
 		}
-		if (publicSeed.length != n) {
-			throw new IllegalArgumentException("length of publicSeed must be equal to length of digest");
-		}
 		this.root = root;
-		this.publicSeed = publicSeed;
+		publicSeed = xmss.getPublicSeed();
 	}
 	
 	public byte[] getRoot() {

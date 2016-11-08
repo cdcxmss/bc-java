@@ -21,7 +21,7 @@ public class KeyedHashFunctions {
 	}
 	
 	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
-		int n = digest.getDigestSize();	// 32 / 64 byte
+		int n = digest.getDigestSize();
 		byte[] buffer = new byte[(2 * n) + index.length];
 		byte[] in = XMSSUtil.toBytesBigEndian(fixedValue, n);
 		// fill first n byte of out buffer
@@ -48,17 +48,20 @@ public class KeyedHashFunctions {
 			throw new IllegalArgumentException("wrong key length");
 		}
 		if (in.length != n) {
-			throw new IllegalArgumentException("wrong address length");
+			throw new IllegalArgumentException("wrong in length");
 		}
 		return coreDigest(0, key, in);
 	}
 	
-	public byte[] H(byte[] key, XMSSAddress address) {
-		if (address == null) {
-			throw new NullPointerException("address == null");
+	public byte[] H(byte[] key, byte[] in) {
+		int n = digest.getDigestSize();
+		if (key.length != n) {
+			throw new IllegalArgumentException("wrong key length");
 		}
-		byte[] addressBytes = address.toByteArray();
-		return coreDigest(1, key, addressBytes);
+		if (in.length != (2 * n)) {
+			throw new IllegalArgumentException("wrong in length");
+		}
+		return coreDigest(1, key, in);
 	}
 	
 	public byte[] HMsg(byte[] key, XMSSAddress address) {

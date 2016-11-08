@@ -27,8 +27,7 @@ public class XMSSPrivateKey {
 		xmss.getParams().getPRNG().nextBytes(secretKeySeed);
 		secretKeyPRF = new byte[n];
 		xmss.getParams().getPRNG().nextBytes(secretKeyPRF);
-		publicSeed = new byte[n];
-		xmss.getParams().getPRNG().nextBytes(publicSeed);
+		publicSeed = xmss.getPublicSeed();
 		root = new byte[n];
 	}
 
