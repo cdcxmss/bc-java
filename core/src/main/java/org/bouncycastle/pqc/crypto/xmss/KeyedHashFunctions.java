@@ -64,12 +64,12 @@ public class KeyedHashFunctions {
 		return coreDigest(1, key, in);
 	}
 	
-	public byte[] HMsg(byte[] key, XMSSAddress address) {
-		if (address == null) {
-			throw new NullPointerException("address == null");
+	public byte[] HMsg(byte[] key, byte[] in) {
+		int n = digest.getDigestSize();
+		if (key.length != (3 * n)) {
+			throw new IllegalArgumentException("wrong key length");
 		}
-		byte[] addressBytes = address.toByteArray();
-		return coreDigest(2, key, addressBytes);
+		return coreDigest(2, key, in);
 	}
 	
 	public byte[] PRF(byte[] key, byte[] address) {

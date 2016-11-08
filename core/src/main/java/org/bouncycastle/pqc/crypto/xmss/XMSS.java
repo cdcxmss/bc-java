@@ -143,10 +143,16 @@ public class XMSS {
 			}
 		}
 		return tmpSig;
-		
 	}
 	
-	public void sign(){
-		
+	public void sign(byte[] message, XMSSPrivateKey sk){
+		KeyedHashFunctions khf = params.getKHF();
+		int index = sk.getIndex();
+		byte[] r = khf.PRF(sk.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 4));
+		byte[] concatenated = XMSSUtil.concat(r, sk.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
+		byte[] hashedMessage = khf.HMsg(concatenated, message);
+		byte[] treeSignature = treeSig(hashedMessage, sk, new OTSHashAddress());
+		byte[] signature = XMSSUtil.concat(XMSSUtil.toBytesBigEndian(index, 4), r, treeSignature);
+		sk.setIndex(index+1);
 	}
 }
