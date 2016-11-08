@@ -3,24 +3,21 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
 
+/**
+ * 
+ * XMSS Parameters.
+ * 
+ * @author Sebastian Roland <seroland86@gmail.com>
+ */
 public class XMSSParameters {
-	
-	/**
-	 * WOTS+ scheme.
-	 */
-	private WinternitzOTSPlus wotsPlus;
 
-	/**
-	 * The height (number of levels - 1) of the tree.
-	 */
 	private int height;
-	
-	/**
-	 * Keyed Hash Function.
-	 */
-	private KeyedHashFunction khf;
+	private Digest digest;
+	private int digestSize;
+	private SecureRandom prng;
+	private KeyedHashFunctions khf;
+	private int winternitzParameter;
 	
 	/**
 	 * XMSS Constructor...
@@ -30,15 +27,43 @@ public class XMSSParameters {
 	 */
 	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
 		super();
+		if (digest == null) {
+			throw new NullPointerException("digest == null");
+		}
 		if (prng == null) {
 			throw new NullPointerException("prng == null");
 		}
-		WinternitzOTSPlusParameters wotsPlusParams = new WinternitzOTSPlusParameters(digest, prng);
-		wotsPlus = new WinternitzOTSPlus(wotsPlusParams);
-		khf = new KeyedHashFunction(wotsPlus.getParams().getDigest());
+		if (!XMSSUtil.isValidDigest(digest)) {
+			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
+		};
+		this.height = height;
+		this.digest = digest;
+		this.prng = prng;
+		khf = new KeyedHashFunctions(digest);
+		winternitzParameter = 16;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public Digest getDigest() {
+		return digest;
+	}
+
+	public int getDigestSize() {
+		return digestSize;
+	}
+
+	public SecureRandom getPRNG() {
+		return prng;
+	}
+
+	public KeyedHashFunctions getKHF() {
+		return khf;
 	}
 	
-	public WinternitzOTSPlus getWotsPlus() {
-		return wotsPlus;
+	public int getWinternitzParameter() {
+		return winternitzParameter;
 	}
 }

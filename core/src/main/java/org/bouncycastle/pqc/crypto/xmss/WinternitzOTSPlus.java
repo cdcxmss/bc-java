@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.util.encoders.Hex;
 
 /**
  * This class implements the WOTS+ one-time signature system
@@ -20,14 +19,19 @@ public class WinternitzOTSPlus {
 	private WinternitzOTSPlusParameters params;
 	
 	/**
-	 * Keyed Hash Function
+	 * Public Seed.
 	 */
-	private KeyedHashFunction khf;
+	private byte[] publicSeed;
 	
 	/**
-	 * WOTS+ private key.
+	 * Keyed hash function.
 	 */
-	private byte[][] privateKey;
+	private KeyedHashFunctions khf;
+	
+	/**
+	 * WOTS+ secret key seed.
+	 */
+	private byte[] secretKeySeed;
 	
 	/**
 	 * WOTS+ public key.
@@ -35,46 +39,53 @@ public class WinternitzOTSPlus {
 	private byte[][] publicKey;
 	
 	/**
-	 * Public Seed.
-	 */
-	private byte[] publicSeed;
-	
-	/**
 	 * Constructs a new WOTS+ one-time signature system based
 	 * on the given WOTS+ parameters.
 	 */
-	public WinternitzOTSPlus(WinternitzOTSPlusParameters params) {
+	public WinternitzOTSPlus(WinternitzOTSPlusParameters params, byte[] publicSeed) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
-		khf = new KeyedHashFunction(params.getDigest());
-		int len = params.getLen();
-		int n = params.getDigestSize();
-		privateKey = new byte[len][n];
-		publicKey = new byte[len][n];
-		publicSeed = new byte[n];
+		if (publicSeed.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("length of publicSeed must be size of digest");
+		}
+		this.publicSeed = publicSeed;
+		khf = new KeyedHashFunctions(params.getDigest());
+		secretKeySeed = new byte[params.getDigestSize()];
+		publicKey = new byte[params.getLen()][params.getDigestSize()];
 	}
 	
 	public void genKeyPair() {
-		genPrivateKey();
+		genSecretKeySeed();
 		genPublicKey();
 	}
 	
-	private void genPrivateKey() {
-		for (int i = 0; i < params.getLen(); i++) {
-			params.getPRNG().nextBytes(privateKey[i]);
+	public void genKeyPair(byte[] secretKeySeed) {
+		if (secretKeySeed.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("length of secretKeySeed must be size of digest");
 		}
+		this.secretKeySeed = secretKeySeed;
+		genPublicKey();
+	}
+	
+	private void genSecretKeySeed() {
+		params.getPRNG().nextBytes(secretKeySeed);
+	}
+	
+	private byte[] expandSecretKeySeed(int index) {
+		if (index < 0 || index >= params.getLen()) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
+		return khf.PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
 	}
 	
 	private void genPublicKey() {
-		params.getPRNG().nextBytes(publicSeed);
-
 		OTSHashAddress address = new OTSHashAddress();
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
-			publicKey[i] = chain(privateKey[i], 0, params.getWinternitzParameter() - 1, address);
+			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, address);
 		}
 	}
 	
@@ -104,7 +115,7 @@ public class WinternitzOTSPlus {
 		byte[][] signature = new byte[params.getLen()][];
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
-			signature[i] = chain(privateKey[i], 0, baseWMessage.get(i), address);
+			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), address);
 		}
 		return signature;
 	}
@@ -173,9 +184,9 @@ public class WinternitzOTSPlus {
 		byte[] tmp = chain(X, startIndex, steps - 1, address);
 		address.setHashAddress(startIndex + steps - 1);
 		address.setKeyAndMask(0);
-		byte[] key = khf.PRF(publicSeed, address);
+		byte[] key = khf.PRF(publicSeed, address.toByteArray());
 		address.setKeyAndMask(1);
-		byte[] bitmask = khf.PRF(publicSeed, address);
+		byte[] bitmask = khf.PRF(publicSeed, address.toByteArray());
 		byte[] tmpMasked = new byte[n];
 		for (int i = 0; i < n; i++) {
 			tmpMasked[i] = (byte)(tmp[i] ^ bitmask[i]);
@@ -209,27 +220,19 @@ public class WinternitzOTSPlus {
 		return params;
 	}
 	
-	public byte[][] getPrivateKey() {
-		return privateKey;
-	}
-	
-	public void setPrivateKey(byte[][] privateKey) {
-		this.privateKey = privateKey;
-	}
-	
-	public byte[][] getPublicKey() {
-		return publicKey;
-	}
-	
-	public void setPublicKey(byte[][] publicKey) {
-		this.publicKey = publicKey;
-	}
-	
 	public byte[] getPublicSeed() {
 		return publicSeed;
 	}
 	
-	public void setPublicSeed(byte[] publicSeed) {
-		this.publicSeed = publicSeed;
+	public byte[][] getPrivateKey() {
+		byte[][] privateKey = new byte[params.getLen()][];
+		for (int i = 0; i < privateKey.length; i++) {
+			privateKey[i] = expandSecretKeySeed(i);
+		}
+		return privateKey;
+	}
+	
+	public byte[][] getPublicKey() {
+		return publicKey;
 	}
 }

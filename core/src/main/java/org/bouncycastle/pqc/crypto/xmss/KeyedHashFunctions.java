@@ -8,11 +8,11 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class KeyedHashFunction {
+public class KeyedHashFunctions {
 
 	Digest digest;
 	
-	public KeyedHashFunction(Digest digest) {
+	public KeyedHashFunctions(Digest digest) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
@@ -48,7 +48,7 @@ public class KeyedHashFunction {
 			throw new IllegalArgumentException("wrong key length");
 		}
 		if (in.length != n) {
-			throw new IllegalArgumentException("wrong in length");
+			throw new IllegalArgumentException("wrong address length");
 		}
 		return coreDigest(0, key, in);
 	}
@@ -69,15 +69,14 @@ public class KeyedHashFunction {
 		return coreDigest(2, key, addressBytes);
 	}
 	
-	public byte[] PRF(byte[] key, XMSSAddress address) {
+	public byte[] PRF(byte[] key, byte[] address) {
 		int n = digest.getDigestSize();
 		if (key.length != n) {
 			throw new IllegalArgumentException("wrong key length");
 		}
-		if (address == null) {
-			throw new NullPointerException("address == null");
+		if (address.length != 32) {
+			throw new IllegalArgumentException("wrong address length");
 		}
-		byte[] addressBytes = address.toByteArray();
-		return coreDigest(3, key, addressBytes);
+		return coreDigest(3, key, address);
 	}
 }

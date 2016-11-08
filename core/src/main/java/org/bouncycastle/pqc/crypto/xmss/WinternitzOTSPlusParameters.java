@@ -34,6 +34,11 @@ public class WinternitzOTSPlusParameters {
 	private int winternitzParameter;
 	
 	/**
+	 * The number of n-byte string elements in a WOTS+ secret key, public key, and signature.
+	 */
+	private int len;
+
+	/**
 	 * len1.
 	 */
 	private int len1;
@@ -43,10 +48,6 @@ public class WinternitzOTSPlusParameters {
 	 */
 	private int len2;
 	
-	/**
-	 * The number of n-byte string elements in a WOTS+ secret key, public key, and signature.
-	 */
-	private int len;
 	
 	/**
 	 * Constructor...
@@ -60,7 +61,7 @@ public class WinternitzOTSPlusParameters {
 		if (prng == null) {
 			throw new NullPointerException("prng == null");
 		}
-		if (!isValidDigest(digest)) {
+		if (!XMSSUtil.isValidDigest(digest)) {
 			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
 		};
 		this.digest = digest;
@@ -68,18 +69,6 @@ public class WinternitzOTSPlusParameters {
 		this.prng = prng;
 		winternitzParameter = 16;
 		setLen();
-	}
-	
-	/**
-	 * Checks whether the digest is allowed according to draft-irtf-cfrg-xmss-hash-based-signatures-06.
-	 * @param digest The digest to be validated.
-	 * @return true if digest is valid false else.
-	 */
-	private boolean isValidDigest(Digest digest) {
-		if (digest instanceof SHA256Digest || digest instanceof SHA512Digest) {
-			return true;
-		}
-		return false;
 	}
 	
 	/**
@@ -124,6 +113,14 @@ public class WinternitzOTSPlusParameters {
 	}
 	
 	/**
+	 * Getter len.
+	 * @return len.
+	 */
+	public int getLen() {
+		return len;
+	}
+	
+	/**
 	 * Getter len1.
 	 * @return len1.
 	 */
@@ -137,13 +134,5 @@ public class WinternitzOTSPlusParameters {
 	 */
 	public int getLen2() {
 		return len2;
-	}
-	
-	/**
-	 * Getter len.
-	 * @return len.
-	 */
-	public int getLen() {
-		return len;
 	}
 }

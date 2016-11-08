@@ -17,7 +17,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 
 	public void testGenKeyPairSHA256() {
 		WinternitzOTSPlusParameters paramsSHA256 = new WinternitzOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA256);
+		byte[] publicSeed = new byte[paramsSHA256.getDigestSize()];
+		paramsSHA256.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA256, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[][] expected = {
 				{ (byte)0x53, (byte)0x59, (byte)0x77, (byte)0xa9, (byte)0xba, (byte)0xde, (byte)0x14, (byte)0x49, (byte)0x46, (byte)0xce, (byte)0xc7, (byte)0xbd, (byte)0x94, (byte)0x29, (byte)0x8a, (byte)0x06, (byte)0x18, (byte)0x3d, (byte)0x1e, (byte)0x4d, (byte)0x6d, (byte)0xf2, (byte)0x87, (byte)0x6d, (byte)0x35, (byte)0x78, (byte)0xda, (byte)0xf7, (byte)0x4f, (byte)0x62, (byte)0xe9, (byte)0x25 }, 
@@ -98,7 +100,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 	
 	public void testGenKeyPairSHA512() {
 		WinternitzOTSPlusParameters paramsSHA512 = new WinternitzOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA512);
+		byte[] publicSeed = new byte[paramsSHA512.getDigestSize()];
+		paramsSHA512.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA512, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[][] expected = {
 				{ (byte)0xcd, (byte)0xdd, (byte)0x47, (byte)0x3b, (byte)0xc7, (byte)0xee, (byte)0x7f, (byte)0x04, (byte)0x9e, (byte)0x4a, (byte)0xe0, (byte)0xef, (byte)0xdb, (byte)0xa3, (byte)0x4e, (byte)0x9f, (byte)0xb6, (byte)0x11, (byte)0x08, (byte)0x19, (byte)0x5b, (byte)0xef, (byte)0x24, (byte)0x02, (byte)0x1d, (byte)0xf1, (byte)0x6a, (byte)0xc5, (byte)0xd3, (byte)0x23, (byte)0x3d, (byte)0xd8, (byte)0x87, (byte)0x32, (byte)0x78, (byte)0xfa, (byte)0x3b, (byte)0xe7, (byte)0xac, (byte)0xb4, (byte)0x1e, (byte)0x8d, (byte)0xea, (byte)0x55, (byte)0xf0, (byte)0x69, (byte)0x11, (byte)0x39, (byte)0xf0, (byte)0x02, (byte)0x86, (byte)0xcb, (byte)0x0d, (byte)0xdf, (byte)0x99, (byte)0x5a, (byte)0x8a, (byte)0x0a, (byte)0x36, (byte)0x13, (byte)0x83, (byte)0xa9, (byte)0xce, (byte)0xf8 },
@@ -243,7 +247,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 	
 	public void testSignSHA256() {
 		WinternitzOTSPlusParameters paramsSHA256 = new WinternitzOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA256);
+		byte[] publicSeed = new byte[paramsSHA256.getDigestSize()];
+		paramsSHA256.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA256, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[] msg = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] expected = {
@@ -325,7 +331,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 	
 	public void testSignSHA512() {
 		WinternitzOTSPlusParameters paramsSHA512 = new WinternitzOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA512);
+		byte[] publicSeed = new byte[paramsSHA512.getDigestSize()];
+		paramsSHA512.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(paramsSHA512, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[] msg = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] expected = {
@@ -471,7 +479,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 	
 	public void testVerifySignatureSHA256() {
 		WinternitzOTSPlusParameters params = new WinternitzOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(params);
+		byte[] publicSeed = new byte[params.getDigestSize()];
+		params.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(params, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[] msg1 = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] signature = wotsPlus.sign(msg1);
@@ -483,7 +493,9 @@ public class WinternitzOTSPlusTest extends TestCase {
 	
 	public void testVerifySignatureSHA512() {
 		WinternitzOTSPlusParameters params = new WinternitzOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(params);
+		byte[] publicSeed = new byte[params.getDigestSize()];
+		params.getPRNG().nextBytes(publicSeed);
+		WinternitzOTSPlus wotsPlus = new WinternitzOTSPlus(params, publicSeed);
 		wotsPlus.genKeyPair();
 		byte[] msg1 = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] signature = wotsPlus.sign(msg1);
