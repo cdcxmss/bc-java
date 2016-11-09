@@ -3,6 +3,7 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
+import org.ietf.jgss.Oid;
 
 /**
  * 
@@ -18,6 +19,7 @@ public class XMSSParameters {
 	private SecureRandom prng;
 	private KeyedHashFunctions khf;
 	private int winternitzParameter;
+	private Oid oid;
 	
 	/**
 	 * XMSS Constructor...
@@ -49,6 +51,7 @@ public class XMSSParameters {
 		this.prng = prng;
 		khf = new KeyedHashFunctions(digest);
 		winternitzParameter = 16;
+		// TODO getOidFromParams();
 	}
 
 	public int getHeight() {

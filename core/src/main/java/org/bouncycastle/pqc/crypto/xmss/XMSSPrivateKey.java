@@ -45,7 +45,7 @@ public class XMSSPrivateKey {
 		}
 		this.index = index;
 	}
-
+	
 	public byte[] getSecretKeySeed() {
 		return secretKeySeed;
 	}

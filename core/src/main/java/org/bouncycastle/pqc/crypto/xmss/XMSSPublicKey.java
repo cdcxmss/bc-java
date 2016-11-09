@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import org.ietf.jgss.Oid;
+
 /**
  * XMSS Public Key.
  * 
@@ -7,6 +9,7 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class XMSSPublicKey {
 
+	private Oid oid;
 	private byte[] root;
 	private byte[] publicSeed;
 	
@@ -21,6 +24,11 @@ public class XMSSPublicKey {
 		}
 		this.root = root;
 		publicSeed = xmss.getPublicSeed();
+	}
+	
+	public byte[] toByteArray() {
+		/* TODO */
+		return null;
 	}
 	
 	public byte[] getRoot() {

@@ -3,20 +3,18 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bouncycastle.crypto.Digest;
-
 /**
  * This class implements the WOTS+ one-time signature system
  * as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class WinternitzOTSPlus {
+public class WOTSPlus {
 
 	/**
 	 * WOTS+ parameters.
 	 */
-	private WinternitzOTSPlusParameters params;
+	private WOTSPlusParameters params;
 	
 	/**
 	 * Public Seed.
@@ -36,13 +34,12 @@ public class WinternitzOTSPlus {
 	/**
 	 * WOTS+ public key.
 	 */
-	private byte[][] publicKey;
+	private WOTSPlusPublicKey publicKey;
 	
 	/**
-	 * Constructs a new WOTS+ one-time signature system based
-	 * on the given WOTS+ parameters.
+	 * Constructs a new WOTS+ one-time signature system based on the given WOTS+ parameters.
 	 */
-	public WinternitzOTSPlus(WinternitzOTSPlusParameters params, byte[] publicSeed) {
+	public WOTSPlus(WOTSPlusParameters params, byte[] publicSeed) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
@@ -53,16 +50,18 @@ public class WinternitzOTSPlus {
 		}
 		this.publicSeed = publicSeed;
 		khf = new KeyedHashFunctions(params.getDigest());
-		secretKeySeed = new byte[params.getDigestSize()];
-		publicKey = new byte[params.getLen()][params.getDigestSize()];
 	}
 	
 	public void genKeyPair() {
-		genSecretKeySeed();
-		genPublicKey(new OTSHashAddress());
+		secretKeySeed = genSecretKeySeed();
+		publicKey = genPublicKey(new OTSHashAddress());
 	}
 	
-	public void genKeyPair(byte[] secretKeySeed, OTSHashAddress address) {
+	public void genKeyPair(byte[] secretKeySeed) {
+		genKeyPair(secretKeySeed, new OTSHashAddress());
+	}
+	
+	protected void genKeyPair(byte[] secretKeySeed, OTSHashAddress address) {
 		if (secretKeySeed.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("length of secretKeySeed must be size of digest");
 		}
@@ -70,33 +69,42 @@ public class WinternitzOTSPlus {
 			throw new NullPointerException("address == null");
 		}
 		this.secretKeySeed = secretKeySeed;
-		genPublicKey(address);
+		publicKey = genPublicKey(address);
 	}
 	
-	private void genSecretKeySeed() {
+	private byte[] genSecretKeySeed() {
+		byte[] secretKeySeed = new byte[params.getDigestSize()];
 		params.getPRNG().nextBytes(secretKeySeed);
+		return secretKeySeed;
 	}
 	
-	private byte[] expandSecretKeySeed(int index) {
-		if (index < 0 || index >= params.getLen()) {
-			throw new IllegalArgumentException("index out of bounds");
-		}
-		return khf.PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
-	}
-	
-	private void genPublicKey(OTSHashAddress address) {
+	private WOTSPlusPublicKey genPublicKey(OTSHashAddress address) {
 		if (address == null) {
 			throw new NullPointerException("address == null");
 		}
+		byte[][] publicKey = new byte[params.getLen()][];
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
 			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, address);
 		}
+		return new WOTSPlusPublicKey(publicKey);
 	}
 	
-	public byte[][] sign(byte[] message) {
-		List<Integer> baseWMessage = convertToBaseW(message, params.getWinternitzParameter(), params.getLen1());
-
+	public WOTSPlusSignature sign(byte[] messageDigest) {
+		return sign(messageDigest, new OTSHashAddress());
+	}
+	
+	protected WOTSPlusSignature sign(byte[] messageDigest, OTSHashAddress address) {
+		if (messageDigest.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
+		}
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
+		if (secretKeySeed == null || publicKey == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
+		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
 		// create checksum
 		int checksum = 0;
 		for (int i = 0; i < params.getLen1(); i++) {
@@ -110,23 +118,39 @@ public class WinternitzOTSPlus {
 		baseWMessage.addAll(baseWChecksum);
 
 		// create signature
-		OTSHashAddress address = new OTSHashAddress();
 		byte[][] signature = new byte[params.getLen()][];
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
 			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), address);
 		}
-		return signature;
+		return new WOTSPlusSignature(signature);
 	}
 	
-	public boolean verifySignature(byte[] message, byte[][] signature) {
-		if (signature.length != params.getLen()) {
+	public boolean verifySignature(byte[] messageDigest, WOTSPlusSignature signature) {
+		return verifySignature(messageDigest, signature, new OTSHashAddress());
+	}
+	
+	protected boolean verifySignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress address) {
+		if (publicKey == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
+		if (messageDigest.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
+		}
+		if (signature == null) {
+			throw new NullPointerException("signature == null");
+		}
+		if (signature.toByteArray().length != params.getLen()) {
 			throw new IllegalArgumentException("wrong signature size");
 		}
-		byte[][] tmpPublicKey = getPublicKeyFromSignature(message, signature);
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
+		byte[][] tmpPublicKey = getPublicKeyFromSignature(messageDigest, signature, address).toByteArray();
+		/* compare values */
 		for (int i = 0; i < tmpPublicKey.length; i++) {
 			for (int j = 0; j < tmpPublicKey[i].length; j++) {
-				if (tmpPublicKey[i][j] != publicKey[i][j]) {
+				if (tmpPublicKey[i][j] != publicKey.toByteArray()[i][j]) {
 					return false;
 				}
 			}
@@ -134,8 +158,8 @@ public class WinternitzOTSPlus {
 		return true;
 	}
 	
-	private byte[][] getPublicKeyFromSignature(byte[] message, byte[][] signature) {
-		List<Integer> baseWMessage = convertToBaseW(message, params.getWinternitzParameter(), params.getLen1());
+	private WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress address) {
+		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
 		// create checksum
 		int checksum = 0;
 		for (int i = 0; i < params.getLen1(); i++) {
@@ -148,13 +172,12 @@ public class WinternitzOTSPlus {
 		// concatenate
 		baseWMessage.addAll(baseWChecksum);
 		
-		OTSHashAddress address = new OTSHashAddress();
-		byte[][] res = new byte[params.getLen()][];
+		byte[][] publicKey = new byte[params.getLen()][];
 		for (int i = 0; i < params.getLen(); i++) {
 			address.setChainAddress(i);
-			res[i] = chain(signature[i], baseWMessage.get(i), params.getWinternitzParameter() - 1 - baseWMessage.get(i), address);
+			publicKey[i] = chain(signature.toByteArray()[i], baseWMessage.get(i), params.getWinternitzParameter() - 1 - baseWMessage.get(i), address);
 		}
-		return res;
+		return new WOTSPlusPublicKey(publicKey);
 	}
 	
 	private byte[] chain(byte[] X, int startIndex, int steps, OTSHashAddress address) {
@@ -208,7 +231,17 @@ public class WinternitzOTSPlus {
 		return res;
 	}
 	
-	public WinternitzOTSPlusParameters getParams() {
+	private byte[] expandSecretKeySeed(int index) {
+		if (secretKeySeed == null) {
+			throw new IllegalStateException("secretKeySeed == null");
+		}
+		if (index < 0 || index >= params.getLen()) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
+		return khf.PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
+	}
+
+	public WOTSPlusParameters getParams() {
 		return params;
 	}
 	
@@ -216,15 +249,32 @@ public class WinternitzOTSPlus {
 		return publicSeed;
 	}
 	
-	public byte[][] getPrivateKey() {
+	public KeyedHashFunctions getKhf() {
+		return khf;
+	}
+	
+	public byte[] getSecretKeySeed() {
+		if (secretKeySeed == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
+		return secretKeySeed;
+	}
+	
+	public WOTSPlusPrivateKey getPrivateKey() {
+		if (secretKeySeed == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
 		byte[][] privateKey = new byte[params.getLen()][];
 		for (int i = 0; i < privateKey.length; i++) {
 			privateKey[i] = expandSecretKeySeed(i);
 		}
-		return privateKey;
+		return new WOTSPlusPrivateKey(privateKey);
 	}
 	
-	public byte[][] getPublicKey() {
+	public WOTSPlusPublicKey getPublicKey() {
+		if (publicKey == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
 		return publicKey;
 	}
 }

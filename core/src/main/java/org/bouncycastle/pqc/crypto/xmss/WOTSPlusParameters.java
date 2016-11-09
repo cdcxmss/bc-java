@@ -3,15 +3,14 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.ietf.jgss.Oid;
 
 /**
  * Parameters for the WOTS+ one-time signature system as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class WinternitzOTSPlusParameters {
+public class WOTSPlusParameters {
 
 	/**
 	 * Digest used in WOTS+.
@@ -48,12 +47,16 @@ public class WinternitzOTSPlusParameters {
 	 */
 	private int len2;
 	
+	/**
+	 * oid.
+	 */
+	private Oid oid;
 	
 	/**
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
 	 */
-	public WinternitzOTSPlusParameters(Digest digest, SecureRandom prng) {
+	public WOTSPlusParameters(Digest digest, SecureRandom prng) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
@@ -69,6 +72,7 @@ public class WinternitzOTSPlusParameters {
 		this.prng = prng;
 		winternitzParameter = 16;
 		setLen();
+		// TODO getOidFromParams();
 	}
 	
 	/**

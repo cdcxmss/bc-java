@@ -1,4 +1,4 @@
-package org.bouncycastle.pqc.crypto.test;
+package org.bouncycastle.pqc.crypto.xmss;
 
 import java.security.SecureRandom;
 
@@ -18,6 +18,8 @@ public class NullPRNG extends SecureRandom {
 	
 	@Override
 	public void nextBytes(byte[] bytes) {
-		;
+		for (int i = 0; i < bytes.length; i++) {
+			bytes[i] = 0x00;
+		}
 	}
 }

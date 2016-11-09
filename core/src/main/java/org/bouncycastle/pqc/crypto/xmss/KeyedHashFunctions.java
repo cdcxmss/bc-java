@@ -10,7 +10,7 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
  */
 public class KeyedHashFunctions {
 
-	Digest digest;
+	private Digest digest;
 	
 	public KeyedHashFunctions(Digest digest) {
 		super();
@@ -22,7 +22,7 @@ public class KeyedHashFunctions {
 	
 	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
 		int n = digest.getDigestSize();
-		byte[] buffer = new byte[(2 * n) + index.length];
+		byte[] buffer = new byte[n + key.length + index.length];
 		byte[] in = XMSSUtil.toBytesBigEndian(fixedValue, n);
 		// fill first n byte of out buffer
 		for (int i = 0; i < in.length; i++) {
