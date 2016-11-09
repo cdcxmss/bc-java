@@ -118,6 +118,73 @@ public class XMSS {
 		return stack.pop();
 	}
 	
+	/**
+	 * Compute the authentication path for the i^th WOTS+ key pair.
+	 * This algorithm is extremely inefficient, the use of one of the alternative algorithms is strongly RECOMMENDED.
+	 * @param sk the {@link XMSSPrivateKey}
+	 * @param index the {@link WinternitzOTSPlus} key par index
+	 * @param address {@link XMSSAddress} 
+	 */
+	private XMSSNode[] buildAuth(XMSSPrivateKey sk, int index, XMSSAddress address){
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
+		if (sk == null) {
+			throw new NullPointerException("sk == null");
+		}
+		int h = params.getHeight();
+		XMSSNode[] auth = new XMSSNode[h-1];
+		for (int j = 0; j < h; j++){
+			int k = (int)Math.floor(index / (Math.pow(2, j))) ^ 1;
+			auth[j] = treeHash(sk, (int)(k * Math.pow(2, j)), j, address);
+		}
+		return auth;
+	}
+	
+	/**
+	 * Generate a WOTS+ signature on a message with corresponding authentication path
+	 * @param message n-byte message
+	 * @param sk {@link XMSSPrivateKey}
+	 * @param address {@link OTSHashAddress}
+	 * @return Concatenation of WOTS+ signature and authentication path
+	 */
+	private byte[] treeSig(byte[] message, XMSSPrivateKey sk, OTSHashAddress address){
+		if (address == null) {
+			throw new NullPointerException("address == null");
+		}
+		if (sk == null) {
+			throw new NullPointerException("sk == null");
+		}
+		int index = sk.getIndex();
+		XMSSNode[] auth = buildAuth(sk, index, address);
+		address.setOTSAddress(index);
+		byte[][] otsSignature = wotsPlus.sign(message);//parameters index, address, wots sk?
+		WinternitzOTSPlusParameters wotsPlusParams = wotsPlus.getParams();
+		byte[] tmpSig = new byte[wotsPlusParams.getLen() * wotsPlusParams.getDigestSize() + params.getHeight()-1 * params.getDigestSize()];
+		for (int i = 0; i < otsSignature.length; i++){
+			for (int j = 0; j < otsSignature[i].length; j++){
+				tmpSig[i*otsSignature.length+j] = otsSignature[i][j];
+			}
+		}
+		for (int i = 0; i < auth.length; i++){
+			for (int j = 0; j < auth[i].getValue().length; j++){
+				tmpSig[wotsPlusParams.getLen() * wotsPlusParams.getDigestSize()+i*auth.length+j] = auth[i].getValue()[j];
+			}
+		}
+		return tmpSig;
+	}
+
+	public void sign(byte[] message, XMSSPrivateKey sk){
+		KeyedHashFunctions khf = params.getKHF();
+		int index = sk.getIndex();
+		byte[] r = khf.PRF(sk.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 4));
+		byte[] concatenated = XMSSUtil.concat(r, sk.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
+		byte[] hashedMessage = khf.HMsg(concatenated, message);
+		byte[] treeSignature = treeSig(hashedMessage, sk, new OTSHashAddress());
+		byte[] signature = XMSSUtil.concat(XMSSUtil.toBytesBigEndian(index, 4), r, treeSignature);
+		sk.setIndex(index+1);
+	}
+	
 	public XMSSParameters getParams() {
 		return params;
 	}
@@ -132,5 +199,5 @@ public class XMSS {
 	
 	public XMSSPrivateKey getPrivateKey() {
 		return privateKey;
-	}
+    }
 }
