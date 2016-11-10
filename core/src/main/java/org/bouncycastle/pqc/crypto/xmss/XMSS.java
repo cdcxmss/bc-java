@@ -184,9 +184,9 @@ public class XMSS {
 		if (address == null) {
 			throw new NullPointerException("address == null");
 		}
-		/* recreate WOTSPlus state at index */
+		/* update WOTSPlus secret key */
 		int index = privateKey.getIndex();
-		resetWOTSPlusState(index, publicSeed);
+		updateWOTSPlusState(index);
 		
 		/* create WOTS+ signature */
 		address.setOTSAddress(privateKey.getIndex());
@@ -203,7 +203,7 @@ public class XMSS {
 	public XMSSSignature sign(byte[] message) {
 		if (publicKey == null || privateKey == null) {
 			throw new IllegalStateException("no key has been generated");
-		}
+		}	
 		KeyedHashFunctions khf = params.getKHF();
 		/* create (randomized keyed) messageDigest of message */
 		int index = privateKey.getIndex();
@@ -218,7 +218,6 @@ public class XMSS {
 		
 		/* update index */
 		privateKey.setIndex(index + 1);
-		
 		return signature;
 	}
 	
@@ -284,13 +283,8 @@ public class XMSS {
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
 	}
 	
-	private void resetWOTSPlusState(int index, byte[] publicSeed) {
-		if (publicSeed.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of publicSeed needs to be equal to size of digest");
-		}
-		OTSHashAddress address = new OTSHashAddress();
-		address.setOTSAddress(index);
-		wotsPlus.generatePublicKeyFromParams(privateKey.getWOTSPlusSecretKey(index), publicSeed, address);
+	private void updateWOTSPlusState(int index) {
+		wotsPlus.setSecretKeySeed(privateKey.getWOTSPlusSecretKey(index));
 	}
 	
 	public XMSSParameters getParams() {
@@ -298,6 +292,9 @@ public class XMSS {
 	}
 	
 	public byte[] getPublicSeed() {
+		if (publicSeed == null) {
+			throw new IllegalStateException("no key has been generated");
+		}
 		return publicSeed;
 	}
 	
