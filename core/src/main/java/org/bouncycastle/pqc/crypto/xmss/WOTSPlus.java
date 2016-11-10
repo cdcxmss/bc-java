@@ -158,7 +158,7 @@ public class WOTSPlus {
 		return true;
 	}
 	
-	private WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress address) {
+	protected WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress address) {
 		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
 		// create checksum
 		int checksum = 0;

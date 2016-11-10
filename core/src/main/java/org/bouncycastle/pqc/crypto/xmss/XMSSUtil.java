@@ -159,4 +159,19 @@ public class XMSSUtil {
 
 	    return result;
 	}
+	
+	public static Boolean compareByteArray(byte[] a, byte[] b) {
+		if (a == null || b == null) {
+			throw new NullPointerException("a or b == null");
+		}
+		if (a.length != b.length) {
+			throw new IllegalArgumentException("size of a and b must be equal");
+		}
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != b[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

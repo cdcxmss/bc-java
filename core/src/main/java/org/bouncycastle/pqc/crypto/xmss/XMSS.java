@@ -205,6 +205,53 @@ public class XMSS {
 		return signature;
 	}
 	
+	/**
+	 * Compute a root node from a tree signature
+	 * @param sig the {@link XMSSSignature}
+	 * @param message n-byte long message
+	 * @return the root as {@link XMSSNode}
+	 */
+	protected XMSSNode rootFromSig(XMSSSignature signature, byte[] message){
+		int index = signature.getIndex();
+		OTSHashAddress otsAddress = new OTSHashAddress();
+		otsAddress.setOTSAddress(index);
+		byte[][] wotsPlusPK = wotsPlus.getPublicKeyFromSignature(message, signature.getSignature());
+		LTreeAddress ltreeAddress = new LTreeAddress();
+		ltreeAddress.setLTreeAddress(index);
+		XMSSNode[] node = new XMSSNode[2];
+		node[0] = lTree(ltreeAddress);//parameter wotsPlusPK?
+		HashTreeAddress hashTreeAddress = new HashTreeAddress();
+		hashTreeAddress.setTreeIndex(index);
+		for (int k = 0; k < params.getHeight(); k++){
+			hashTreeAddress.setTreeHeight(k);
+			if (Math.floor(index / (Math.pow(2, k) )) % 2 == 0){
+				hashTreeAddress.setTreeIndex(hashTreeAddress.getTreeIndex() / 2);
+				node[1] = randomizeHash(node[0], signature.getAuthPath()[k], hashTreeAddress);
+			} else {
+				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
+				node[1] = randomizeHash(signature.getAuthPath()[k], node[0], hashTreeAddress);
+			}
+			node[0] = node[1];
+		}
+		return node[0];
+	}
+	
+	/**
+	 * Verify an XMSS signature using the corresponding XMSS public key and a message
+	 * @param sig {@link XMSSSignature}
+	 * @param message
+	 * @return returns true if and only if Sig is a valid signature on M under public key PK.  Otherwise, it returns false.
+	 */
+	public boolean verify(XMSSSignature signature, byte[] message) {
+		if (signature == null) {
+			throw new NullPointerException("signature == null");
+		}
+		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
+		byte[] messageDigest = params.getKHF().HMsg(concatenated, message);
+		XMSSNode node = rootFromSig(signature, messageDigest);
+		return XMSSUtil.compareByteArray(node.getValue(), publicKey.getRoot());
+	}
+	
 	public XMSSParameters getParams() {
 		return params;
 	}
