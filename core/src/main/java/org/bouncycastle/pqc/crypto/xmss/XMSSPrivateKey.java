@@ -8,11 +8,29 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class XMSSPrivateKey {
 
+	/**
+	 * XMSS object.
+	 */
 	private XMSS xmss;
+	/**
+	 * Index for WOTS+ keys (randomization factor).
+	 */
 	private int index;
+	/**
+	 * Secret for the derivation of WOTS+ secret keys.
+	 */
 	private byte[] secretKeySeed;
+	/**
+	 * Secret for the randomization of message digests during signature creation.
+	 */
 	private byte[] secretKeyPRF;
+	/**
+	 * Public seed for the randomization of hashes.
+	 */
 	private byte[] publicSeed;
+	/**
+	 * Public root of binary tree.
+	 */
 	private byte[] root;
 	
 	public XMSSPrivateKey(XMSS xmss) {
@@ -31,7 +49,7 @@ public class XMSSPrivateKey {
 		publicSeed = xmss.getPublicSeed();
 		root = new byte[n];
 	}
-
+	
 	protected byte[] getWOTSPlusSecretKey(int index) {
 		return xmss.getParams().getKHF().PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
 	}

@@ -162,7 +162,7 @@ public class XMSSUtil {
 	    return result;
 	}
 	
-	public static Boolean compareByteArray(byte[] a, byte[] b) {
+	public static boolean compareByteArray(byte[] a, byte[] b) {
 		if (a == null || b == null) {
 			throw new NullPointerException("a or b == null");
 		}

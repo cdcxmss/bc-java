@@ -19,10 +19,8 @@ public class WOTSPlusTest extends TestCase {
 
 	public void testGenKeyPairSHA256() {
 		WOTSPlusParameters paramsSHA256 = new WOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[paramsSHA256.getDigestSize()];
-		paramsSHA256.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA256, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA256);
+		wotsPlus.generateKeys();
 		byte[][] expected = {
             { (byte)0x32, (byte)0x72, (byte)0xdc, (byte)0x7f, (byte)0x02, (byte)0x5c, (byte)0x6b, (byte)0x49, (byte)0xc0, (byte)0x2f, (byte)0xce, (byte)0x5f, (byte)0x80, (byte)0xf7, (byte)0x96, (byte)0x49, (byte)0x2a, (byte)0x1d, (byte)0x01, (byte)0x47, (byte)0x17, (byte)0x3a, (byte)0x45, (byte)0xbf, (byte)0xc9, (byte)0xb5, (byte)0x25, (byte)0xa8, (byte)0x67, (byte)0xcd, (byte)0x77, (byte)0xe4 },
             { (byte)0xb5, (byte)0x30, (byte)0xf1, (byte)0x30, (byte)0xe6, (byte)0x83, (byte)0x19, (byte)0x32, (byte)0x9f, (byte)0xc5, (byte)0xd8, (byte)0x0f, (byte)0xdf, (byte)0x55, (byte)0x50, (byte)0x61, (byte)0x6b, (byte)0x21, (byte)0x26, (byte)0x15, (byte)0x9f, (byte)0xa3, (byte)0x70, (byte)0x40, (byte)0x11, (byte)0x0f, (byte)0x03, (byte)0xbf, (byte)0xcc, (byte)0xb5, (byte)0x6b, (byte)0x5b },
@@ -102,10 +100,8 @@ public class WOTSPlusTest extends TestCase {
 	
 	public void testGenKeyPairSHA512() {
 		WOTSPlusParameters paramsSHA512 = new WOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[paramsSHA512.getDigestSize()];
-		paramsSHA512.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA512, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA512);
+		wotsPlus.generateKeys();
 		byte[][] expected = {
             { (byte)0xa2, (byte)0x75, (byte)0x0d, (byte)0x91, (byte)0xea, (byte)0x34, (byte)0x2e, (byte)0xfe, (byte)0xad, (byte)0xcd, (byte)0x4e, (byte)0xb7, (byte)0xab, (byte)0x9e, (byte)0x82, (byte)0x86, (byte)0x17, (byte)0xa2, (byte)0x91, (byte)0xc6, (byte)0x87, (byte)0x8a, (byte)0xf1, (byte)0xb6, (byte)0xb4, (byte)0xa4, (byte)0xb0, (byte)0xc5, (byte)0x74, (byte)0x0f, (byte)0xba, (byte)0x88, (byte)0xa3, (byte)0x19, (byte)0x1c, (byte)0x21, (byte)0x47, (byte)0xfd, (byte)0xed, (byte)0x39, (byte)0x2d, (byte)0x91, (byte)0xaa, (byte)0x3f, (byte)0x75, (byte)0x7a, (byte)0x58, (byte)0xe6, (byte)0xfd, (byte)0xf5, (byte)0xda, (byte)0xcb, (byte)0x6f, (byte)0xc0, (byte)0xec, (byte)0x0d, (byte)0xba, (byte)0x57, (byte)0xb5, (byte)0x6b, (byte)0x1b, (byte)0x1f, (byte)0x30, (byte)0x7e },
             { (byte)0xa9, (byte)0x2f, (byte)0x36, (byte)0x69, (byte)0xec, (byte)0xaa, (byte)0x89, (byte)0x1f, (byte)0xe9, (byte)0x9b, (byte)0xce, (byte)0xd3, (byte)0xbc, (byte)0x5f, (byte)0xb3, (byte)0xb7, (byte)0xa7, (byte)0x65, (byte)0x0e, (byte)0xd1, (byte)0xcf, (byte)0x14, (byte)0x61, (byte)0x0c, (byte)0xd9, (byte)0xee, (byte)0x09, (byte)0x39, (byte)0xcc, (byte)0xbb, (byte)0xda, (byte)0x27, (byte)0x65, (byte)0x6b, (byte)0x82, (byte)0x6b, (byte)0x75, (byte)0x85, (byte)0x9a, (byte)0x40, (byte)0x91, (byte)0xe6, (byte)0x5b, (byte)0x62, (byte)0x27, (byte)0x82, (byte)0x67, (byte)0x8f, (byte)0xbc, (byte)0x9a, (byte)0x8b, (byte)0x54, (byte)0x58, (byte)0x06, (byte)0x24, (byte)0xfe, (byte)0x96, (byte)0xe4, (byte)0x2f, (byte)0x3c, (byte)0xdb, (byte)0x75, (byte)0x69, (byte)0xde },
@@ -249,10 +245,8 @@ public class WOTSPlusTest extends TestCase {
 	
 	public void testSignSHA256() {
 		WOTSPlusParameters paramsSHA256 = new WOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[paramsSHA256.getDigestSize()];
-		paramsSHA256.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA256, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA256);
+		wotsPlus.generateKeys();
 		byte[] msg = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] expected = {
 		
@@ -334,10 +328,8 @@ public class WOTSPlusTest extends TestCase {
 	
 	public void testSignSHA512() {
 		WOTSPlusParameters paramsSHA512 = new WOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[paramsSHA512.getDigestSize()];
-		paramsSHA512.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA512, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(paramsSHA512);
+		wotsPlus.generateKeys();
 		byte[] msg = new byte[wotsPlus.getParams().getDigestSize()];
 		byte[][] expected = {
             { (byte)0x25, (byte)0xfc, (byte)0x9e, (byte)0xb1, (byte)0x57, (byte)0xc4, (byte)0x43, (byte)0xb4, (byte)0x9d, (byte)0xca, (byte)0xf5, (byte)0xb7, (byte)0x6d, (byte)0x21, (byte)0x08, (byte)0x6c, (byte)0x79, (byte)0xdd, (byte)0x06, (byte)0xfa, (byte)0x47, (byte)0x4f, (byte)0xd2, (byte)0xb1, (byte)0x04, (byte)0x6b, (byte)0xc9, (byte)0x75, (byte)0x85, (byte)0x54, (byte)0x84, (byte)0xb9, (byte)0x61, (byte)0x8a, (byte)0x44, (byte)0x2b, (byte)0x4f, (byte)0x23, (byte)0x77, (byte)0xa5, (byte)0x49, (byte)0xea, (byte)0xa6, (byte)0x57, (byte)0xc4, (byte)0xa2, (byte)0xa0, (byte)0xdc, (byte)0x9b, (byte)0x7e, (byte)0xa3, (byte)0x29, (byte)0xa9, (byte)0x33, (byte)0x82, (byte)0xef, (byte)0x77, (byte)0x7a, (byte)0x2e, (byte)0xd4, (byte)0x02, (byte)0xc8, (byte)0x89, (byte)0x73 },
@@ -482,10 +474,8 @@ public class WOTSPlusTest extends TestCase {
 	
 	public void testVerifySignatureSHA256() {
 		WOTSPlusParameters params = new WOTSPlusParameters(new SHA256Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[params.getDigestSize()];
-		params.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(params, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(params);
+		wotsPlus.generateKeys();
 		byte[] msg1 = new byte[wotsPlus.getParams().getDigestSize()];
 		WOTSPlusSignature signature = wotsPlus.sign(msg1);
 		assertEquals(true, wotsPlus.verifySignature(msg1, signature));
@@ -496,10 +486,8 @@ public class WOTSPlusTest extends TestCase {
 	
 	public void testVerifySignatureSHA512() {
 		WOTSPlusParameters params = new WOTSPlusParameters(new SHA512Digest(), new NullPRNG());
-		byte[] publicSeed = new byte[params.getDigestSize()];
-		params.getPRNG().nextBytes(publicSeed);
-		WOTSPlus wotsPlus = new WOTSPlus(params, publicSeed);
-		wotsPlus.genKeyPair();
+		WOTSPlus wotsPlus = new WOTSPlus(params);
+		wotsPlus.generateKeys();
 		byte[] msg1 = new byte[wotsPlus.getParams().getDigestSize()];
 		WOTSPlusSignature signature = wotsPlus.sign(msg1);
 		assertEquals(true, wotsPlus.verifySignature(msg1, signature));

@@ -8,6 +8,7 @@ import org.bouncycastle.pqc.crypto.xmss.WOTSPlusParameters;
 import org.bouncycastle.pqc.crypto.xmss.WOTSPlusSignature;
 import org.bouncycastle.pqc.crypto.xmss.XMSS;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
+import org.bouncycastle.pqc.crypto.xmss.XMSSPublicKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSSignature;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -854,23 +855,25 @@ public class XMSSTest extends TestCase {
 		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), new NullPRNG());
 		XMSS xmss = new XMSS(params);
 		xmss.genKeyPair();
+		XMSSPublicKey publicKey = xmss.getPublicKey();
 		byte[] msg1 = new byte[1024];
 		XMSSSignature signature = xmss.sign(msg1);
-		assertEquals(true, xmss.verifySignature(msg1, signature));
+		assertEquals(true, xmss.verifySignature(msg1, signature, publicKey));
 		byte[] msg2 = new byte[1024];
 		msg2[0] = 0x01;
-		assertEquals(false, xmss.verifySignature(msg2, signature));
+		assertEquals(false, xmss.verifySignature(msg2, signature, publicKey));
 	}
 	
 	public void testVerifySignatureSHA512() {
 		XMSSParameters params = new XMSSParameters(8, new SHA512Digest(), new NullPRNG());
 		XMSS xmss = new XMSS(params);
 		xmss.genKeyPair();
+		XMSSPublicKey publicKey = xmss.getPublicKey();
 		byte[] msg1 = new byte[1024];
 		XMSSSignature signature = xmss.sign(msg1);
-		assertEquals(true, xmss.verifySignature(msg1, signature));
+		assertEquals(true, xmss.verifySignature(msg1, signature, publicKey));
 		byte[] msg2 = new byte[1024];
 		msg2[0] = 0x01;
-		assertEquals(false, xmss.verifySignature(msg2, signature));
+		assertEquals(false, xmss.verifySignature(msg2, signature, publicKey));
 	}
 }
