@@ -137,12 +137,13 @@ public class XMSS {
 		if (address == null) {
 			throw new NullPointerException("address == null");
 		}
-		int height = params.getHeight();
-		int index = privateKey.getIndex();
+		int treeHeight = params.getHeight();
+		int indexOfPublicKey = privateKey.getIndex();
 		List<XMSSNode> authPath = new ArrayList<XMSSNode>();
-		for (int i = 0; i < height; i++) {
-			int k = ((int)Math.floor((double)index / (1 << i))) ^ 1;
-			XMSSNode node = treeHash((k * (1 << i)), i, address, new LTreeAddress(), new HashTreeAddress());
+		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
+			int indexOfNodeOnHeight = ((int)Math.floor((double)indexOfPublicKey / (1 << currentHeight))) ^ 1;
+			int startLeafIndex = (indexOfNodeOnHeight * (1 << currentHeight));
+			XMSSNode node = treeHash(startLeafIndex, currentHeight, address, new LTreeAddress(), new HashTreeAddress());
 			authPath.add(node);
 		}
 		return authPath;
@@ -242,7 +243,7 @@ public class XMSS {
 	 * @param message
 	 * @return returns true if and only if Sig is a valid signature on M under public key PK.  Otherwise, it returns false.
 	 */
-	public boolean verify(XMSSSignature signature, byte[] message) {
+	public boolean verifySignature(byte[] message, XMSSSignature signature) {
 		if (signature == null) {
 			throw new NullPointerException("signature == null");
 		}
