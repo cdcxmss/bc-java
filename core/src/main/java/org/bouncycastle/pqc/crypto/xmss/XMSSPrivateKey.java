@@ -4,6 +4,7 @@ package org.bouncycastle.pqc.crypto.xmss;
  * XMSS Private Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSPrivateKey {
 

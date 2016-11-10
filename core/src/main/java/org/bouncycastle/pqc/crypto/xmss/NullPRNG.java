@@ -7,6 +7,7 @@ import java.security.SecureRandom;
  * For testing purposes only(!).
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class NullPRNG extends SecureRandom {
 

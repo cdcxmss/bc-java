@@ -9,6 +9,7 @@ import org.bouncycastle.crypto.digests.SHA512Digest;
  * Utils for XMSS implementation.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSUtil {
 

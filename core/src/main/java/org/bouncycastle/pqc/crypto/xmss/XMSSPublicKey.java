@@ -6,6 +6,7 @@ import org.ietf.jgss.Oid;
  * XMSS Public Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSPublicKey {
 

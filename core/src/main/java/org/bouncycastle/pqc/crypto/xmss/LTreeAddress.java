@@ -7,6 +7,7 @@ import java.text.ParseException;
  * XMSS L-tree address.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class LTreeAddress extends XMSSAddress {
 	
