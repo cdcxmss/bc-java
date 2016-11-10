@@ -3,6 +3,7 @@ package org.bouncycastle.pqc.crypto.xmss;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * 
@@ -174,5 +175,30 @@ public class XMSSUtil {
 			}
 		}
 		return true;
+	}
+	
+	public static void dumpByteArray(byte[][] x) {
+		for (int i = 0; i < x.length; i++) {
+			System.out.println(Hex.toHexString(x[i]));
+		}
+	}
+	
+	public static byte[] byteArrayDeepCopy(byte[] in) {
+		byte[] out = new byte[in.length];
+		for (int i = 0; i < in.length; i++) {
+			out[i] = in[i];
+		}
+		return out;
+	}
+	
+	public static byte[][] byteArrayDeepCopy(byte[][] in) {
+		byte[][] out = new byte[in.length][];
+		for (int i = 0; i < in.length; i++) {
+			out[i] = new byte[in[i].length];
+			for (int j = 0; j < in[i].length; j++) {
+				out[i][j] = in[i][j];
+			}
+		}
+		return out;
 	}
 }

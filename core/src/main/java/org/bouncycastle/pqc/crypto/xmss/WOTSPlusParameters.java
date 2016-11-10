@@ -80,8 +80,8 @@ public class WOTSPlusParameters {
 	 * Sets the len values from the message digest size and Winternitz parameter.
 	 */
 	private void setLen() {
-		len1 = (int) Math.ceil((8 * digestSize) / XMSSUtil.log2(winternitzParameter));
-		len2 = (int) Math.floor(XMSSUtil.log2(len1 * (winternitzParameter - 1)) / XMSSUtil.log2(winternitzParameter)) + 1;
+		len1 = (int)Math.ceil((double)(8 * digestSize) / XMSSUtil.log2(winternitzParameter));
+		len2 = (int)Math.floor(XMSSUtil.log2(len1 * (winternitzParameter - 1)) / XMSSUtil.log2(winternitzParameter)) + 1;
 		len = len1 + len2;
 	}
 

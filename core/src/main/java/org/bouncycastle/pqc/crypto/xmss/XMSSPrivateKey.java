@@ -48,19 +48,19 @@ public class XMSSPrivateKey {
 	}
 	
 	public byte[] getSecretKeySeed() {
-		return secretKeySeed;
+		return XMSSUtil.byteArrayDeepCopy(secretKeySeed);
 	}
 
 	public byte[] getSecretKeyPRF() {
-		return secretKeyPRF;
+		return XMSSUtil.byteArrayDeepCopy(secretKeyPRF);
 	}
 
 	public byte[] getPublicSeed() {
-		return publicSeed;
+		return XMSSUtil.byteArrayDeepCopy(publicSeed);
 	}
 
 	public byte[] getRoot() {
-		return root;
+		return XMSSUtil.byteArrayDeepCopy(root);
 	}
 	
 	public void setRoot(byte[] root) {

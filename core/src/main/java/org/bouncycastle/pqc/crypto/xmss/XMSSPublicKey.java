@@ -33,10 +33,10 @@ public class XMSSPublicKey {
 	}
 	
 	public byte[] getRoot() {
-		return root;
+		return XMSSUtil.byteArrayDeepCopy(root);
 	}
 	
 	public byte[] getPublicSeed() {
-		return publicSeed;
+		return XMSSUtil.byteArrayDeepCopy(publicSeed);
 	}
 }

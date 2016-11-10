@@ -16,6 +16,6 @@ public class WOTSPlusPublicKey {
 	}
 	
 	public byte[][] toByteArray() {
-		return publicKey;
+		return XMSSUtil.byteArrayDeepCopy(publicKey);
 	}
 }

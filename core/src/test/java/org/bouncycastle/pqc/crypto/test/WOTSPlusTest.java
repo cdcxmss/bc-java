@@ -2,7 +2,7 @@ package org.bouncycastle.pqc.crypto.test;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
-import org.bouncycastle.pqc.crypto.xmss.OTSHashAddress;
+import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.WOTSPlus;
 import org.bouncycastle.pqc.crypto.xmss.WOTSPlusParameters;
 import org.bouncycastle.pqc.crypto.xmss.WOTSPlusSignature;

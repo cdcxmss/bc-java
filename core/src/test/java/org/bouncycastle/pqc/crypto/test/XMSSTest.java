@@ -2,10 +2,13 @@ package org.bouncycastle.pqc.crypto.test;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
+import org.bouncycastle.pqc.crypto.xmss.WOTSPlus;
+import org.bouncycastle.pqc.crypto.xmss.WOTSPlusParameters;
+import org.bouncycastle.pqc.crypto.xmss.WOTSPlusSignature;
 import org.bouncycastle.pqc.crypto.xmss.XMSS;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSSignature;
-import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 import org.bouncycastle.util.encoders.Hex;
 
 import junit.framework.TestCase;
@@ -14,7 +17,6 @@ import junit.framework.TestCase;
  * Test cases for XMSS class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSTest extends TestCase {
 
@@ -175,9 +177,9 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex0, signature.getIndex());
 		assertEquals(expectedRandom0, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature0.length, signature.getSignature().length);
+		assertEquals(expectedSignature0.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature0.length; i++) {
-			assertEquals(expectedSignature0[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature0[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath0.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath0.length; i++) {
@@ -268,9 +270,9 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex1, signature.getIndex());
 		assertEquals(expectedRandom1, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature1.length, signature.getSignature().length);
+		assertEquals(expectedSignature1.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature1.length; i++) {
-			assertEquals(expectedSignature1[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature1[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath1.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath1.length; i++) {
@@ -361,9 +363,9 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex2, signature.getIndex());
 		assertEquals(expectedRandom2, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature2.length, signature.getSignature().length);
+		assertEquals(expectedSignature2.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature2.length; i++) {
-			assertEquals(expectedSignature2[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature2[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath2.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath2.length; i++) {
@@ -524,9 +526,9 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex0, signature.getIndex());
 		assertEquals(expectedRandom0, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature0.length, signature.getSignature().length);
+		assertEquals(expectedSignature0.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature0.length; i++) {
-			assertEquals(expectedSignature0[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature0[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath0.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath0.length; i++) {
@@ -681,9 +683,9 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex1, signature.getIndex());
 		assertEquals(expectedRandom1, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature1.length, signature.getSignature().length);
+		assertEquals(expectedSignature1.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature1.length; i++) {
-			assertEquals(expectedSignature1[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature1[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath1.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath1.length; i++) {
@@ -838,13 +840,37 @@ public class XMSSTest extends TestCase {
 		};
 		assertEquals(expectedIndex2, signature.getIndex());
 		assertEquals(expectedRandom2, Hex.toHexString(signature.getRandom()));
-		assertEquals(expectedSignature2.length, signature.getSignature().length);
+		assertEquals(expectedSignature2.length, signature.getSignature().toByteArray().length);
 		for (int i = 0; i < expectedSignature2.length; i++) {
-			assertEquals(expectedSignature2[i], Hex.toHexString(signature.getSignature()[i]));
+			assertEquals(expectedSignature2[i], Hex.toHexString(signature.getSignature().toByteArray()[i]));
 		}
 		assertEquals(expectedAuthPath2.length, signature.getAuthPath().size());
 		for (int i = 0; i < expectedAuthPath2.length; i++) {
 			assertEquals(expectedAuthPath2[i], Hex.toHexString(signature.getAuthPath().get(i).getValue()));
 		}
+	}
+	
+	public void testVerifySignatureSHA256() {
+		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
+		xmss.genKeyPair();
+		byte[] msg1 = new byte[1024];
+		XMSSSignature signature = xmss.sign(msg1);
+		assertEquals(true, xmss.verifySignature(msg1, signature));
+		byte[] msg2 = new byte[1024];
+		msg2[0] = 0x01;
+		assertEquals(false, xmss.verifySignature(msg2, signature));
+	}
+	
+	public void testVerifySignatureSHA512() {
+		XMSSParameters params = new XMSSParameters(8, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
+		xmss.genKeyPair();
+		byte[] msg1 = new byte[1024];
+		XMSSSignature signature = xmss.sign(msg1);
+		assertEquals(true, xmss.verifySignature(msg1, signature));
+		byte[] msg2 = new byte[1024];
+		msg2[0] = 0x01;
+		assertEquals(false, xmss.verifySignature(msg2, signature));
 	}
 }

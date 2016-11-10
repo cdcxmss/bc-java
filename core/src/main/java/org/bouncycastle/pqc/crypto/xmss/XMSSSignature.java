@@ -12,11 +12,14 @@ public class XMSSSignature {
 
 	private int index;
 	private byte[] random;
-	private byte[][] signature;
+	private WOTSPlusSignature signature;
 	private List<XMSSNode> authPath;
 	
-	public XMSSSignature(byte[][] signature, List<XMSSNode> authPath) {
+	public XMSSSignature(WOTSPlusSignature signature, List<XMSSNode> authPath) {
 		super();
+		if (signature == null) {
+			throw new NullPointerException("signature == null");
+		}
 		if (authPath == null) {
 			throw new NullPointerException("authPath == null");
 		}
@@ -38,14 +41,14 @@ public class XMSSSignature {
 	}
 
 	public byte[] getRandom() {
-		return random;
+		return XMSSUtil.byteArrayDeepCopy(random);
 	}
 
 	public void setRandom(byte[] random) {
 		this.random = random;
 	}
 
-	public byte[][] getSignature() {
+	public WOTSPlusSignature getSignature() {
 		return signature;
 	}
 

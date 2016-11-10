@@ -3,6 +3,7 @@ package org.bouncycastle.pqc.crypto.test;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.WOTSPlusParameters;
 
 import junit.framework.TestCase;
