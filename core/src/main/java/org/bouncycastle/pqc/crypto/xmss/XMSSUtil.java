@@ -177,6 +177,18 @@ public class XMSSUtil {
 		return true;
 	}
 	
+	public static boolean compareByteArray(byte[][] a, byte[][] b) {
+		if (hasNullPointer(a) || hasNullPointer(b)) {
+			throw new NullPointerException("a or b == null");
+		}
+		for (int i = 0; i < a.length; i++) {
+			if (!compareByteArray(a[i], b[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public static void dumpByteArray(byte[][] x) {
 		for (int i = 0; i < x.length; i++) {
 			System.out.println(Hex.toHexString(x[i]));
@@ -200,5 +212,17 @@ public class XMSSUtil {
 			}
 		}
 		return out;
+	}
+	
+	public static boolean hasNullPointer(byte[][] in) {
+		if (in == null) {
+			return true;
+		}
+		for (int i = 0; i < in.length; i++) {
+			if (in[i] == null) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

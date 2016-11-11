@@ -124,10 +124,10 @@ public class XMSS {
 			throw new NullPointerException("hashTreeAddress == null");
 		}
 		for (int i = 0; i < (1 << targetNodeHeight); i++) {
+			wotsPlus.initialize(privateKey.getWOTSPlusSecretKey(startIndex + i), publicSeed);
 			otsHashAddress.setOTSAddress(startIndex + i);
-			wotsPlus.generatePublicKeyFromParams(privateKey.getWOTSPlusSecretKey(startIndex + i), publicSeed, otsHashAddress);
 			lTreeAddress.setLTreeAddress(startIndex + i);
-			XMSSNode node = lTree(wotsPlus.getPublicKey(), publicSeed, lTreeAddress);
+			XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
 			hashTreeAddress.setTreeHeight(0);
 			hashTreeAddress.setTreeIndex(startIndex + i);
 			while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
@@ -184,13 +184,12 @@ public class XMSS {
 		if (address == null) {
 			throw new NullPointerException("address == null");
 		}
-		/* update WOTSPlus secret key */
-		int index = privateKey.getIndex();
-		updateWOTSPlusState(index);
+		/* reinitialize WOTS+ object */
+		wotsPlus.initialize(privateKey.getWOTSPlusSecretKey(privateKey.getIndex()), publicSeed);
 		
 		/* create WOTS+ signature */
 		address.setOTSAddress(privateKey.getIndex());
-		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, publicSeed, address);
+		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
 		List<XMSSNode> authPath = buildAuthPath(publicSeed, address);
@@ -241,7 +240,7 @@ public class XMSS {
 		int index = signature.getIndex();
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		otsHashAddress.setOTSAddress(index);
-		WOTSPlusPublicKey wotsPlusPK = wotsPlus.getPublicKeyFromSignature(messageDigest, signature.getSignature(), publicSeed, otsHashAddress);
+		WOTSPlusPublicKey wotsPlusPK = wotsPlus.getPublicKeyFromSignature(messageDigest, signature.getSignature(), otsHashAddress);
 		LTreeAddress ltreeAddress = new LTreeAddress();
 		ltreeAddress.setLTreeAddress(index);
 		XMSSNode[] node = new XMSSNode[2];
@@ -281,10 +280,6 @@ public class XMSS {
 		byte[] messageDigest = params.getKHF().HMsg(concatenated, message);
 		XMSSNode rootNodeFromSignature = getRootNodeFromSignature(messageDigest, signature, publicKey.getPublicSeed());
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
-	}
-	
-	private void updateWOTSPlusState(int index) {
-		wotsPlus.setSecretKeySeed(privateKey.getWOTSPlusSecretKey(index));
 	}
 	
 	public XMSSParameters getParams() {
