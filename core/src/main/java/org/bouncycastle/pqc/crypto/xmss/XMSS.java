@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -25,20 +26,51 @@ public class XMSS {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
-		publicSeed = new byte[params.getDigestSize()];
-		params.getPRNG().nextBytes(publicSeed);
-		WOTSPlusParameters wotsPlusParams = new WOTSPlusParameters(params.getDigest(), params.getPRNG());
-		wotsPlus = new WOTSPlus(wotsPlusParams);
+		wotsPlus = new WOTSPlus(new WOTSPlusParameters(params.getDigest()));
 		stack = new Stack<XMSSNode>();
 	}
 	
-	public void genKeyPair() {
+	public void importKeys(byte[][] privateKey, byte[][] publicKey) {
+		if (XMSSUtil.hasNullPointer(privateKey)) {
+			throw new NullPointerException("privateKey has null pointers");
+		}
+		if (XMSSUtil.hasNullPointer(publicKey)) {
+			throw new NullPointerException("publicKey has null pointers");
+		}
+		XMSSPrivateKey tmpPrivateKey = new XMSSPrivateKey(this);
+		try {
+			tmpPrivateKey.parseByteArray(privateKey);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+		}
+		XMSSPublicKey tmpPublicKey = new XMSSPublicKey(this);
+		try {
+			tmpPublicKey.parseByteArray(publicKey);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+		}
+		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getRoot(), tmpPublicKey.getRoot())) {
+			throw new IllegalStateException("root of private key and public key do not match");
+		}
+		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getPublicSeed(), tmpPublicKey.getPublicSeed())) {
+			throw new IllegalStateException("publicSeed of private key and public key do not match");
+		}
+		this.privateKey = tmpPrivateKey;
+		this.publicKey = tmpPublicKey;
+		this.publicSeed = this.privateKey.getPublicSeed();
+	}
+	
+	public void generateKeys() {
 		publicSeed = new byte[params.getDigestSize()];
 		params.getPRNG().nextBytes(publicSeed);
 		privateKey = new XMSSPrivateKey(this);
-		XMSSNode root = treeHash(0, params.getHeight(), publicSeed, new OTSHashAddress(), new LTreeAddress(), new HashTreeAddress());
+		privateKey.setPublicSeed(publicSeed);
+		privateKey.generateKeys();
+		XMSSNode root = treeHash(0, params.getHeight(), new OTSHashAddress(), new LTreeAddress(), new HashTreeAddress());
 		privateKey.setRoot(root.getValue());
-		publicKey = new XMSSPublicKey(this, root.getValue());
+		publicKey = new XMSSPublicKey(this);
+		publicKey.setRoot(root.getValue());
+		publicKey.setPublicSeed(publicSeed);
 	}
 	
 	private XMSSNode randomizeHash(XMSSNode left, XMSSNode right, byte[] publicSeed, XMSSAddress address) {
@@ -107,12 +139,9 @@ public class XMSS {
 		return publicKeyNodes[0];
 	}
 	
-	protected XMSSNode treeHash(int startIndex, int targetNodeHeight, byte[] publicSeed, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
+	protected XMSSNode treeHash(int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
 		if (startIndex % (1 << targetNodeHeight) != 0) {
 			throw new IllegalArgumentException("leaf at index startIndex needs to be a leftmost one");
-		}
-		if (publicSeed.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of publicSeed needs to be equal to size of digest");
 		}
 		if (otsHashAddress == null) {
 			throw new NullPointerException("otsHashAddress == null");
@@ -148,10 +177,7 @@ public class XMSS {
 	 * @param index the {@link WOTSPlus} keypair index
 	 * @param address {@link XMSSAddress} 
 	 */
-	private List<XMSSNode> buildAuthPath(byte[] publicSeed, OTSHashAddress address) {
-		if (publicSeed.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of publicSeed needs to be equal to size of digest");
-		}
+	private List<XMSSNode> buildAuthPath(OTSHashAddress address) {
 		if (address == null) {
 			throw new NullPointerException("address == null");
 		}
@@ -161,7 +187,7 @@ public class XMSS {
 		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
 			int indexOfNodeOnHeight = ((int)Math.floor(indexOfPublicKey / (1 << currentHeight))) ^ 1;
 			int startLeafIndex = (indexOfNodeOnHeight * (1 << currentHeight));
-			XMSSNode node = treeHash(startLeafIndex, currentHeight, publicSeed, address, new LTreeAddress(), new HashTreeAddress());
+			XMSSNode node = treeHash(startLeafIndex, currentHeight, address, new LTreeAddress(), new HashTreeAddress());
 			authPath.add(node);
 		}
 		return authPath;
@@ -174,25 +200,19 @@ public class XMSS {
 	 * @param address {@link OTSHashAddress}
 	 * @return Concatenation of WOTS+ signature and authentication path
 	 */
-	private XMSSSignature treeSig(byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
+	private XMSSSignature treeSig(byte[] messageDigest, OTSHashAddress address) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
-		if (publicSeed.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of publicSeed needs to be equal to size of digest");
-		}
 		if (address == null) {
 			throw new NullPointerException("address == null");
-		}
-		/* reinitialize WOTS+ object */
-		wotsPlus.initialize(privateKey.getWOTSPlusSecretKey(privateKey.getIndex()), publicSeed);
-		
+		}	
 		/* create WOTS+ signature */
 		address.setOTSAddress(privateKey.getIndex());
 		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
-		List<XMSSNode> authPath = buildAuthPath(publicSeed, address);
+		List<XMSSNode> authPath = buildAuthPath(address);
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(wotsSignature, authPath);
@@ -200,18 +220,19 @@ public class XMSS {
 	}
 
 	public XMSSSignature sign(byte[] message) {
-		if (publicKey == null || privateKey == null) {
-			throw new IllegalStateException("no key has been generated");
-		}	
-		KeyedHashFunctions khf = params.getKHF();
-		/* create (randomized keyed) messageDigest of message */
+		checkState();
+		/* reinitialize WOTS+ object */
 		int index = privateKey.getIndex();
+		wotsPlus.initialize(privateKey.getWOTSPlusSecretKey(index), publicSeed);
+
+		/* create (randomized keyed) messageDigest of message */
+		KeyedHashFunctions khf = params.getKHF();
 		byte[] random = khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 32));
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		/* create signature for messageDigest */
-		XMSSSignature signature = treeSig(messageDigest, publicSeed, new OTSHashAddress());
+		XMSSSignature signature = treeSig(messageDigest, new OTSHashAddress());
 		signature.setIndex(index);
 		signature.setRandom(random);
 		
@@ -270,16 +291,46 @@ public class XMSS {
 	 * @return returns true if and only if Sig is a valid signature on M under public key PK.  Otherwise, it returns false.
 	 */
 	public boolean verifySignature(byte[] message, XMSSSignature signature, XMSSPublicKey publicKey) {
+		checkState();
+		if (message == null) {
+			throw new NullPointerException("message == null");
+		}
 		if (signature == null) {
 			throw new NullPointerException("signature == null");
 		}
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
-		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
+		/* reinitialize WOTS+ object */
+		int index = signature.getIndex();
+		byte[] publicSeed = publicKey.getPublicSeed();
+		wotsPlus.initialize(privateKey.getWOTSPlusSecretKey(index), publicSeed);
+		
+		/* create message digest */
+		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
 		byte[] messageDigest = params.getKHF().HMsg(concatenated, message);
 		XMSSNode rootNodeFromSignature = getRootNodeFromSignature(messageDigest, signature, publicKey.getPublicSeed());
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
+	}
+	
+	private void checkState() {
+		if (privateKey == null || publicKey == null || publicSeed == null) {
+			throw new IllegalStateException("not initialized");
+		}
+	}
+	
+	public byte[][] exportPrivateKey() {
+		if (privateKey == null) {
+			throw new IllegalStateException("not initialized");
+		}
+		return privateKey.toByteArray();
+	}
+	
+	public byte[][] exportPublicKey() {
+		if (publicKey == null) {
+			throw new IllegalStateException("not initialized");
+		}
+		return publicKey.toByteArray();
 	}
 	
 	public XMSSParameters getParams() {
@@ -288,22 +339,22 @@ public class XMSS {
 	
 	public byte[] getPublicSeed() {
 		if (publicSeed == null) {
-			throw new IllegalStateException("no key has been generated");
+			throw new IllegalStateException("not initialized");
 		}
 		return publicSeed;
 	}
 	
-	public XMSSPublicKey getPublicKey() {
-		if (publicKey == null) {
-			throw new IllegalStateException("no key has been generated");
-		}
-		return publicKey;
-	}
-	
 	public XMSSPrivateKey getPrivateKey() {
 		if (privateKey == null) {
-			throw new IllegalStateException("no key has been generated");
+			throw new IllegalStateException("not initialized");
 		}
 		return privateKey;
     }
+	
+	public XMSSPublicKey getPublicKey() {
+		if (publicKey == null) {
+			throw new IllegalStateException("not initialized");
+		}
+		return publicKey;
+	}
 }

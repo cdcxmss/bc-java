@@ -31,6 +31,8 @@ public class AllTests
         suite.addTestSuite(WOTSPlusParametersTest.class);
         suite.addTestSuite(XMSSAddressTest.class);
         suite.addTestSuite(XMSSUtilTest.class);
+        suite.addTestSuite(XMSSPrivateKeyTest.class);
+        suite.addTestSuite(XMSSPublicKeyTest.class);
         suite.addTestSuite(XMSSTest.class);
         suite.addTestSuite(AllTests.SimpleTestTest.class);
 

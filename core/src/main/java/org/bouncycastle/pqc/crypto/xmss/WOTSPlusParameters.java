@@ -1,7 +1,5 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import java.security.SecureRandom;
-
 import org.bouncycastle.crypto.Digest;
 import org.ietf.jgss.Oid;
 
@@ -17,37 +15,26 @@ public class WOTSPlusParameters {
 	 * Digest used in WOTS+.
 	 */
 	private Digest digest;
-	
 	/**
 	 * The message digest size.
 	 */
 	private int digestSize;
-	
-	/**
-	 * PRNG.
-	 */
-	private SecureRandom prng;
-	
 	/**
 	 * The Winternitz parameter (currently fixed to 16).
 	 */
 	private int winternitzParameter;
-	
 	/**
 	 * The number of n-byte string elements in a WOTS+ secret key, public key, and signature.
 	 */
 	private int len;
-
 	/**
 	 * len1.
 	 */
 	private int len1;
-	
 	/**
 	 * len2.
 	 */
 	private int len2;
-	
 	/**
 	 * oid.
 	 */
@@ -57,20 +44,16 @@ public class WOTSPlusParameters {
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
 	 */
-	public WOTSPlusParameters(Digest digest, SecureRandom prng) {
+	public WOTSPlusParameters(Digest digest) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
-		}
-		if (prng == null) {
-			throw new NullPointerException("prng == null");
 		}
 		if (!XMSSUtil.isValidDigest(digest)) {
 			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
 		};
 		this.digest = digest;
 		digestSize = digest.getDigestSize();
-		this.prng = prng;
 		winternitzParameter = 16;
 		setLen();
 		// TODO getOidFromParams();
@@ -92,7 +75,6 @@ public class WOTSPlusParameters {
 	public Digest getDigest() {
 		return digest;
 	}
-	
 	/**
 	 * Getter digestSize.
 	 * @return digestSize.
@@ -100,15 +82,6 @@ public class WOTSPlusParameters {
 	public int getDigestSize() {
 		return digestSize;
 	}
-	
-	/**
-	 * Getter PRNG.
-	 * @return PRNG.
-	 */
-	public SecureRandom getPRNG() {
-		return prng;
-	}
-
 	/**
 	 * Getter WinternitzParameter.
 	 * @return winternitzParameter.
@@ -116,7 +89,6 @@ public class WOTSPlusParameters {
 	public int getWinternitzParameter() {
 		return winternitzParameter;
 	}
-	
 	/**
 	 * Getter len.
 	 * @return len.
@@ -124,7 +96,6 @@ public class WOTSPlusParameters {
 	public int getLen() {
 		return len;
 	}
-	
 	/**
 	 * Getter len1.
 	 * @return len1.
@@ -132,7 +103,6 @@ public class WOTSPlusParameters {
 	public int getLen1() {
 		return len1;
 	}
-	
 	/**
 	 * Getter len2.
 	 * @return len2.

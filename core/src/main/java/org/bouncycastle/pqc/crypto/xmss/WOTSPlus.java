@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class WOTSPlus {
 		khf = new KeyedHashFunctions(params.getDigest());
 	}
 	/**
-	 * (Re)Initializes the internal state.
+	 * (Re)Initialize internal state.
 	 */
 	public void initialize(byte[] secretKeySeed, byte[] publicSeed) {
 		if (secretKeySeed == null) {
@@ -66,15 +67,26 @@ public class WOTSPlus {
 			throw new NullPointerException("otsHashAddress == null");
 		}
 		byte[][] publicKey = new byte[params.getLen()][];
-		for (int i = 0; i < params.getLen(); i++) {
-			otsHashAddress.setChainAddress(i);
-			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddress);
+		/* clone hash address as it will be modified by chaining function */
+		OTSHashAddress otsHashAddressTmp = new OTSHashAddress();
+		try {
+			otsHashAddressTmp.parseByteArray((XMSSUtil.byteArrayDeepCopy(otsHashAddress.toByteArray())));
+		} catch (ParseException ex) {
+			ex.printStackTrace();
 		}
-		return new WOTSPlusPublicKey(publicKey);
+		/* derive public key from secretKeySeed */
+		for (int i = 0; i < params.getLen(); i++) {
+			otsHashAddressTmp.setChainAddress(i);
+			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddressTmp);
+		}
+		return new WOTSPlusPublicKey(params, publicKey);
 	}
 	
 	public WOTSPlusSignature sign(byte[] messageDigest, OTSHashAddress otsHashAddress) {
 		checkState();
+		if (messageDigest == null) {
+			throw new NullPointerException("messageDigest == null");
+		}
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
@@ -100,53 +112,41 @@ public class WOTSPlus {
 			otsHashAddress.setChainAddress(i);
 			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), otsHashAddress);
 		}
-		return new WOTSPlusSignature(signature);
+		return new WOTSPlusSignature(params, signature);
 	}
 	
 	public boolean verifySignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress) {
 		checkState();
+		if (messageDigest == null) {
+			throw new NullPointerException("messageDigest == null");
+		}
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
 		if (signature == null) {
 			throw new NullPointerException("signature == null");
 		}
-		if (XMSSUtil.hasNullPointer(signature.toByteArray())) {
-			throw new NullPointerException("signature byte array == null");
-		}
-		if (signature.toByteArray().length != params.getLen()) {
-			throw new IllegalArgumentException("wrong signature size");
-		}
 		if (otsHashAddress == null) {
 			throw new NullPointerException("otsHashAddress == null");
-		}
-		if (otsHashAddress.toByteArray() == null) {
-			throw new NullPointerException("otsHashAddress byte array == null");
 		}
 		byte[][] tmpPublicKey = getPublicKeyFromSignature(messageDigest, signature, otsHashAddress).toByteArray();
 		/* compare values */
 		return XMSSUtil.compareByteArray(tmpPublicKey, getPublicKey(otsHashAddress).toByteArray()) ? true : false;
 	}
 	
-	public WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress) {
+	protected WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress) {
 		checkState();
+		if (messageDigest == null) {
+			throw new NullPointerException("messageDigest == null");
+		}
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
 		if (signature == null) {
 			throw new NullPointerException("signature == null");
 		}
-		if (XMSSUtil.hasNullPointer(signature.toByteArray())) {
-			throw new NullPointerException("signature byte array == null");
-		}
-		if (signature.toByteArray().length != params.getLen()) {
-			throw new IllegalArgumentException("wrong signature size");
-		}
 		if (otsHashAddress == null) {
 			throw new NullPointerException("otsHashAddress == null");
-		}
-		if (otsHashAddress.toByteArray() == null) {
-			throw new NullPointerException("otsHashAddress byte array == null");
 		}
 		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
 		/* create checksum */
@@ -166,12 +166,15 @@ public class WOTSPlus {
 			otsHashAddress.setChainAddress(i);
 			publicKey[i] = chain(signature.toByteArray()[i], baseWMessage.get(i), params.getWinternitzParameter() - 1 - baseWMessage.get(i), otsHashAddress);
 		}
-		return new WOTSPlusPublicKey(publicKey);
+		return new WOTSPlusPublicKey(params, publicKey);
 	}
 	
 	private byte[] chain(byte[] startHash, int startIndex, int steps, OTSHashAddress otsHashAddress) {
 		checkState();
 		int n = params.getDigestSize();
+		if (startHash == null) {
+			throw new NullPointerException("startHash == null");
+		}
 		if (startHash.length != n) {
 			throw new IllegalArgumentException("startHash needs to be " + n + "bytes");
 		}
@@ -204,6 +207,9 @@ public class WOTSPlus {
 	}
 	
 	private List<Integer> convertToBaseW(byte[] msg, int w, int outLength) {
+		if (msg == null) {
+			throw new NullPointerException("msg == null");
+		}
 		if (w != 4 && w != 16) {
 			throw new IllegalArgumentException("w needs to be 4 or 16");
 		}
@@ -262,6 +268,6 @@ public class WOTSPlus {
 		for (int i = 0; i < privateKey.length; i++) {
 			privateKey[i] = expandSecretKeySeed(i);
 		}
-		return new WOTSPlusPrivateKey(privateKey);
+		return new WOTSPlusPrivateKey(params, privateKey);
 	}
 }

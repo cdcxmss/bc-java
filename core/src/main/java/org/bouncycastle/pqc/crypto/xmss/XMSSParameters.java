@@ -31,7 +31,7 @@ public class XMSSParameters {
 	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
 		super();
 		/*
-		 * if height is greater than 30 integers overflow e.g. in loops...
+		 * if height is greater than 30 integers overflow e.g. in loops occur...
 		 * the current maximum supported is 2^30 signatures accordingly.
 		 */
 		if (height > 30) {

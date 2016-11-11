@@ -10,8 +10,20 @@ public class WOTSPlusPrivateKey {
 
 	private byte[][] privateKey;
 	
-	public WOTSPlusPrivateKey(byte[][] privateKey) {
+	public WOTSPlusPrivateKey(WOTSPlusParameters params, byte[][] privateKey) {
 		super();
+		if (params == null) {
+			throw new NullPointerException("params == null");
+		}
+		if (privateKey == null) {
+			throw new NullPointerException("privateKey == null");
+		}
+		if (XMSSUtil.hasNullPointer(privateKey)) {
+			throw new NullPointerException("privateKey byte array == null");
+		}
+		if (privateKey.length != params.getLen()) {
+			throw new IllegalArgumentException("wrong privateKey size");
+		}
 		this.privateKey = privateKey;
 	}
 	
