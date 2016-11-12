@@ -8,7 +8,7 @@ import java.text.ParseException;
  * @author Sebastian Roland <seroland86@gmail.com>
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
-public class XMSSPrivateKey {
+public class XMSSPrivateKey implements XMSSStoreableObject {
 
 	/**
 	 * XMSS object.
@@ -44,68 +44,64 @@ public class XMSSPrivateKey {
 		index = 0;
 	}
 	
-	public byte[][] toByteArray() {
-		byte[][] privateKey = new byte[5][];
+	@Override
+	public byte[] toByteArray() {
+		/* index || secretKeySeed || secretKeyPRF || publicSeed || root */
+		int n = xmss.getParams().getDigestSize();
+		int indexSize = 4;
+		int secretKeySize = n;
+		int secretKeyPRFSize = n;
+		int publicSeedSize = n;
+		int rootSize = n;
+		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize;
+		byte[] out = new byte[totalSize];
+		int position = 0;
 		/* copy index */
-		privateKey[0] = XMSSUtil.toBytesBigEndian(index, 32);
-		/* copy secret key seed */
-		privateKey[1] = XMSSUtil.cloneArray(secretKeySeed);
-		/* copy secret key prf */
-		privateKey[2] = XMSSUtil.cloneArray(secretKeyPRF);
-		/* copy public seed */
-		privateKey[3] = XMSSUtil.cloneArray(publicSeed);
+		XMSSUtil.intToBytesBigEndianOffset(out, index, position);
+		position += indexSize;
+		/* copy secretKeySeed */
+		XMSSUtil.copyBytesAtOffset(out, secretKeySeed, position);
+		position += secretKeySize;
+		/* copy secretKeyPRF */
+		XMSSUtil.copyBytesAtOffset(out, secretKeyPRF, position);
+		position += secretKeyPRFSize;
+		/* copy publicSeed */
+		XMSSUtil.copyBytesAtOffset(out, publicSeed, position);
+		position += publicSeedSize;
 		/* copy root */
-		privateKey[4] = XMSSUtil.cloneArray(root);
-		return privateKey;
+		XMSSUtil.copyBytesAtOffset(out, root, position);
+		return out;
 	}
-	
-	public void parseByteArray(byte[][] privateKey) throws ParseException {
-		if (XMSSUtil.hasNullPointer(privateKey)) {
-			throw new NullPointerException("privateKey has null pointers");
-		}
-		if (privateKey.length != 5) {
-			throw new ParseException("wrong size", 0);
+
+	@Override
+	public void parseByteArray(byte[] in) throws ParseException {
+		if (in == null) {
+			throw new NullPointerException("in == null");
 		}
 		int n = xmss.getParams().getDigestSize();
-
-		/* parse index */
-		byte[] index = privateKey[0];
-		if (index.length != 32) {
-			throw new ParseException("index must be 32 bytes", 0);
+		int height = xmss.getParams().getHeight();
+		int indexSize = 4;
+		int secretKeySize = n;
+		int secretKeyPRFSize = n;
+		int publicSeedSize = n;
+		int rootSize = n;
+		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize;
+		if (in.length != totalSize) {
+			throw new IllegalArgumentException("wrong size");
 		}
-		int tmpIndex = XMSSUtil.bytesToIntBigEndian(index, 28);
-		if (!!XMSSUtil.isIndexValid(xmss.getParams().getHeight(),tmpIndex)) {
+		int position = 0;
+		index = XMSSUtil.bytesToIntBigEndian(in, position);
+		if (!XMSSUtil.isIndexValid(height, index)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
-		this.index = tmpIndex;
-
-		/* parse secret key seed */
-		byte[] secretKeySeed = XMSSUtil.cloneArray(privateKey[1]);
-		if (secretKeySeed.length != n) {
-			throw new ParseException("secret key seed needs to be equal to size of digest", 0);
-		}
-		this.secretKeySeed = secretKeySeed;
-
-		/* parse secret key PRF */
-		byte[] secretKeyPRF = XMSSUtil.cloneArray(privateKey[2]);
-		if (secretKeyPRF.length != n) {
-			throw new ParseException("secret key PRF needs to be equal to size of digest", 0);
-		}
-		this.secretKeyPRF = secretKeyPRF;
-
-		/* parse public seed */
-		byte[] publicSeed = XMSSUtil.cloneArray(privateKey[3]);
-		if (publicSeed.length != n) {
-			throw new ParseException("publicSeed needs to be equal to size of digest", 0);
-		}
-		this.publicSeed = publicSeed;
-
-		/* parse root */
-		byte[] root = XMSSUtil.cloneArray(privateKey[4]);
-		if (root.length != n) {
-			throw new ParseException("root needs to be equal to size of digest", 0);
-		}
-		this.root = root;
+		position += indexSize;
+		secretKeySeed = XMSSUtil.extractBytesAtOffset(in, position, secretKeySize);
+		position += secretKeySize;
+		secretKeyPRF = XMSSUtil.extractBytesAtOffset(in, position, secretKeyPRFSize);
+		position += secretKeyPRFSize;
+		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, publicSeedSize);
+		position += publicSeedSize;
+		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 	}
 
 	public int getIndex() {

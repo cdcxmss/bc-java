@@ -890,8 +890,8 @@ public class XMSSTest extends TestCase {
 		XMSSSignature signature1 = xmss1.sign(msg1);
 		XMSSSignature signature2 = xmss1.sign(msg2);
 		assertEquals(2, xmss1.getPrivateKey().getIndex());
-		byte[][] exportedPrivateKey = xmss1.exportPrivateKey();
-		byte[][] exportedPublicKey = xmss1.exportPublicKey();
+		byte[] exportedPrivateKey = xmss1.getPrivateKey().toByteArray();
+		byte[] exportedPublicKey = xmss1.getPublicKey().toByteArray();
 		XMSSPublicKey publicKey = xmss1.getPublicKey();
 		XMSSSignature signature3 = xmss1.sign(msg3);
 		
@@ -921,8 +921,8 @@ public class XMSSTest extends TestCase {
 		XMSSSignature signature1 = xmss1.sign(msg1);
 		XMSSSignature signature2 = xmss1.sign(msg2);
 		assertEquals(2, xmss1.getPrivateKey().getIndex());
-		byte[][] exportedPrivateKey = xmss1.exportPrivateKey();
-		byte[][] exportedPublicKey = xmss1.exportPublicKey();
+		byte[] exportedPrivateKey = xmss1.getPrivateKey().toByteArray();
+		byte[] exportedPublicKey = xmss1.getPublicKey().toByteArray();
 		XMSSPublicKey publicKey = xmss1.getPublicKey();
 		XMSSSignature signature3 = xmss1.sign(msg3);
 		

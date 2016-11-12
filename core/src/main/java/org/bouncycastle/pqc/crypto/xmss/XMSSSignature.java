@@ -129,6 +129,9 @@ public class XMSSSignature implements XMSSStoreableObject {
 	 * @param index
 	 */
 	public void setIndex(int index) {
+		if (!XMSSUtil.isIndexValid(xmss.getParams().getHeight(), index)) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
 		this.index = index;
 	}
 
@@ -145,6 +148,12 @@ public class XMSSSignature implements XMSSStoreableObject {
 	 * @param random random.
 	 */
 	public void setRandom(byte[] random) {
+		if (random == null) {
+			throw new NullPointerException("random == null");
+		}
+		if (random.length != xmss.getParams().getDigestSize()) {
+			throw new IllegalArgumentException("size of random needs to be equal to size of digest");
+		}
 		this.random = random;
 	}
 
@@ -161,6 +170,9 @@ public class XMSSSignature implements XMSSStoreableObject {
 	 * @param signature WOTS+ signature.
 	 */
 	public void setSignature(WOTSPlusSignature signature) {
+		if (signature == null) {
+			throw new NullPointerException("signature == null");
+		}
 		this.signature = signature;
 	}
 
@@ -177,6 +189,12 @@ public class XMSSSignature implements XMSSStoreableObject {
 	 * @param authPath Authentication path.
 	 */
 	public void setAuthPath(List<XMSSNode> authPath) {
+		if (authPath == null) {
+			throw new NullPointerException("authPath == null");
+		}
+		if (authPath.size() != xmss.getParams().getHeight()) {
+			throw new IllegalArgumentException("size of authPath needs to be equal to height of tree");
+		}
 		this.authPath = authPath;
 	}
 }

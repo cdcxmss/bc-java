@@ -52,14 +52,20 @@ public class XMSS {
 	 * @param privateKey XMSS private key.
 	 * @param publicKey XMSS public key.
 	 */
-	public void importKeys(byte[][] privateKey, byte[] publicKey) {
-		if (XMSSUtil.hasNullPointer(privateKey)) {
-			throw new NullPointerException("privateKey has null pointers");
+	public void importKeys(byte[] privateKey, byte[] publicKey) {
+		if (privateKey == null) {
+			throw new NullPointerException("privateKey == null");
 		}
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
-		// TODO: check sizes
+		int n = params.getDigestSize();
+		if (privateKey.length != (4 * n) + 4) {
+			throw new IllegalArgumentException("private key has wrong size");
+		}
+		if (publicKey.length != (2 * n) + 4) {
+			throw new IllegalArgumentException("public key has wrong size");
+		}
 		XMSSPrivateKey tmpPrivateKey = new XMSSPrivateKey(this);
 		try {
 			tmpPrivateKey.parseByteArray(privateKey);
@@ -402,29 +408,7 @@ public class XMSS {
 			throw new IllegalStateException("not initialized");
 		}
 	}
-	
-	/**
-	 * Export private key.
-	 * @return XMSS private key.
-	 */
-	public byte[][] exportPrivateKey() {
-		if (privateKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
-		return privateKey.toByteArray();
-	}
-	
-	/**
-	 * Export public key.
-	 * @return XMSS public key.
-	 */
-	public byte[] exportPublicKey() {
-		if (publicKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
-		return publicKey.toByteArray();
-	}
-	
+
 	/**
 	 * Getter XMSS params.
 	 * @return XMSS params.

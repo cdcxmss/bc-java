@@ -49,6 +49,9 @@ public class XMSSUtil {
      * @param Offset in {@code in}.
      */
     public static void intToBytesBigEndianOffset(byte[] in, int value, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
     	if ((in.length - offset) < 4) {
     		throw new IllegalArgumentException("not enough space in array");
     	}
@@ -65,6 +68,9 @@ public class XMSSUtil {
      * @param Offset in {@code in}.
      */
     public static void longToBytesBigEndianOffset(byte[] in, long value, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
     	if ((in.length - offset) < 8) {
     		throw new IllegalArgumentException("not enough space in array");
     	}
@@ -84,6 +90,9 @@ public class XMSSUtil {
      * @return Integer.
      */
     public static int bytesToIntBigEndian(byte[] in, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		if ((offset + 4) > in.length) {
 			throw new IllegalArgumentException("out of bounds");
 		}
@@ -96,6 +105,9 @@ public class XMSSUtil {
      * @return Long.
      */
     public static long bytesToLongBigEndian(byte[] in, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		if ((offset + 8) > in.length) {
 			throw new IllegalArgumentException("out of bounds");
 		}
@@ -110,6 +122,9 @@ public class XMSSUtil {
      * @return Long.
      */
     private static long bytesToXBigEndian(byte[] in, int offset, int size) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		long res = 0;
 		for (int i = offset; i < (offset + size); i++) {
 		   res = (res << 8) | (in[i] & 0xff);
@@ -123,6 +138,9 @@ public class XMSSUtil {
      * @return Copy of byte array.
      */
 	public static byte[] cloneArray(byte[] in) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		byte[] out = new byte[in.length];
 		for (int i = 0; i < in.length; i++) {
 			out[i] = in[i];
@@ -136,6 +154,9 @@ public class XMSSUtil {
      * @return Copy of 2d byte array.
      */
 	public static byte[][] cloneArray(byte[][] in) {
+    	if (hasNullPointer(in)) {
+    		throw new NullPointerException("in has null pointers");
+    	}
 		byte[][] out = new byte[in.length][];
 		for (int i = 0; i < in.length; i++) {
 			out[i] = new byte[in[i].length];
@@ -152,6 +173,9 @@ public class XMSSUtil {
 	 * @return true if digest is valid false else.
 	 */
 	public static boolean isValidDigest(Digest digest) {
+    	if (digest == null) {
+    		throw new NullPointerException("digest == null");
+    	}
 		if (digest instanceof SHA256Digest || digest instanceof SHA512Digest) {
 			return true;
 		}
@@ -224,6 +248,9 @@ public class XMSSUtil {
 	 * @param x byte array.
 	 */
 	public static void dumpByteArray(byte[][] x) {
+		if (hasNullPointer(x)) {
+			throw new NullPointerException("x has null pointers");
+		}
 		for (int i = 0; i < x.length; i++) {
 			System.out.println(Hex.toHexString(x[i]));
 		}
@@ -270,6 +297,13 @@ public class XMSSUtil {
 		}
 	}
 	
+	/**
+	 * Copy length bytes at position offset from src.
+	 * @param src Source byte array.
+	 * @param offset Offset in source byte array.
+	 * @param length Length of bytes to copy.
+	 * @return New byte array.
+	 */
 	public static byte[] extractBytesAtOffset(byte[] src, int offset, int length) {
 		if (src == null) {
 			throw new NullPointerException("src == null");
@@ -290,6 +324,12 @@ public class XMSSUtil {
 		return out;
 	}
 	
+	/**
+	 * Check whether an index is valid or not.
+	 * @param height Height of binary tree.
+	 * @param index Index to validate.
+	 * @return true if index is valid false else.
+	 */
 	public static boolean isIndexValid(int height, int index) {
 		if (index > (1 << height) - 1) {
 			return false;
