@@ -44,14 +44,6 @@ public class XMSSPrivateKey {
 		index = 0;
 	}
 	
-	public void generateKeys() {
-		int n = xmss.getParams().getDigestSize();
-		secretKeySeed = new byte[n];
-		xmss.getParams().getPRNG().nextBytes(secretKeySeed);
-		secretKeyPRF = new byte[n];
-		xmss.getParams().getPRNG().nextBytes(secretKeyPRF);
-	}
-	
 	public void parseByteArray(byte[][] privateKey) throws ParseException {
 		if (XMSSUtil.hasNullPointer(privateKey)) {
 			throw new NullPointerException("privateKey has null pointers");
@@ -117,10 +109,6 @@ public class XMSSPrivateKey {
 		return privateKey;
 	}
 	
-	protected byte[] getWOTSPlusSecretKey(int index) {
-		return xmss.getParams().getKHF().PRF(secretKeySeed, XMSSUtil.toBytesBigEndian(index, 32));
-	}
-	
 	private boolean isIndexValid(int index) {
 		if (index > (1 << xmss.getParams().getHeight()) - 1) {
 			return false;
@@ -142,9 +130,29 @@ public class XMSSPrivateKey {
 	public byte[] getSecretKeySeed() {
 		return XMSSUtil.byteArrayDeepCopy(secretKeySeed);
 	}
+	
+	public void setSecretKeySeed(byte[] secretKeySeed) {
+		if (secretKeySeed == null) {
+			throw new NullPointerException("secretKeySeed == null");
+		}
+		if (secretKeySeed.length != xmss.getParams().getDigestSize()) {
+			throw new IllegalArgumentException("size of secretKeySeed needs to be equal size of digest");
+		}
+		this.secretKeySeed = secretKeySeed;
+	}
 
 	public byte[] getSecretKeyPRF() {
 		return XMSSUtil.byteArrayDeepCopy(secretKeyPRF);
+	}
+	
+	public void setSecretKeyPRF(byte[] secretKeyPRF) {
+		if (secretKeyPRF == null) {
+			throw new NullPointerException("secretKeyPRF == null");
+		}
+		if (secretKeyPRF.length != xmss.getParams().getDigestSize()) {
+			throw new IllegalArgumentException("size of secretKeyPRF needs to be equal size of digest");
+		}
+		this.secretKeyPRF = secretKeyPRF;
 	}
 
 	public byte[] getPublicSeed() {

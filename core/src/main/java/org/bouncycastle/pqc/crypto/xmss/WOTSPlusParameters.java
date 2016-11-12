@@ -44,7 +44,7 @@ public class WOTSPlusParameters {
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
 	 */
-	public WOTSPlusParameters(Digest digest) {
+	protected WOTSPlusParameters(Digest digest) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
@@ -72,42 +72,47 @@ public class WOTSPlusParameters {
 	 * Getter digest.
 	 * @return digest.
 	 */
-	public Digest getDigest() {
+	protected Digest getDigest() {
 		return digest;
 	}
+	
 	/**
 	 * Getter digestSize.
 	 * @return digestSize.
 	 */
-	public int getDigestSize() {
+	protected int getDigestSize() {
 		return digestSize;
 	}
+	
 	/**
 	 * Getter WinternitzParameter.
 	 * @return winternitzParameter.
 	 */
-	public int getWinternitzParameter() {
+	protected int getWinternitzParameter() {
 		return winternitzParameter;
 	}
+	
 	/**
 	 * Getter len.
 	 * @return len.
 	 */
-	public int getLen() {
+	protected int getLen() {
 		return len;
 	}
+	
 	/**
 	 * Getter len1.
 	 * @return len1.
 	 */
-	public int getLen1() {
+	protected int getLen1() {
 		return len1;
 	}
+	
 	/**
 	 * Getter len2.
 	 * @return len2.
 	 */
-	public int getLen2() {
+	protected int getLen2() {
 		return len2;
 	}
 }

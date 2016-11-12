@@ -52,18 +52,6 @@ public class KeyedHashFunctionsTest extends TestCase {
 		addr3 = new HashTreeAddress();
 	}
 	
-	public void testF() {
-
-	}
-	
-	public void testH() {
-		
-	}
-	
-	public void testHMsg() {
-		
-	}
-	
 	public void testPRF() {
 		// SHA256
 		byte[] hash = khfSHA256.PRF(key1, addr1.toByteArray());

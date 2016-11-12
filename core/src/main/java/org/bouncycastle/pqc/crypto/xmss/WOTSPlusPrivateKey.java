@@ -10,7 +10,7 @@ public class WOTSPlusPrivateKey {
 
 	private byte[][] privateKey;
 	
-	public WOTSPlusPrivateKey(WOTSPlusParameters params, byte[][] privateKey) {
+	protected WOTSPlusPrivateKey(WOTSPlusParameters params, byte[][] privateKey) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
@@ -27,7 +27,7 @@ public class WOTSPlusPrivateKey {
 		this.privateKey = privateKey;
 	}
 	
-	public byte[][] toByteArray() {
+	protected byte[][] toByteArray() {
 		return XMSSUtil.byteArrayDeepCopy(privateKey);
 	}
 }
