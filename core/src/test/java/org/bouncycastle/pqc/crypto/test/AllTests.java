@@ -33,6 +33,7 @@ public class AllTests
         suite.addTestSuite(XMSSUtilTest.class);
         suite.addTestSuite(XMSSPrivateKeyTest.class);
         suite.addTestSuite(XMSSPublicKeyTest.class);
+        suite.addTestSuite(XMSSSignatureTest.class);
         suite.addTestSuite(XMSSTest.class);
         suite.addTestSuite(AllTests.SimpleTestTest.class);
 

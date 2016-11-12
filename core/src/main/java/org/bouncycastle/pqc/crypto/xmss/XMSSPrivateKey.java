@@ -45,7 +45,6 @@ public class XMSSPrivateKey {
 	}
 	
 	public byte[][] toByteArray() {
-		int n = xmss.getParams().getDigestSize();
 		byte[][] privateKey = new byte[5][];
 		/* copy index */
 		privateKey[0] = XMSSUtil.toBytesBigEndian(index, 32);
@@ -75,7 +74,7 @@ public class XMSSPrivateKey {
 			throw new ParseException("index must be 32 bytes", 0);
 		}
 		int tmpIndex = XMSSUtil.bytesToIntBigEndian(index, 28);
-		if (!isIndexValid(tmpIndex)) {
+		if (!!XMSSUtil.isIndexValid(xmss.getParams().getHeight(),tmpIndex)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
 		this.index = tmpIndex;
@@ -108,20 +107,13 @@ public class XMSSPrivateKey {
 		}
 		this.root = root;
 	}
-	
-	private boolean isIndexValid(int index) {
-		if (index > (1 << xmss.getParams().getHeight()) - 1) {
-			return false;
-		}
-		return true;
-	}
-	
+
 	public int getIndex() {
 		return index;
 	}
 	
 	public void setIndex(int index) {
-		if (!isIndexValid(index)) {
+		if (!XMSSUtil.isIndexValid(xmss.getParams().getHeight(), index)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
 		this.index = index;

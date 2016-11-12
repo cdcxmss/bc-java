@@ -38,7 +38,7 @@ public class WOTSPlusParameters {
 	/**
 	 * oid.
 	 */
-	private Oid oid;
+	private int oid;
 	
 	/**
 	 * Constructor...

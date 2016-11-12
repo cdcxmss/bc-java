@@ -52,13 +52,14 @@ public class XMSS {
 	 * @param privateKey XMSS private key.
 	 * @param publicKey XMSS public key.
 	 */
-	public void importKeys(byte[][] privateKey, byte[][] publicKey) {
+	public void importKeys(byte[][] privateKey, byte[] publicKey) {
 		if (XMSSUtil.hasNullPointer(privateKey)) {
 			throw new NullPointerException("privateKey has null pointers");
 		}
-		if (XMSSUtil.hasNullPointer(publicKey)) {
-			throw new NullPointerException("publicKey has null pointers");
+		if (publicKey == null) {
+			throw new NullPointerException("publicKey == null");
 		}
+		// TODO: check sizes
 		XMSSPrivateKey tmpPrivateKey = new XMSSPrivateKey(this);
 		try {
 			tmpPrivateKey.parseByteArray(privateKey);
@@ -417,7 +418,7 @@ public class XMSS {
 	 * Export public key.
 	 * @return XMSS public key.
 	 */
-	public byte[][] exportPublicKey() {
+	public byte[] exportPublicKey() {
 		if (publicKey == null) {
 			throw new IllegalStateException("not initialized");
 		}

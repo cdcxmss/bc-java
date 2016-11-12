@@ -96,6 +96,9 @@ public class XMSSSignature implements XMSSStoreableObject {
 		}
 		int position = 0;
 		index = XMSSUtil.bytesToIntBigEndian(in, position);
+		if (!XMSSUtil.isIndexValid(height, index)) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
 		position += indexSize;
 		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;

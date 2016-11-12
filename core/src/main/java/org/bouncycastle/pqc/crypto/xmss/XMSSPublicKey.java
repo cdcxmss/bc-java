@@ -2,21 +2,19 @@ package org.bouncycastle.pqc.crypto.xmss;
 
 import java.text.ParseException;
 
-import org.ietf.jgss.Oid;
-
 /**
  * XMSS Public Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
-public class XMSSPublicKey {
+public class XMSSPublicKey implements XMSSStoreableObject {
 
 	/**
 	 * XMSS object.
 	 */
 	private XMSS xmss;
-	private Oid oid;
+	private int oid;
 	private byte[] root;
 	private byte[] publicSeed;
 	
@@ -28,36 +26,55 @@ public class XMSSPublicKey {
 		this.xmss = xmss;
 	}
 	
-	public byte[][] toByteArray() {
-		byte[][] publicKey = new byte[2][];
+	@Override
+	public byte[] toByteArray() {
+		/* oid || root || seed */
+		int n = xmss.getParams().getDigestSize();
+		int oidSize = 4;
+		int rootSize = n;
+		int publicSeedSize = n;
+		int totalSize = oidSize + rootSize + publicSeedSize;
+		byte[] out = new byte[totalSize];
+		int position = 0;
+		/* copy oid */
+		XMSSUtil.intToBytesBigEndianOffset(out, oid, position);
+		position += oidSize;
 		/* copy root */
-		publicKey[0] = XMSSUtil.cloneArray(root);
-		/* copy publicSeed */
-		publicKey[1] = XMSSUtil.cloneArray(publicSeed);
-		return publicKey;
+		XMSSUtil.copyBytesAtOffset(out, root, position);
+		position += rootSize;
+		/* copy public seed */
+		XMSSUtil.copyBytesAtOffset(out, publicSeed, position);
+		return out;
 	}
-	
-	public void parseByteArray(byte[][] publicKey) throws ParseException {
-		if (XMSSUtil.hasNullPointer(publicKey)) {
-			throw new NullPointerException("publicKey has null pointers");
-		}
-		if (publicKey.length != 2) {
-			throw new ParseException("wrong size", 0);
+
+	@Override
+	public void parseByteArray(byte[] in) throws ParseException {
+		if (in == null) {
+			throw new NullPointerException("in == null");
 		}
 		int n = xmss.getParams().getDigestSize();
-		
-		/* parse root */
-		byte[] root = XMSSUtil.cloneArray(publicKey[0]);
-		if (root.length != n) {
-			throw new ParseException("root needs to be equal to size of digest", 0);
+		int oidSize = 4;
+		int rootSize = n;
+		int publicSeedSize = n;
+		int totalSize = oidSize + rootSize + publicSeedSize;
+		if (in.length != totalSize) {
+			throw new IllegalArgumentException("wrong size");
 		}
-		this.root = root;
-		/* parse public seed */
-		byte[] publicSeed = XMSSUtil.cloneArray(publicKey[1]);
-		if (publicSeed.length != n) {
-			throw new ParseException("publicSeed needs to be equal to size of digest", 0);
-		}
-		this.publicSeed = publicSeed;
+		int position = 0;
+		oid = XMSSUtil.bytesToIntBigEndian(in, position);
+		// TODO: check oid value
+		position += oidSize;
+		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
+		position += rootSize;
+		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
+	}
+	
+	public int getOid() {
+		return oid;
+	}
+	
+	public void setOid(int oid) {
+		this.oid = oid;
 	}
 	
 	public byte[] getRoot() {

@@ -289,4 +289,11 @@ public class XMSSUtil {
 		}
 		return out;
 	}
+	
+	public static boolean isIndexValid(int height, int index) {
+		if (index > (1 << height) - 1) {
+			return false;
+		}
+		return true;
+	}
 }

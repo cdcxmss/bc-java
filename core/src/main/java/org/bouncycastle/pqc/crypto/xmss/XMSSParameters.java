@@ -20,7 +20,7 @@ public class XMSSParameters {
 	private SecureRandom prng;
 	private KeyedHashFunctions khf;
 	private int winternitzParameter;
-	private Oid oid;
+	private int oid;
 	
 	/**
 	 * XMSS Constructor...
