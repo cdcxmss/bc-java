@@ -373,7 +373,7 @@ public class XMSS {
 		/* reinitialize WOTS+ object */
 		int index = signature.getIndex();
 		byte[] publicSeed = publicKey.getPublicSeed();
-		wotsPlus.importKeys(getWOTSPlusSecretKey(index), publicSeed);
+		wotsPlus.importKeys(new byte[params.getDigestSize()], publicSeed);
 		
 		/* create message digest */
 		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
