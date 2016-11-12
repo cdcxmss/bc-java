@@ -278,7 +278,9 @@ public class XMSS {
 		List<XMSSNode> authPath = buildAuthPath(address);
 		
 		/* assemble temp signature */
-		XMSSSignature tmpSignature = new XMSSSignature(wotsSignature, authPath);
+		XMSSSignature tmpSignature = new XMSSSignature(this);
+		tmpSignature.setSignature(wotsSignature);
+		tmpSignature.setAuthPath(authPath);
 		return tmpSignature;
 	}
 
@@ -428,6 +430,10 @@ public class XMSS {
 	 */
 	public XMSSParameters getParams() {
 		return params;
+	}
+	
+	public WOTSPlus getWOTSPlus() {
+		return wotsPlus;
 	}
 	
 	/**

@@ -117,6 +117,24 @@ public class XMSSUtil {
 		return res;
     }
     
+    /**
+     * Clone a byte array.
+     * @param in byte array.
+     * @return Copy of byte array.
+     */
+	public static byte[] cloneArray(byte[] in) {
+		byte[] out = new byte[in.length];
+		for (int i = 0; i < in.length; i++) {
+			out[i] = in[i];
+		}
+		return out;
+	}
+	
+    /**
+     * Clone a 2d byte array.
+     * @param in 2d byte array.
+     * @return Copy of 2d byte array.
+     */
 	public static byte[][] cloneArray(byte[][] in) {
 		byte[][] out = new byte[in.length][];
 		for (int i = 0; i < in.length; i++) {
@@ -142,8 +160,8 @@ public class XMSSUtil {
 	
 	/**
 	 * Concatenates an arbitrary number of byte arrays.
-	 * @param arrays
-	 * @return
+	 * @param arrays Arrays that shall be concatenated.
+	 * @return Concatenated array.
 	 */
 	public static byte[] concat(byte[]... arrays) {
 		int totalLength = 0;
@@ -162,6 +180,12 @@ public class XMSSUtil {
 	    return result;
 	}
 	
+	/**
+	 * Compares two byte arrays.
+	 * @param a byte array 1.
+	 * @param b byte array 2.
+	 * @return true if all values in byte array are equal false else.
+	 */
 	public static boolean compareByteArray(byte[] a, byte[] b) {
 		if (a == null || b == null) {
 			throw new NullPointerException("a or b == null");
@@ -177,6 +201,12 @@ public class XMSSUtil {
 		return true;
 	}
 	
+	/**
+	 * Compares two 2d-byte arrays.
+	 * @param a 2d-byte array 1.
+	 * @param b 2d-byte array 2.
+	 * @return true if all values in 2d-byte array are equal false else.
+	 */
 	public static boolean compareByteArray(byte[][] a, byte[][] b) {
 		if (hasNullPointer(a) || hasNullPointer(b)) {
 			throw new NullPointerException("a or b == null");
@@ -189,31 +219,21 @@ public class XMSSUtil {
 		return true;
 	}
 	
+	/**
+	 * Dump content of 2d byte array.
+	 * @param x byte array.
+	 */
 	public static void dumpByteArray(byte[][] x) {
 		for (int i = 0; i < x.length; i++) {
 			System.out.println(Hex.toHexString(x[i]));
 		}
 	}
-	
-	public static byte[] byteArrayDeepCopy(byte[] in) {
-		byte[] out = new byte[in.length];
-		for (int i = 0; i < in.length; i++) {
-			out[i] = in[i];
-		}
-		return out;
-	}
-	
-	public static byte[][] byteArrayDeepCopy(byte[][] in) {
-		byte[][] out = new byte[in.length][];
-		for (int i = 0; i < in.length; i++) {
-			out[i] = new byte[in[i].length];
-			for (int j = 0; j < in[i].length; j++) {
-				out[i][j] = in[i][j];
-			}
-		}
-		return out;
-	}
-	
+
+	/**
+	 * Checks whether 2d byte array has null pointers.
+	 * @param in 2d byte array.
+	 * @return true if at least one null pointer is found false else.
+	 */
 	public static boolean hasNullPointer(byte[][] in) {
 		if (in == null) {
 			return true;
@@ -224,5 +244,49 @@ public class XMSSUtil {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Copy src byte array to dst byte array at offset.
+	 * @param dst Destination.
+	 * @param src Source.
+	 * @param offset Destination offset.
+	 */
+	public static void copyBytesAtOffset(byte[] dst, byte[] src, int offset) {
+		if (dst == null) {
+			throw new NullPointerException("dst == null");
+		}
+		if (src == null) {
+			throw new NullPointerException("src == null");
+		}
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset hast to be >= 0");
+		}
+		if ((src.length + offset) > dst.length) {
+			throw new IllegalArgumentException("src length + offset must not be greater then size of destination");
+		}
+		for (int i = 0; i < src.length; i++) {
+			dst[offset + i] = src[i];
+		}
+	}
+	
+	public static byte[] extractBytesAtOffset(byte[] src, int offset, int length) {
+		if (src == null) {
+			throw new NullPointerException("src == null");
+		}
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset hast to be >= 0");
+		}
+		if (length < 0) {
+			throw new IllegalArgumentException("length hast to be >= 0");
+		}
+		if ((offset + length) > src.length) {
+			throw new IllegalArgumentException("offset + length must not be greater then size of source array");
+		}
+		byte[] out = new byte[length];
+		for (int i = 0; i < out.length; i++) {
+			out[i] = src[offset + i];
+		}
+		return out;
 	}
 }

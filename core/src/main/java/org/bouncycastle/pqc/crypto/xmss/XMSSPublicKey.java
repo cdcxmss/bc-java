@@ -28,6 +28,15 @@ public class XMSSPublicKey {
 		this.xmss = xmss;
 	}
 	
+	public byte[][] toByteArray() {
+		byte[][] publicKey = new byte[2][];
+		/* copy root */
+		publicKey[0] = XMSSUtil.cloneArray(root);
+		/* copy publicSeed */
+		publicKey[1] = XMSSUtil.cloneArray(publicSeed);
+		return publicKey;
+	}
+	
 	public void parseByteArray(byte[][] publicKey) throws ParseException {
 		if (XMSSUtil.hasNullPointer(publicKey)) {
 			throw new NullPointerException("publicKey has null pointers");
@@ -38,30 +47,21 @@ public class XMSSPublicKey {
 		int n = xmss.getParams().getDigestSize();
 		
 		/* parse root */
-		byte[] root = XMSSUtil.byteArrayDeepCopy(publicKey[0]);
+		byte[] root = XMSSUtil.cloneArray(publicKey[0]);
 		if (root.length != n) {
 			throw new ParseException("root needs to be equal to size of digest", 0);
 		}
 		this.root = root;
 		/* parse public seed */
-		byte[] publicSeed = XMSSUtil.byteArrayDeepCopy(publicKey[1]);
+		byte[] publicSeed = XMSSUtil.cloneArray(publicKey[1]);
 		if (publicSeed.length != n) {
 			throw new ParseException("publicSeed needs to be equal to size of digest", 0);
 		}
 		this.publicSeed = publicSeed;
 	}
 	
-	public byte[][] toByteArray() {
-		byte[][] publicKey = new byte[2][];
-		/* copy root */
-		publicKey[0] = XMSSUtil.byteArrayDeepCopy(root);
-		/* copy publicSeed */
-		publicKey[1] = XMSSUtil.byteArrayDeepCopy(publicSeed);
-		return publicKey;
-	}
-	
 	public byte[] getRoot() {
-		return XMSSUtil.byteArrayDeepCopy(root);
+		return XMSSUtil.cloneArray(root);
 	}
 	
 	public void setRoot(byte[] root) {
@@ -75,7 +75,7 @@ public class XMSSPublicKey {
 	}
 	
 	public byte[] getPublicSeed() {
-		return XMSSUtil.byteArrayDeepCopy(publicSeed);
+		return XMSSUtil.cloneArray(publicSeed);
 	}
 	
 	public void setPublicSeed(byte[] publicSeed) {

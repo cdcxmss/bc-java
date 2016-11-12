@@ -28,6 +28,6 @@ public class WOTSPlusPublicKey {
 	}
 	
 	protected byte[][] toByteArray() {
-		return XMSSUtil.byteArrayDeepCopy(publicKey);
+		return XMSSUtil.cloneArray(publicKey);
 	}
 }

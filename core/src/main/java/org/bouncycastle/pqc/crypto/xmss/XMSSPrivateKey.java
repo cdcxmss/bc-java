@@ -44,6 +44,22 @@ public class XMSSPrivateKey {
 		index = 0;
 	}
 	
+	public byte[][] toByteArray() {
+		int n = xmss.getParams().getDigestSize();
+		byte[][] privateKey = new byte[5][];
+		/* copy index */
+		privateKey[0] = XMSSUtil.toBytesBigEndian(index, 32);
+		/* copy secret key seed */
+		privateKey[1] = XMSSUtil.cloneArray(secretKeySeed);
+		/* copy secret key prf */
+		privateKey[2] = XMSSUtil.cloneArray(secretKeyPRF);
+		/* copy public seed */
+		privateKey[3] = XMSSUtil.cloneArray(publicSeed);
+		/* copy root */
+		privateKey[4] = XMSSUtil.cloneArray(root);
+		return privateKey;
+	}
+	
 	public void parseByteArray(byte[][] privateKey) throws ParseException {
 		if (XMSSUtil.hasNullPointer(privateKey)) {
 			throw new NullPointerException("privateKey has null pointers");
@@ -65,48 +81,32 @@ public class XMSSPrivateKey {
 		this.index = tmpIndex;
 
 		/* parse secret key seed */
-		byte[] secretKeySeed = XMSSUtil.byteArrayDeepCopy(privateKey[1]);
+		byte[] secretKeySeed = XMSSUtil.cloneArray(privateKey[1]);
 		if (secretKeySeed.length != n) {
 			throw new ParseException("secret key seed needs to be equal to size of digest", 0);
 		}
 		this.secretKeySeed = secretKeySeed;
 
 		/* parse secret key PRF */
-		byte[] secretKeyPRF = XMSSUtil.byteArrayDeepCopy(privateKey[2]);
+		byte[] secretKeyPRF = XMSSUtil.cloneArray(privateKey[2]);
 		if (secretKeyPRF.length != n) {
 			throw new ParseException("secret key PRF needs to be equal to size of digest", 0);
 		}
 		this.secretKeyPRF = secretKeyPRF;
 
 		/* parse public seed */
-		byte[] publicSeed = XMSSUtil.byteArrayDeepCopy(privateKey[3]);
+		byte[] publicSeed = XMSSUtil.cloneArray(privateKey[3]);
 		if (publicSeed.length != n) {
 			throw new ParseException("publicSeed needs to be equal to size of digest", 0);
 		}
 		this.publicSeed = publicSeed;
 
 		/* parse root */
-		byte[] root = XMSSUtil.byteArrayDeepCopy(privateKey[4]);
+		byte[] root = XMSSUtil.cloneArray(privateKey[4]);
 		if (root.length != n) {
 			throw new ParseException("root needs to be equal to size of digest", 0);
 		}
 		this.root = root;
-	}
-	
-	public byte[][] toByteArray() {
-		int n = xmss.getParams().getDigestSize();
-		byte[][] privateKey = new byte[5][];
-		/* copy index */
-		privateKey[0] = XMSSUtil.toBytesBigEndian(index, 32);
-		/* copy secret key seed */
-		privateKey[1] = XMSSUtil.byteArrayDeepCopy(secretKeySeed);
-		/* copy secret key prf */
-		privateKey[2] = XMSSUtil.byteArrayDeepCopy(secretKeyPRF);
-		/* copy public seed */
-		privateKey[3] = XMSSUtil.byteArrayDeepCopy(publicSeed);
-		/* copy root */
-		privateKey[4] = XMSSUtil.byteArrayDeepCopy(root);
-		return privateKey;
 	}
 	
 	private boolean isIndexValid(int index) {
@@ -128,7 +128,7 @@ public class XMSSPrivateKey {
 	}
 	
 	public byte[] getSecretKeySeed() {
-		return XMSSUtil.byteArrayDeepCopy(secretKeySeed);
+		return XMSSUtil.cloneArray(secretKeySeed);
 	}
 	
 	public void setSecretKeySeed(byte[] secretKeySeed) {
@@ -142,7 +142,7 @@ public class XMSSPrivateKey {
 	}
 
 	public byte[] getSecretKeyPRF() {
-		return XMSSUtil.byteArrayDeepCopy(secretKeyPRF);
+		return XMSSUtil.cloneArray(secretKeyPRF);
 	}
 	
 	public void setSecretKeyPRF(byte[] secretKeyPRF) {
@@ -156,7 +156,7 @@ public class XMSSPrivateKey {
 	}
 
 	public byte[] getPublicSeed() {
-		return XMSSUtil.byteArrayDeepCopy(publicSeed);
+		return XMSSUtil.cloneArray(publicSeed);
 	}
 	
 	public void setPublicSeed(byte[] publicSeed) {
@@ -170,7 +170,7 @@ public class XMSSPrivateKey {
 	}
 
 	public byte[] getRoot() {
-		return XMSSUtil.byteArrayDeepCopy(root);
+		return XMSSUtil.cloneArray(root);
 	}
 	
 	public void setRoot(byte[] root) {

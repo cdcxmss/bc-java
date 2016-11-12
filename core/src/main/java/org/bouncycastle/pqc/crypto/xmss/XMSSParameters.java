@@ -34,8 +34,8 @@ public class XMSSParameters {
 		 * if height is greater than 30 integers overflow e.g. in loops occur...
 		 * the current maximum supported is 2^30 signatures accordingly.
 		 */
-		if (height > 30) {
-			throw new IllegalArgumentException("maximum height is 30");
+		if (height < 2 || height > 30) {
+			throw new IllegalArgumentException("height must be between 2 and 30");
 		}
 		if (digest == null) {
 			throw new NullPointerException("digest == null");

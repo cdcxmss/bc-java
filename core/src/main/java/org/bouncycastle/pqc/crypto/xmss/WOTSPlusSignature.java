@@ -28,6 +28,6 @@ public class WOTSPlusSignature {
 	}
 	
 	public byte[][] toByteArray() {
-		return XMSSUtil.byteArrayDeepCopy(signature);
+		return XMSSUtil.cloneArray(signature);
 	}
 }

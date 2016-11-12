@@ -292,7 +292,7 @@ public class WOTSPlus {
 	 * Getter parameters.
 	 * @return params.
 	 */
-	protected WOTSPlusParameters getParams() {
+	public WOTSPlusParameters getParams() {
 		return params;
 	}
 	
