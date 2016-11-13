@@ -8,7 +8,6 @@ import org.bouncycastle.pqc.crypto.xmss.XMSS;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSPrivateKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
-import org.bouncycastle.util.encoders.Hex;
 
 import junit.framework.TestCase;
 
@@ -20,8 +19,8 @@ import junit.framework.TestCase;
 public class XMSSPrivateKeyTest extends TestCase {
 
 	public void testPrivateKeyParsing() {
-		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), new NullPRNG());
-		XMSS xmss = new XMSS(params);
+		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), 16);
+		XMSS xmss = new XMSS(params, new NullPRNG());
 		xmss.generateKeys();
 		XMSSPrivateKey privateKey = xmss.getPrivateKey();
 		privateKey.setIndex(0xaa);

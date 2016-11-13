@@ -24,8 +24,8 @@ import junit.framework.TestCase;
 public class XMSSSignatureTest extends TestCase {
 
 	public void testSignatureParsing() {
-		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), new NullPRNG());
-		XMSS xmss = new XMSS(params);
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
+		XMSS xmss = new XMSS(params, new NullPRNG());
 		XMSSSignature signature = new XMSSSignature(xmss);
 		
 		int n = xmss.getParams().getDigestSize();
