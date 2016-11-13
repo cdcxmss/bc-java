@@ -92,12 +92,12 @@ public class XMSSSignature implements XMSSStoreableObject {
 		int authPathSize = height * n;
 		int totalSize = indexSize + randomSize + signatureSize + authPathSize;
 		if (in.length != totalSize) {
-			throw new IllegalArgumentException("wrong size");
+			throw new ParseException("signature has wrong size", 0);
 		}
 		int position = 0;
 		index = XMSSUtil.bytesToIntBigEndian(in, position);
 		if (!XMSSUtil.isIndexValid(height, index)) {
-			throw new IllegalArgumentException("index out of bounds");
+			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
 		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);

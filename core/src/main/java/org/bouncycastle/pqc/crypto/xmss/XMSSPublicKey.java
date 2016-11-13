@@ -59,12 +59,12 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		int publicSeedSize = n;
 		int totalSize = oidSize + rootSize + publicSeedSize;
 		if (in.length != totalSize) {
-			throw new IllegalArgumentException("wrong size");
+			throw new ParseException("public key has wrong size", 0);
 		}
 		int position = 0;
 		oid = XMSSUtil.bytesToIntBigEndian(in, position);
-		if (!XMSSOid.checkOid(oid)) {
-			throw new IllegalArgumentException("oid invalid");
+		if (oid != xmss.getParams().getOid().getOid()) {
+			throw new ParseException("public key not compatible with current instance parameters", 0);
 		}
 		position += oidSize;
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);

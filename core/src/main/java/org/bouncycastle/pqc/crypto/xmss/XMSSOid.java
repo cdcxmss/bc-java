@@ -73,6 +73,7 @@ public class XMSSOid {
 	 * @param oid OID.
 	 * @return true if OID is found, false else.
 	 */
+	/*
 	public static boolean checkOid(int oid) {
 		Iterator<XMSSOid> iterator = oidLookupTable.values().iterator();
 		while (iterator.hasNext()) {
@@ -83,6 +84,7 @@ public class XMSSOid {
 		}
 		return false;
 	}
+	*/
 	
 	/**
 	 * Create a key based on parameters.

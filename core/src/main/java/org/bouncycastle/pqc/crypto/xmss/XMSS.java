@@ -66,7 +66,7 @@ public class XMSS {
 	 * @param privateKey XMSS private key.
 	 * @param publicKey XMSS public key.
 	 */
-	public void importKeys(byte[] privateKey, byte[] publicKey) {
+	public void importKeys(byte[] privateKey, byte[] publicKey) throws ParseException {
 		if (privateKey == null) {
 			throw new NullPointerException("privateKey == null");
 		}
@@ -74,17 +74,9 @@ public class XMSS {
 			throw new NullPointerException("publicKey == null");
 		}
 		XMSSPrivateKey tmpPrivateKey = new XMSSPrivateKey(this);
-		try {
-			tmpPrivateKey.parseByteArray(privateKey);
-		} catch (ParseException ex) {
-			ex.printStackTrace();
-		}
+		tmpPrivateKey.parseByteArray(privateKey);
 		XMSSPublicKey tmpPublicKey = new XMSSPublicKey(this);
-		try {
-			tmpPublicKey.parseByteArray(publicKey);
-		} catch (ParseException ex) {
-			ex.printStackTrace();
-		}
+		tmpPublicKey.parseByteArray(publicKey);
 		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getRoot(), tmpPublicKey.getRoot())) {
 			throw new IllegalStateException("root of private key and public key do not match");
 		}
@@ -376,7 +368,7 @@ public class XMSS {
 	 * @param publicKey XMSS public key.
 	 * @return true if signature is valid false else.
 	 */
-	public boolean verifySignature(byte[] message, byte[] sig, byte[] pubKey) {
+	public boolean verifySignature(byte[] message, byte[] sig, byte[] pubKey) throws ParseException {
 		if (message == null) {
 			throw new NullPointerException("message == null");
 		}
@@ -388,17 +380,10 @@ public class XMSS {
 		}
 		/* parse signature and public key */
 		XMSSSignature signature = new XMSSSignature(this);
-		try {
-			signature.parseByteArray(sig);
-		} catch (ParseException ex) {
-			ex.printStackTrace();
-		}
+		signature.parseByteArray(sig);
 		XMSSPublicKey publicKey = new XMSSPublicKey(this);
-		try {
-			publicKey.parseByteArray(pubKey);
-		} catch (ParseException ex) {
-			ex.printStackTrace();
-		}
+		publicKey.parseByteArray(pubKey);
+
 		/* reinitialize WOTS+ object */
 		int index = signature.getIndex();
 		byte[] publicSeed = publicKey.getPublicSeed();
