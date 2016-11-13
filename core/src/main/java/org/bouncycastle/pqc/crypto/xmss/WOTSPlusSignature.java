@@ -10,7 +10,7 @@ public class WOTSPlusSignature {
 
 	private byte[][] signature;
 	
-	public WOTSPlusSignature(WOTSPlusParameters params, byte[][] signature) {
+	protected WOTSPlusSignature(WOTSPlusParameters params, byte[][] signature) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
@@ -27,7 +27,7 @@ public class WOTSPlusSignature {
 		this.signature = signature;
 	}
 	
-	public byte[][] toByteArray() {
+	protected byte[][] toByteArray() {
 		return XMSSUtil.cloneArray(signature);
 	}
 }

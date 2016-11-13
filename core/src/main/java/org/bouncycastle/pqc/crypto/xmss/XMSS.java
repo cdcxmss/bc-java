@@ -73,13 +73,6 @@ public class XMSS {
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
-		int n = params.getDigestSize();
-		if (privateKey.length != (4 * n) + 4) {
-			throw new IllegalArgumentException("private key has wrong size");
-		}
-		if (publicKey.length != (2 * n) + 4) {
-			throw new IllegalArgumentException("public key has wrong size");
-		}
 		XMSSPrivateKey tmpPrivateKey = new XMSSPrivateKey(this);
 		try {
 			tmpPrivateKey.parseByteArray(privateKey);
@@ -311,7 +304,7 @@ public class XMSS {
 	 * @param message Message to sign.
 	 * @return XMSS signature on digest of message.
 	 */
-	public XMSSSignature sign(byte[] message) {
+	public byte[] sign(byte[] message) {
 		checkState();
 		/* reinitialize WOTS+ object */
 		int index = privateKey.getIndex();
@@ -329,7 +322,7 @@ public class XMSS {
 		
 		/* update index */
 		privateKey.setIndex(index + 1);
-		return signature;
+		return signature.toByteArray();
 	}
 	
 	/**
@@ -383,15 +376,28 @@ public class XMSS {
 	 * @param publicKey XMSS public key.
 	 * @return true if signature is valid false else.
 	 */
-	public boolean verifySignature(byte[] message, XMSSSignature signature, XMSSPublicKey publicKey) {
+	public boolean verifySignature(byte[] message, byte[] sig, byte[] pubKey) {
 		if (message == null) {
 			throw new NullPointerException("message == null");
 		}
-		if (signature == null) {
+		if (sig == null) {
 			throw new NullPointerException("signature == null");
 		}
-		if (publicKey == null) {
+		if (pubKey == null) {
 			throw new NullPointerException("publicKey == null");
+		}
+		/* parse signature and public key */
+		XMSSSignature signature = new XMSSSignature(this);
+		try {
+			signature.parseByteArray(sig);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+		}
+		XMSSPublicKey publicKey = new XMSSPublicKey(this);
+		try {
+			publicKey.parseByteArray(pubKey);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
 		}
 		/* reinitialize WOTS+ object */
 		int index = signature.getIndex();
@@ -431,7 +437,7 @@ public class XMSS {
 		return params;
 	}
 	
-	public WOTSPlus getWOTSPlus() {
+	protected WOTSPlus getWOTSPlus() {
 		return wotsPlus;
 	}
 	
@@ -439,7 +445,7 @@ public class XMSS {
 	 * Getter public seed.
 	 * @return Public seed.
 	 */
-	public byte[] getPublicSeed() {
+	protected byte[] getPublicSeed() {
 		if (publicSeed == null) {
 			throw new IllegalStateException("not initialized");
 		}
@@ -450,21 +456,21 @@ public class XMSS {
 	 * Getter private key.
 	 * @return XMSS private key.
 	 */
-	public XMSSPrivateKey getPrivateKey() {
+	public byte[] getPrivateKey() {
 		if (privateKey == null) {
 			throw new IllegalStateException("not initialized");
 		}
-		return privateKey;
+		return privateKey.toByteArray();
     }
 
 	/**
 	 * Getter public key.
 	 * @return XMSS public key.
 	 */
-	public XMSSPublicKey getPublicKey() {
+	public byte[] getPublicKey() {
 		if (publicKey == null) {
 			throw new IllegalStateException("not initialized");
 		}
-		return publicKey;
+		return publicKey.toByteArray();
 	}
 }

@@ -19,10 +19,10 @@ import junit.framework.TestCase;
 public class XMSSPrivateKeyTest extends TestCase {
 
 	public void testPrivateKeyParsing() {
-		XMSSParameters params = new XMSSParameters(8, new SHA256Digest(), 16);
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
 		XMSS xmss = new XMSS(params, new NullPRNG());
-		xmss.generateKeys();
-		XMSSPrivateKey privateKey = xmss.getPrivateKey();
+		int n = params.getDigestSize();
+		XMSSPrivateKey privateKey = new XMSSPrivateKey(xmss);
 		privateKey.setIndex(0xaa);
 		byte[] root = {
 			(byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07,
@@ -30,6 +30,9 @@ public class XMSSPrivateKeyTest extends TestCase {
 			(byte) 0x10, (byte) 0x20, (byte) 0x30, (byte) 0x03, (byte) 0x40, (byte) 0x50, (byte) 0x60, (byte) 0x70,
 			(byte) 0x80, (byte) 0x90, (byte) 0xa0, (byte) 0xb0, (byte) 0xc0, (byte) 0xd0, (byte) 0xe0, (byte) 0xf0
 		};
+		privateKey.setSecretKeySeed(new byte[n]);
+		privateKey.setSecretKeyPRF(new byte[n]);
+		privateKey.setPublicSeed(new byte[n]);
 		privateKey.setRoot(root);
 		byte[] export = privateKey.toByteArray();
 		

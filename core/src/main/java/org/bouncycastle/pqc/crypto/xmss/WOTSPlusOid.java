@@ -20,10 +20,8 @@ public class WOTSPlusOid {
 		Map<String, WOTSPlusOid> map = new HashMap<String, WOTSPlusOid>();
 		map.put(createKey("SHA-256", 16), new WOTSPlusOid(0x01000001, "WOTSP_SHA2-256_W16"));
 		map.put(createKey("SHA-512", 16), new WOTSPlusOid(0x02000002, "WOTSP_SHA2-512_W16"));
-		/*
-		map.put(getKey("SHAKE128", 16), new WOTSPlusOid(0x03000003, "XMSS_SHAKE128_W16_H10"));
-		map.put(getKey("SHAKE256", 16), new WOTSPlusOid(0x04000004, "XMSS_SHAKE256_W16_H10"));
-		*/
+		map.put(createKey("SHAKE128", 16), new WOTSPlusOid(0x03000003, "WOTSP_SHAKE128_W16"));
+		map.put(createKey("SHAKE256", 16), new WOTSPlusOid(0x04000004, "WOTSP_SHAKE256_W16"));
 		oidLookupTable = Collections.unmodifiableMap(map);
 	}
 	

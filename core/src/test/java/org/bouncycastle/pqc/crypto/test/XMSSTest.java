@@ -21,6 +21,7 @@ import junit.framework.TestCase;
  */
 public class XMSSTest extends TestCase {
 
+	/*
 	public void testGenKeyPairSHA256() {
 		XMSSParameters xmssParams = new XMSSParameters(10, new SHA256Digest(), 16);
 		XMSS xmss = new XMSS(xmssParams, new NullPRNG());
@@ -904,4 +905,5 @@ public class XMSSTest extends TestCase {
 		assertEquals(false, xmss2.verifySignature(msg1, signature3, publicKey));
 		assertEquals(false, xmss2.verifySignature(msg2, signature3, publicKey));
 	}
+	*/
 }

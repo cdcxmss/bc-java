@@ -301,7 +301,7 @@ public class WOTSPlus {
 	 * Getter parameters.
 	 * @return params.
 	 */
-	public WOTSPlusParameters getParams() {
+	protected WOTSPlusParameters getParams() {
 		return params;
 	}
 	
