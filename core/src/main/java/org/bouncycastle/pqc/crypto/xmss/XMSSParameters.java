@@ -1,11 +1,10 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import java.security.SecureRandom;
+import java.security.InvalidParameterException;
 
 import org.bouncycastle.crypto.Digest;
 
 /**
- * 
  * XMSS Parameters.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
@@ -13,45 +12,36 @@ import org.bouncycastle.crypto.Digest;
  */
 public class XMSSParameters {
 
+	private XMSSOid oid;
 	private int height;
 	private Digest digest;
 	private int digestSize;
-	private SecureRandom prng;
-	private KeyedHashFunctions khf;
 	private int winternitzParameter;
-	private int oid;
 	
 	/**
 	 * XMSS Constructor...
 	 * @param height Height of tree.
 	 * @param digest Digest to use.
-	 * @param prng PRNG.
+	 * @param winternitzParameter Winternitz parameter.
 	 */
-	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
+	public XMSSParameters(int height, Digest digest, int winternitzParameter) {
 		super();
-		/*
-		 * if height is greater than 30 integers overflow e.g. in loops occur...
-		 * the current maximum supported is 2^30 signatures accordingly.
-		 */
-		if (height < 2 || height > 30) {
-			throw new IllegalArgumentException("height must be between 2 and 30");
-		}
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
-		if (prng == null) {
-			throw new NullPointerException("prng == null");
+		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), winternitzParameter, height);
+		if (oid == null) {
+			throw new InvalidParameterException();
 		}
-		if (!XMSSUtil.isValidDigest(digest)) {
-			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
-		};
+		this.oid = oid;
 		this.height = height;
 		this.digest = digest;
 		this.digestSize = digest.getDigestSize();
-		this.prng = prng;
-		khf = new KeyedHashFunctions(digest);
-		winternitzParameter = 16;
-		// TODO getOidFromParams();
+		this.winternitzParameter = winternitzParameter;
+	}
+	
+	public XMSSOid getOid() {
+		return oid;
 	}
 
 	public int getHeight() {
@@ -61,19 +51,11 @@ public class XMSSParameters {
 	public Digest getDigest() {
 		return digest;
 	}
-
+	
 	public int getDigestSize() {
 		return digestSize;
 	}
 
-	public SecureRandom getPRNG() {
-		return prng;
-	}
-
-	public KeyedHashFunctions getKHF() {
-		return khf;
-	}
-	
 	public int getWinternitzParameter() {
 		return winternitzParameter;
 	}

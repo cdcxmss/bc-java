@@ -5,6 +5,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.bouncycastle.util.test.SimpleTestResult;
+import org.ietf.jgss.Oid;
 
 public class AllTests
     extends TestCase
@@ -27,6 +28,7 @@ public class AllTests
         suite.addTestSuite(NTRUSignatureKeyTest.class);
         suite.addTestSuite(NTRUSignerTest.class);
         suite.addTestSuite(NTRUSigningParametersTest.class);
+        suite.addTestSuite(OidTest.class);
         suite.addTestSuite(WOTSPlusTest.class);
         suite.addTestSuite(WOTSPlusParametersTest.class);
         suite.addTestSuite(XMSSAddressTest.class);

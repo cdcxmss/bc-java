@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,14 @@ public class XMSS {
 	 */
 	private WOTSPlus wotsPlus;
 	/**
+	 * PRNG.
+	 */
+	private SecureRandom prng;
+	/**
+	 * Randomization functions.
+	 */
+	private KeyedHashFunctions khf;
+	/**
 	 * XMSS / WOTS+ public seed.
 	 */
 	private byte[] publicSeed;
@@ -33,18 +42,23 @@ public class XMSS {
 	 * XMSS public key.
 	 */
 	private XMSSPublicKey publicKey;
-
+	
 	/**
 	 * XMSS constructor...
 	 * @param params XMSSParameters.
 	 */
-	public XMSS(XMSSParameters params) {
+	public XMSS(XMSSParameters params, SecureRandom prng) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
+		if (prng == null) {
+			throw new NullPointerException("prng == null");
+		}
 		this.params = params;
-		wotsPlus = new WOTSPlus(new WOTSPlusParameters(params.getDigest()));
+		wotsPlus = new WOTSPlus(new WOTSPlusParameters(params.getDigest(), params.getWinternitzParameter()), prng);
+		this.prng = prng;
+		khf = new KeyedHashFunctions(params.getDigest());
 	}
 	
 	/**
@@ -94,11 +108,12 @@ public class XMSS {
 	 */
 	public void generateKeys() {
 		publicSeed = new byte[params.getDigestSize()];
-		params.getPRNG().nextBytes(publicSeed);
+		prng.nextBytes(publicSeed);
 		privateKey = generatePrivateKey();
 		XMSSNode root = treeHash(0, params.getHeight(), new OTSHashAddress(), new LTreeAddress(), new HashTreeAddress());
 		privateKey.setRoot(root.getValue());
 		publicKey = new XMSSPublicKey(this);
+		publicKey.setOid(params.getOid().getOid());
 		publicKey.setRoot(root.getValue());
 		publicKey.setPublicSeed(publicSeed);
 	}
@@ -110,9 +125,9 @@ public class XMSS {
 	private XMSSPrivateKey generatePrivateKey() {
 		int n = getParams().getDigestSize();
 		byte[] secretKeySeed = new byte[n];
-		params.getPRNG().nextBytes(secretKeySeed);
+		prng.nextBytes(secretKeySeed);
 		byte[] secretKeyPRF = new byte[n];
-		params.getPRNG().nextBytes(secretKeyPRF);
+		prng.nextBytes(secretKeyPRF);
 		
 		XMSSPrivateKey privateKey = new XMSSPrivateKey(this);
 		privateKey.setPublicSeed(publicSeed);
@@ -146,11 +161,11 @@ public class XMSS {
 			throw new NullPointerException("address == null");
 		}
 		address.setKeyAndMask(0);
-		byte[] key = params.getKHF().PRF(publicSeed, address.toByteArray());
+		byte[] key = khf.PRF(publicSeed, address.toByteArray());
 		address.setKeyAndMask(1);
-		byte[] bitmask0 = params.getKHF().PRF(publicSeed, address.toByteArray());
+		byte[] bitmask0 = khf.PRF(publicSeed, address.toByteArray());
 		address.setKeyAndMask(2);
-		byte[] bitmask1 = params.getKHF().PRF(publicSeed, address.toByteArray());
+		byte[] bitmask1 = khf.PRF(publicSeed, address.toByteArray());
 		int n = params.getDigestSize();
 		byte[] tmpMask = new byte[2 * n];
 		for (int i = 0; i < n; i++) {
@@ -159,7 +174,7 @@ public class XMSS {
 		for (int i = 0; i < n; i++) {
 			tmpMask[i+n] = (byte)(right.getValue()[i] ^ bitmask1[i]);
 		}
-		byte[] out = params.getKHF().H(key, tmpMask);
+		byte[] out = khf.H(key, tmpMask);
 		return new XMSSNode(left.getHeight(), out);
 	}
 	
@@ -303,7 +318,6 @@ public class XMSS {
 		wotsPlus.importKeys(getWOTSPlusSecretKey(index), publicSeed);
 
 		/* create (randomized keyed) messageDigest of message */
-		KeyedHashFunctions khf = params.getKHF();
 		byte[] random = khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 32));
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
@@ -386,7 +400,7 @@ public class XMSS {
 		
 		/* create message digest */
 		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
-		byte[] messageDigest = params.getKHF().HMsg(concatenated, message);
+		byte[] messageDigest = khf.HMsg(concatenated, message);
 		XMSSNode rootNodeFromSignature = getRootNodeFromSignature(messageDigest, signature, publicKey.getPublicSeed());
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
 	}
@@ -397,7 +411,7 @@ public class XMSS {
 	 * @return WOTS+ secret key at index.
 	 */
 	private byte[] getWOTSPlusSecretKey(int index) {
-		return params.getKHF().PRF(privateKey.getSecretKeySeed(), XMSSUtil.toBytesBigEndian(index, 32));
+		return khf.PRF(privateKey.getSecretKeySeed(), XMSSUtil.toBytesBigEndian(index, 32));
 	}
 	
 	/**

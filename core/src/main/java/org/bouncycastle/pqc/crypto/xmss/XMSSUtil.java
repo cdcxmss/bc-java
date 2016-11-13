@@ -1,8 +1,5 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
@@ -165,21 +162,6 @@ public class XMSSUtil {
 			}
 		}
 		return out;
-	}
-	
-	/**
-	 * Checks whether the digest is allowed according to draft-irtf-cfrg-xmss-hash-based-signatures-06.
-	 * @param digest The digest to be validated.
-	 * @return true if digest is valid false else.
-	 */
-	public static boolean isValidDigest(Digest digest) {
-    	if (digest == null) {
-    		throw new NullPointerException("digest == null");
-    	}
-		if (digest instanceof SHA256Digest || digest instanceof SHA512Digest) {
-			return true;
-		}
-		return false;
 	}
 	
 	/**

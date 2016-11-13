@@ -24,6 +24,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 			throw new NullPointerException("xmss == null");
 		}
 		this.xmss = xmss;
+		oid = xmss.getParams().getOid().getOid();
 	}
 	
 	@Override
@@ -62,7 +63,9 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		}
 		int position = 0;
 		oid = XMSSUtil.bytesToIntBigEndian(in, position);
-		// TODO: check oid value
+		if (!XMSSOid.checkOid(oid)) {
+			throw new IllegalArgumentException("oid invalid");
+		}
 		position += oidSize;
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 		position += rootSize;

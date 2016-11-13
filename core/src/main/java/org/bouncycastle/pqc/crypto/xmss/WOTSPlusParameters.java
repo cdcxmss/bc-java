@@ -1,7 +1,8 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.InvalidParameterException;
+
 import org.bouncycastle.crypto.Digest;
-import org.ietf.jgss.Oid;
 
 /**
  * Parameters for the WOTS+ one-time signature system as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
@@ -11,6 +12,10 @@ import org.ietf.jgss.Oid;
  */
 public class WOTSPlusParameters {
 
+	/**
+	 * OID.
+	 */
+	private WOTSPlusOid oid;
 	/**
 	 * Digest used in WOTS+.
 	 */
@@ -35,34 +40,32 @@ public class WOTSPlusParameters {
 	 * len2.
 	 */
 	private int len2;
-	/**
-	 * oid.
-	 */
-	private int oid;
 	
 	/**
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
+	 * @param winternitzParameter The Winternitz parameter for WOTS+.
 	 */
-	protected WOTSPlusParameters(Digest digest) {
+	protected WOTSPlusParameters(Digest digest, int winternitzParameter) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
-		if (!XMSSUtil.isValidDigest(digest)) {
-			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
-		};
+		WOTSPlusOid oid = WOTSPlusOid.lookup(digest.getAlgorithmName(), winternitzParameter);
+		if (oid == null) {
+			throw new InvalidParameterException();
+		}
+		this.oid = oid;
 		this.digest = digest;
 		digestSize = digest.getDigestSize();
-		winternitzParameter = 16;
-		setLen();
-		// TODO getOidFromParams();
+		this.winternitzParameter = winternitzParameter;
+		calculateLen();
 	}
 	
 	/**
 	 * Sets the len values from the message digest size and Winternitz parameter.
 	 */
-	private void setLen() {
+	private void calculateLen() {
 		len1 = (int)Math.ceil((double)(8 * digestSize) / XMSSUtil.log2(winternitzParameter));
 		len2 = (int)Math.floor(XMSSUtil.log2(len1 * (winternitzParameter - 1)) / XMSSUtil.log2(winternitzParameter)) + 1;
 		len = len1 + len2;
@@ -114,5 +117,13 @@ public class WOTSPlusParameters {
 	 */
 	protected int getLen2() {
 		return len2;
+	}
+	
+	/**
+	 * Getter OID.
+	 * @return WOTS+ OID.
+	 */
+	protected WOTSPlusOid getOid() {
+		return oid;
 	}
 }

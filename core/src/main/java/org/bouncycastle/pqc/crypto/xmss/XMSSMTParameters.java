@@ -1,7 +1,5 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import java.security.SecureRandom;
-
 import org.bouncycastle.crypto.Digest;
 
 /**
@@ -25,8 +23,8 @@ public class XMSSMTParameters extends XMSSParameters{
 	 * @param digest Digest to use
 	 * @param prng PRNG
 	 */
-	public XMSSMTParameters(int layers, int totalHeight, Digest digest, SecureRandom prng) {
-		super(requirementCheck(layers, totalHeight), digest, prng);
+	public XMSSMTParameters(int layers, int totalHeight, Digest digest, int winternitzParameter) {
+		super(requirementCheck(layers, totalHeight), digest, winternitzParameter);
 		this.layers = layers;
 		this.totalHeight = totalHeight;
 	}
