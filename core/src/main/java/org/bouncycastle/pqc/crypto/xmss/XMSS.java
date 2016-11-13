@@ -422,8 +422,34 @@ public class XMSS {
 		return params;
 	}
 	
+	/**
+	 * Getter WOTS+.
+	 * @return WOTS+ instance.
+	 */
 	protected WOTSPlus getWOTSPlus() {
 		return wotsPlus;
+	}
+	
+	/**
+	 * Getter Root.
+	 * @return Root of binary tree.
+	 */
+	public byte[] getRoot() {
+		if (privateKey == null) {
+			throw new IllegalStateException("not initialized");
+		}
+		return privateKey.getRoot();
+	}
+	
+	/**
+	 * Getter index.
+	 * @return Index.
+	 */
+	public int getIndex() {
+		if (privateKey == null) {
+			throw new IllegalStateException("not initialized");
+		}
+		return privateKey.getIndex();
 	}
 	
 	/**

@@ -7,6 +7,8 @@ import junit.framework.TestSuite;
 import org.bouncycastle.util.test.SimpleTestResult;
 import org.ietf.jgss.Oid;
 
+import com.sun.org.apache.xerces.internal.xni.parser.XMLDTDContentModelSource;
+
 public class AllTests
     extends TestCase
 {
@@ -28,15 +30,15 @@ public class AllTests
         suite.addTestSuite(NTRUSignatureKeyTest.class);
         suite.addTestSuite(NTRUSignerTest.class);
         suite.addTestSuite(NTRUSigningParametersTest.class);
-        suite.addTestSuite(OidTest.class);
-        suite.addTestSuite(WOTSPlusTest.class);
-        suite.addTestSuite(WOTSPlusParametersTest.class);
+        //suite.addTestSuite(WOTSPlusTest.class);
+        //suite.addTestSuite(WOTSPlusParametersTest.class);
         suite.addTestSuite(XMSSAddressTest.class);
+        suite.addTestSuite(XMSSOidTest.class);
         suite.addTestSuite(XMSSUtilTest.class);
         suite.addTestSuite(XMSSPrivateKeyTest.class);
         suite.addTestSuite(XMSSPublicKeyTest.class);
-        //suite.addTestSuite(XMSSSignatureTest.class);
-        //suite.addTestSuite(XMSSTest.class);
+        suite.addTestSuite(XMSSSignatureTest.class);
+        suite.addTestSuite(XMSSTest.class);
         suite.addTestSuite(AllTests.SimpleTestTest.class);
 
         return new BCTestSetup(suite);

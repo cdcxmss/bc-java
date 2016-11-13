@@ -4,7 +4,7 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSOid;
 
 import junit.framework.TestCase;
 
-public class OidTest extends TestCase {
+public class XMSSOidTest extends TestCase {
 
 	public void testXMSSOidException1() {
 		XMSSOid xmssOid = XMSSOid.lookup("SHA-256", 16, -1);
@@ -40,18 +40,5 @@ public class OidTest extends TestCase {
 		xmssOid = XMSSOid.lookup("SHA-512", 16, 20);
 		assertEquals(0x06000006, xmssOid.getOid());
 		assertEquals("XMSS_SHA2-512_W16_H20", xmssOid.toString());
-	}
-	
-	public void testCheckOid() {
-		assertEquals(true, XMSSOid.checkOid(0x01000001));
-		assertEquals(true, XMSSOid.checkOid(0x02000002));
-		assertEquals(true, XMSSOid.checkOid(0x03000003));
-		assertEquals(true, XMSSOid.checkOid(0x04000004));
-		assertEquals(true, XMSSOid.checkOid(0x05000005));
-		assertEquals(true, XMSSOid.checkOid(0x06000006));
-		assertEquals(false, XMSSOid.checkOid(0x01));
-		assertEquals(false, XMSSOid.checkOid(0xaa));
-		assertEquals(false, XMSSOid.checkOid(0xff));
-		assertEquals(false, XMSSOid.checkOid(0xbb));
 	}
 }
