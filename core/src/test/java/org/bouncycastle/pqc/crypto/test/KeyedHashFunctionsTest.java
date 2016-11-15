@@ -2,6 +2,7 @@ package org.bouncycastle.pqc.crypto.test;
 
 import java.util.Arrays;
 
+import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.pqc.crypto.xmss.HashTreeAddress;
@@ -33,8 +34,10 @@ public class KeyedHashFunctionsTest extends TestCase {
 	private XMSSAddress addr3;
 	
 	public void setUp() {
-		khfSHA256 = new KeyedHashFunctions(new SHA256Digest());
-		khfSHA512 = new KeyedHashFunctions(new SHA512Digest());
+		Digest sha256 = new SHA256Digest();
+		Digest sha512 = new SHA512Digest();
+		khfSHA256 = new KeyedHashFunctions(sha256, sha256.getDigestSize());
+		khfSHA512 = new KeyedHashFunctions(sha512, sha512.getDigestSize());
 		key1 = new byte[32];
 		key2 = new byte[32];
 		key3 = new byte[32];

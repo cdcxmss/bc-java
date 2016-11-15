@@ -21,8 +21,8 @@ import junit.framework.TestCase;
 public class XMSSTest extends TestCase {
 
 	public void testGenKeyPairSHA256() {
-		XMSSParameters xmssParams = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(xmssParams, new NullPRNG());
+		XMSSParameters xmssParams = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(xmssParams);
 		xmss.generateKeys();
 		byte[] privateKey = xmss.getPrivateKey();
 		byte[] publicKey = xmss.getPublicKey();
@@ -33,8 +33,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testGenKeyPairSHA512() {
-		XMSSParameters xmssParams = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss = new XMSS(xmssParams, new NullPRNG());
+		XMSSParameters xmssParams = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(xmssParams);
 		xmss.generateKeys();
 		byte[] privateKey = xmss.getPrivateKey();
 		byte[] publicKey = xmss.getPublicKey();
@@ -45,8 +45,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testSignSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);
@@ -61,8 +61,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testSignSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);
@@ -77,8 +77,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testVerifySignatureSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] publicKey = xmss.getPublicKey();
 		byte[] msg1 = new byte[1024];
@@ -100,8 +100,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testVerifySignatureSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] publicKey = xmss.getPublicKey();
 		byte[] msg1 = new byte[1024];
@@ -123,8 +123,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testImportKeysSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss1 = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss1 = new XMSS(params);
 		xmss1.generateKeys();
 		byte[] msg1 = new byte[1024];
 		byte[] msg2 = new byte[2048];
@@ -139,7 +139,7 @@ public class XMSSTest extends TestCase {
 		byte[] publicKey = xmss1.getPublicKey();
 		byte[] signature3 = xmss1.sign(msg3);
 		
-		XMSS xmss2 = new XMSS(params, new NullPRNG());
+		XMSS xmss2 = new XMSS(params);
 		try {
 			xmss2.importKeys(exportedPrivateKey, exportedPublicKey);
 		} catch (ParseException ex) {
@@ -162,8 +162,8 @@ public class XMSSTest extends TestCase {
 	}
 	
 	public void testImportKeysSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss1 = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss1 = new XMSS(params);
 		xmss1.generateKeys();
 		byte[] msg1 = new byte[1024];
 		byte[] msg2 = new byte[2048];
@@ -178,7 +178,7 @@ public class XMSSTest extends TestCase {
 		byte[] publicKey = xmss1.getPublicKey();
 		byte[] signature3 = xmss1.sign(msg3);
 		
-		XMSS xmss2 = new XMSS(params, new NullPRNG());
+		XMSS xmss2 = new XMSS(params);
 		try {
 			xmss2.importKeys(exportedPrivateKey, exportedPublicKey);
 		} catch (ParseException ex) {

@@ -24,7 +24,8 @@ public class XMSSMTParameters extends XMSSParameters{
 	 * @param prng PRNG
 	 */
 	public XMSSMTParameters(int layers, int totalHeight, Digest digest, int winternitzParameter) {
-		super(requirementCheck(layers, totalHeight), digest, winternitzParameter);
+		/* TODO: FIX */
+		super(requirementCheck(layers, totalHeight), digest, new NullPRNG());
 		this.layers = layers;
 		this.totalHeight = totalHeight;
 	}

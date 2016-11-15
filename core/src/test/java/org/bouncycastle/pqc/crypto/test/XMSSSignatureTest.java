@@ -20,8 +20,8 @@ import junit.framework.TestCase;
 public class XMSSSignatureTest extends TestCase {
 
 	public void testSignatureParsingSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);
@@ -37,8 +37,8 @@ public class XMSSSignatureTest extends TestCase {
 	}
 	
 	public void testSignatureParsingSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);

@@ -1,6 +1,5 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +17,6 @@ public class WOTSPlus {
 	 */
 	private WOTSPlusParameters params;
 	/**
-	 * PRNG.
-	 */
-	private SecureRandom prng;
-	/**
 	 * Randomization functions.
 	 */
 	private KeyedHashFunctions khf;
@@ -38,17 +33,13 @@ public class WOTSPlus {
 	 * Constructs a new WOTS+ one-time signature system based on the given WOTS+ parameters.
 	 * @param params Parameters for WOTSPlus object.
 	 */
-	protected WOTSPlus(WOTSPlusParameters params, SecureRandom prng) {
+	protected WOTSPlus(WOTSPlusParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
-		if (prng == null) {
-			throw new NullPointerException("prng == null");
-		}
 		this.params = params;
-		this.prng = prng;
-		khf = new KeyedHashFunctions(params.getDigest());
+		khf = new KeyedHashFunctions(params.getDigest(), params.getDigestSize());
 	}
 
 	/**

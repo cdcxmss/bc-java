@@ -19,8 +19,8 @@ import junit.framework.TestCase;
 public class XMSSPrivateKeyTest extends TestCase {
 
 	public void testPrivateKeyParsing() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
 		XMSSPrivateKey privateKey = new XMSSPrivateKey(xmss);
 		privateKey.setIndex(0xaa);

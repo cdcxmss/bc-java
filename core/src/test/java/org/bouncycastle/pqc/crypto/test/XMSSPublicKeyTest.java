@@ -20,8 +20,8 @@ import junit.framework.TestCase;
 public class XMSSPublicKeyTest extends TestCase {
 
 	public void testPublicKeyParsingSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
 		XMSSPublicKey publicKey = new XMSSPublicKey(xmss);
 		publicKey.setOid(0x01000001);
@@ -49,8 +49,8 @@ public class XMSSPublicKeyTest extends TestCase {
 	}
 	
 	public void testPublicKeyParsingSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), 16);
-		XMSS xmss = new XMSS(params, new NullPRNG());
+		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
+		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
 		XMSSPublicKey publicKey = new XMSSPublicKey(xmss);
 		publicKey.setOid(0x04000004);

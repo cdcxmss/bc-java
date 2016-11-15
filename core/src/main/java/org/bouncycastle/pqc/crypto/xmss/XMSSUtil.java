@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.Xof;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
@@ -317,5 +319,24 @@ public class XMSSUtil {
 			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Determine digest size of digest.
+	 * @param digest Digest.
+	 * @return Digest size.
+	 */
+	public static int getDigestSize(Digest digest) {
+		if (digest == null) {
+			throw new NullPointerException("digest == null");
+		}
+		String algorithmName = digest.getAlgorithmName();
+		if (algorithmName.equals("SHAKE128")) {
+			return 32;
+		}
+		if (algorithmName.equals("SHAKE256")) {
+			return 64;
+		}
+		return digest.getDigestSize();
 	}
 }

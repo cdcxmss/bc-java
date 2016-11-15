@@ -1,6 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
 import java.security.InvalidParameterException;
+import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
 
@@ -13,50 +14,65 @@ import org.bouncycastle.crypto.Digest;
 public class XMSSParameters {
 
 	private XMSSOid oid;
-	private int height;
 	private Digest digest;
+	private SecureRandom prng;
 	private int digestSize;
 	private int winternitzParameter;
-	
+	private int height;
+	private WOTSPlus wotsPlus;
+
 	/**
 	 * XMSS Constructor...
 	 * @param height Height of tree.
 	 * @param digest Digest to use.
 	 * @param winternitzParameter Winternitz parameter.
 	 */
-	public XMSSParameters(int height, Digest digest, int winternitzParameter) {
+	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
-		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), winternitzParameter, height);
+		if (prng == null) {
+			throw new NullPointerException("prng == null");
+		}
+		this.digest = digest;
+		this.prng = prng;
+		digestSize = XMSSUtil.getDigestSize(digest);
+		winternitzParameter = 16;
+		this.height = height;
+		wotsPlus = new WOTSPlus(new WOTSPlusParameters(digest));
+		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, wotsPlus.getParams().getLen(), height);
 		if (oid == null) {
 			throw new InvalidParameterException();
 		}
 		this.oid = oid;
-		this.height = height;
-		this.digest = digest;
-		this.digestSize = digest.getDigestSize();
-		this.winternitzParameter = winternitzParameter;
 	}
 	
 	public XMSSOid getOid() {
 		return oid;
 	}
 
-	public int getHeight() {
-		return height;
-	}
-
 	public Digest getDigest() {
 		return digest;
+	}
+	
+	public SecureRandom getPRNG() {
+		return prng;
 	}
 	
 	public int getDigestSize() {
 		return digestSize;
 	}
-
+	
 	public int getWinternitzParameter() {
 		return winternitzParameter;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public WOTSPlus getWOTSPlus() {
+		return wotsPlus;
 	}
 }

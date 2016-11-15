@@ -47,18 +47,15 @@ public class XMSS {
 	 * XMSS constructor...
 	 * @param params XMSSParameters.
 	 */
-	public XMSS(XMSSParameters params, SecureRandom prng) {
+	public XMSS(XMSSParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
-		if (prng == null) {
-			throw new NullPointerException("prng == null");
-		}
 		this.params = params;
-		wotsPlus = new WOTSPlus(new WOTSPlusParameters(params.getDigest(), params.getWinternitzParameter()), prng);
-		this.prng = prng;
-		khf = new KeyedHashFunctions(params.getDigest());
+		this.wotsPlus = params.getWOTSPlus();
+		this.prng = params.getPRNG();
+		khf = new KeyedHashFunctions(params.getDigest(), params.getDigestSize());
 	}
 	
 	/**
@@ -108,7 +105,7 @@ public class XMSS {
 	 * @return XMSS private key.
 	 */
 	private XMSSPrivateKey generatePrivateKey() {
-		int n = getParams().getDigestSize();
+		int n = params.getDigestSize();
 		byte[] secretKeySeed = new byte[n];
 		prng.nextBytes(secretKeySeed);
 		byte[] secretKeyPRF = new byte[n];

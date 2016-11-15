@@ -1,6 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
 import java.security.InvalidParameterException;
+import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
 
@@ -44,22 +45,21 @@ public class WOTSPlusParameters {
 	/**
 	 * Constructor...
 	 * @param digest The digest used for WOTS+.
-	 * @param winternitzParameter The Winternitz parameter for WOTS+.
 	 */
-	protected WOTSPlusParameters(Digest digest, int winternitzParameter) {
+	protected WOTSPlusParameters(Digest digest) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
-		WOTSPlusOid oid = WOTSPlusOid.lookup(digest.getAlgorithmName(), winternitzParameter);
+		this.digest = digest;
+		digestSize = XMSSUtil.getDigestSize(digest);
+		winternitzParameter = 16;
+		calculateLen();
+		WOTSPlusOid oid = WOTSPlusOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, len);
 		if (oid == null) {
 			throw new InvalidParameterException();
 		}
 		this.oid = oid;
-		this.digest = digest;
-		digestSize = digest.getDigestSize();
-		this.winternitzParameter = winternitzParameter;
-		calculateLen();
 	}
 	
 	/**
@@ -71,6 +71,15 @@ public class WOTSPlusParameters {
 		len = len1 + len2;
 	}
 
+	
+	/**
+	 * Getter OID.
+	 * @return WOTS+ OID.
+	 */
+	protected WOTSPlusOid getOid() {
+		return oid;
+	}
+	
 	/**
 	 * Getter digest.
 	 * @return digest.
@@ -117,13 +126,5 @@ public class WOTSPlusParameters {
 	 */
 	protected int getLen2() {
 		return len2;
-	}
-	
-	/**
-	 * Getter OID.
-	 * @return WOTS+ OID.
-	 */
-	protected WOTSPlusOid getOid() {
-		return oid;
 	}
 }
