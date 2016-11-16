@@ -174,7 +174,7 @@ public class XMSS {
 	 * @param address {@link OTSHashAddress}
 	 * @return Concatenation of WOTS+ signature and authentication path
 	 */
-	private XMSSSignature treeSig(byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
+	protected XMSSSignature treeSig(byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}

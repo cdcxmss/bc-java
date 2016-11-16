@@ -18,7 +18,7 @@ public class XMSSMTParameters extends XMSSParameters{
 	private int layers;
 
 	/**
-	 * Construcor
+	 * Constructor
 	 * the totalHeight has to be divided by the number of layers without remainder
 	 * @param layers the number of layers
 	 * @param totalHeight the total height of the {@link XMSSMT}
@@ -26,22 +26,34 @@ public class XMSSMTParameters extends XMSSParameters{
 	 * @param prng PRNG
 	 */
 	public XMSSMTParameters(int layers, int totalHeight, Digest digest, SecureRandom prng) {
-		super(requirementCheck(layers, totalHeight), digest, prng);
+		super(XMSSTreeHeight(layers, totalHeight), digest, prng);
 		this.layers = layers;
 		this.totalHeight = totalHeight;
 	}
 	
 	/**
-	 * Checks the requirement that the totalHeight has to be divided by the number of layers without remainder
+	 * Calculate the height of the {@link XMSS} trees
+	 * Total height has to be greater or equal to 2 and has to be divided by the number of layers without remainder.
 	 * @param layers the number of layers
 	 * @param totalHeight the total height of the {@link XMSSMT}
-	 * @return the totalHeight divided by layers if it divides without remainder otherwise an {@link IllegalArgumentException} is thrown
+	 * @return the totalHeight divided by layers if it is greater or equal to 2 and divides without remainder otherwise an {@link IllegalArgumentException} is thrown
 	 */
-	private static int requirementCheck(int layers, int totalHeight){
+	private static int XMSSTreeHeight(int layers, int totalHeight){
+		if (totalHeight < 2) {
+			throw new IllegalArgumentException("totalHeight is less than 2");
+		}
 		if (totalHeight % layers != 0){
 			throw new IllegalArgumentException("totalHeight has to be divided by layers without remainder");
 		}
 		return (int)(totalHeight / layers);
+	}
+
+	public int getTotalHeight() {
+		return totalHeight;
+	}
+
+	public int getLayers() {
+		return layers;
 	}
 
 }
