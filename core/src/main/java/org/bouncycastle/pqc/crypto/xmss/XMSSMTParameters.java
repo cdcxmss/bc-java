@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.SecureRandom;
+
 import org.bouncycastle.crypto.Digest;
 
 /**

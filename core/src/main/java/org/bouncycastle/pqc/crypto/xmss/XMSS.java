@@ -305,7 +305,7 @@ public class XMSS {
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		/* create signature for messageDigest */
-		XMSSSignature signature = treeSig(messageDigest, new OTSHashAddress());
+		XMSSSignature signature = treeSig(messageDigest, publicSeed, new OTSHashAddress());
 		signature.setIndex(index);
 		signature.setRandom(random);
 		
