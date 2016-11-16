@@ -1,7 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
+import org.bouncycastle.crypto.Xof;
 
 /**
  * Crypto related functions for XMSS.
@@ -12,70 +12,71 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 public class KeyedHashFunctions {
 
 	private Digest digest;
+	private int digestSize;
 	
-	public KeyedHashFunctions(Digest digest) {
+	public KeyedHashFunctions(Digest digest, int digestSize) {
 		super();
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
 		this.digest = digest;
+		this.digestSize = digestSize;
 	}
 	
 	private byte[] coreDigest(int fixedValue, byte[] key, byte[] index) {
-		int n = digest.getDigestSize();
-		byte[] buffer = new byte[n + key.length + index.length];
-		byte[] in = XMSSUtil.toBytesBigEndian(fixedValue, n);
-		// fill first n byte of out buffer
+		byte[] buffer = new byte[digestSize + key.length + index.length];
+		byte[] in = XMSSUtil.toBytesBigEndian(fixedValue, digestSize);
+		/* fill first n byte of out buffer */
 		for (int i = 0; i < in.length; i++) {
 			buffer[i] = in[i];
 		}
-		// add key
+		/* add key */
 		for (int i = 0; i < key.length; i++) {
 			buffer[in.length + i] = key[i];
 		}
-		// add index
+		/* add index */
 		for (int i = 0; i < index.length; i++) {
 			buffer[in.length + key.length + i] = index[i];
 		}
 		digest.update(buffer, 0, buffer.length);
-		byte[] out = new byte[n];
-		digest.doFinal(out, 0);
+		byte[] out = new byte[digestSize];
+		if (digest instanceof Xof) {
+			((Xof) digest).doFinal(out, 0, digestSize);
+		} else {
+			digest.doFinal(out, 0);
+		}
 		return out;
 	}
 	
 	public byte[] F(byte[] key, byte[] in) {
-		int n = digest.getDigestSize();
-		if (key.length != n) {
+		if (key.length != digestSize) {
 			throw new IllegalArgumentException("wrong key length");
 		}
-		if (in.length != n) {
+		if (in.length != digestSize) {
 			throw new IllegalArgumentException("wrong in length");
 		}
 		return coreDigest(0, key, in);
 	}
 	
 	public byte[] H(byte[] key, byte[] in) {
-		int n = digest.getDigestSize();
-		if (key.length != n) {
+		if (key.length != digestSize) {
 			throw new IllegalArgumentException("wrong key length");
 		}
-		if (in.length != (2 * n)) {
+		if (in.length != (2 * digestSize)) {
 			throw new IllegalArgumentException("wrong in length");
 		}
 		return coreDigest(1, key, in);
 	}
 	
 	public byte[] HMsg(byte[] key, byte[] in) {
-		int n = digest.getDigestSize();
-		if (key.length != (3 * n)) {
+		if (key.length != (3 * digestSize)) {
 			throw new IllegalArgumentException("wrong key length");
 		}
 		return coreDigest(2, key, in);
 	}
 	
 	public byte[] PRF(byte[] key, byte[] address) {
-		int n = digest.getDigestSize();
-		if (key.length != n) {
+		if (key.length != digestSize) {
 			throw new IllegalArgumentException("wrong key length");
 		}
 		if (address.length != 32) {

@@ -17,12 +17,12 @@ public abstract class XMSSAddress {
 	private int keyAndMask;
 	private byte[] byteRepresentation;
 	
-	public XMSSAddress(int type) {
+	protected XMSSAddress(int type) {
 		this.type = type;
 		byteRepresentation = new byte[32];
 	}
 	
-	public void parseByteArray(byte[] address) throws ParseException {
+	protected void parseByteArray(byte[] address) throws ParseException {
 		if (address.length != 32) {
 			throw new IllegalArgumentException("address needs to be 32 byte");
 		}

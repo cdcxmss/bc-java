@@ -26,7 +26,7 @@ public class XMSSNode {
 	}
 
 	public byte[] getValue() {
-		return XMSSUtil.byteArrayDeepCopy(value);
+		return XMSSUtil.cloneArray(value);
 	}
 	
 	public void setValue(byte[] value) {

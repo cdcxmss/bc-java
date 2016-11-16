@@ -1,12 +1,11 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.InvalidParameterException;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;
-import org.ietf.jgss.Oid;
 
 /**
- * 
  * XMSS Parameters.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
@@ -14,68 +13,66 @@ import org.ietf.jgss.Oid;
  */
 public class XMSSParameters {
 
-	private int height;
+	private XMSSOid oid;
 	private Digest digest;
-	private int digestSize;
 	private SecureRandom prng;
-	private KeyedHashFunctions khf;
+	private int digestSize;
 	private int winternitzParameter;
-	private Oid oid;
-	
+	private int height;
+	private WOTSPlus wotsPlus;
+
 	/**
 	 * XMSS Constructor...
 	 * @param height Height of tree.
 	 * @param digest Digest to use.
-	 * @param prng PRNG.
+	 * @param winternitzParameter Winternitz parameter.
 	 */
 	public XMSSParameters(int height, Digest digest, SecureRandom prng) {
 		super();
-		/*
-		 * if height is greater than 30 integers overflow e.g. in loops...
-		 * the current maximum supported is 2^30 signatures accordingly.
-		 */
-		if (height > 30) {
-			throw new IllegalArgumentException("maximum height is 30");
-		}
 		if (digest == null) {
 			throw new NullPointerException("digest == null");
 		}
 		if (prng == null) {
 			throw new NullPointerException("prng == null");
 		}
-		if (!XMSSUtil.isValidDigest(digest)) {
-			throw new IllegalArgumentException(digest.getAlgorithmName() + "(" + digest.getDigestSize() + ")" + "is not allowed");
-		};
-		this.height = height;
 		this.digest = digest;
-		this.digestSize = digest.getDigestSize();
 		this.prng = prng;
-		khf = new KeyedHashFunctions(digest);
+		digestSize = XMSSUtil.getDigestSize(digest);
 		winternitzParameter = 16;
-		// TODO getOidFromParams();
+		this.height = height;
+		wotsPlus = new WOTSPlus(new WOTSPlusParameters(digest));
+		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, wotsPlus.getParams().getLen(), height);
+		if (oid == null) {
+			throw new InvalidParameterException();
+		}
+		this.oid = oid;
 	}
-
-	public int getHeight() {
-		return height;
+	
+	public XMSSOid getOid() {
+		return oid;
 	}
 
 	public Digest getDigest() {
 		return digest;
 	}
-
-	public int getDigestSize() {
-		return digestSize;
-	}
-
+	
 	public SecureRandom getPRNG() {
 		return prng;
 	}
-
-	public KeyedHashFunctions getKHF() {
-		return khf;
+	
+	public int getDigestSize() {
+		return digestSize;
 	}
 	
 	public int getWinternitzParameter() {
 		return winternitzParameter;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public WOTSPlus getWOTSPlus() {
+		return wotsPlus;
 	}
 }

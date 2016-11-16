@@ -1,8 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
 import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.digests.SHA512Digest;
+import org.bouncycastle.crypto.Xof;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
@@ -49,6 +48,9 @@ public class XMSSUtil {
      * @param Offset in {@code in}.
      */
     public static void intToBytesBigEndianOffset(byte[] in, int value, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
     	if ((in.length - offset) < 4) {
     		throw new IllegalArgumentException("not enough space in array");
     	}
@@ -65,6 +67,9 @@ public class XMSSUtil {
      * @param Offset in {@code in}.
      */
     public static void longToBytesBigEndianOffset(byte[] in, long value, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
     	if ((in.length - offset) < 8) {
     		throw new IllegalArgumentException("not enough space in array");
     	}
@@ -84,6 +89,9 @@ public class XMSSUtil {
      * @return Integer.
      */
     public static int bytesToIntBigEndian(byte[] in, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		if ((offset + 4) > in.length) {
 			throw new IllegalArgumentException("out of bounds");
 		}
@@ -96,6 +104,9 @@ public class XMSSUtil {
      * @return Long.
      */
     public static long bytesToLongBigEndian(byte[] in, int offset) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		if ((offset + 8) > in.length) {
 			throw new IllegalArgumentException("out of bounds");
 		}
@@ -110,6 +121,9 @@ public class XMSSUtil {
      * @return Long.
      */
     private static long bytesToXBigEndian(byte[] in, int offset, int size) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
 		long res = 0;
 		for (int i = offset; i < (offset + size); i++) {
 		   res = (res << 8) | (in[i] & 0xff);
@@ -117,7 +131,31 @@ public class XMSSUtil {
 		return res;
     }
     
+    /**
+     * Clone a byte array.
+     * @param in byte array.
+     * @return Copy of byte array.
+     */
+	public static byte[] cloneArray(byte[] in) {
+    	if (in == null) {
+    		throw new NullPointerException("in == null");
+    	}
+		byte[] out = new byte[in.length];
+		for (int i = 0; i < in.length; i++) {
+			out[i] = in[i];
+		}
+		return out;
+	}
+	
+    /**
+     * Clone a 2d byte array.
+     * @param in 2d byte array.
+     * @return Copy of 2d byte array.
+     */
 	public static byte[][] cloneArray(byte[][] in) {
+    	if (hasNullPointer(in)) {
+    		throw new NullPointerException("in has null pointers");
+    	}
 		byte[][] out = new byte[in.length][];
 		for (int i = 0; i < in.length; i++) {
 			out[i] = new byte[in[i].length];
@@ -129,21 +167,9 @@ public class XMSSUtil {
 	}
 	
 	/**
-	 * Checks whether the digest is allowed according to draft-irtf-cfrg-xmss-hash-based-signatures-06.
-	 * @param digest The digest to be validated.
-	 * @return true if digest is valid false else.
-	 */
-	public static boolean isValidDigest(Digest digest) {
-		if (digest instanceof SHA256Digest || digest instanceof SHA512Digest) {
-			return true;
-		}
-		return false;
-	}
-	
-	/**
 	 * Concatenates an arbitrary number of byte arrays.
-	 * @param arrays
-	 * @return
+	 * @param arrays Arrays that shall be concatenated.
+	 * @return Concatenated array.
 	 */
 	public static byte[] concat(byte[]... arrays) {
 		int totalLength = 0;
@@ -162,6 +188,12 @@ public class XMSSUtil {
 	    return result;
 	}
 	
+	/**
+	 * Compares two byte arrays.
+	 * @param a byte array 1.
+	 * @param b byte array 2.
+	 * @return true if all values in byte array are equal false else.
+	 */
 	public static boolean compareByteArray(byte[] a, byte[] b) {
 		if (a == null || b == null) {
 			throw new NullPointerException("a or b == null");
@@ -177,6 +209,12 @@ public class XMSSUtil {
 		return true;
 	}
 	
+	/**
+	 * Compares two 2d-byte arrays.
+	 * @param a 2d-byte array 1.
+	 * @param b 2d-byte array 2.
+	 * @return true if all values in 2d-byte array are equal false else.
+	 */
 	public static boolean compareByteArray(byte[][] a, byte[][] b) {
 		if (hasNullPointer(a) || hasNullPointer(b)) {
 			throw new NullPointerException("a or b == null");
@@ -189,31 +227,24 @@ public class XMSSUtil {
 		return true;
 	}
 	
+	/**
+	 * Dump content of 2d byte array.
+	 * @param x byte array.
+	 */
 	public static void dumpByteArray(byte[][] x) {
+		if (hasNullPointer(x)) {
+			throw new NullPointerException("x has null pointers");
+		}
 		for (int i = 0; i < x.length; i++) {
 			System.out.println(Hex.toHexString(x[i]));
 		}
 	}
-	
-	public static byte[] byteArrayDeepCopy(byte[] in) {
-		byte[] out = new byte[in.length];
-		for (int i = 0; i < in.length; i++) {
-			out[i] = in[i];
-		}
-		return out;
-	}
-	
-	public static byte[][] byteArrayDeepCopy(byte[][] in) {
-		byte[][] out = new byte[in.length][];
-		for (int i = 0; i < in.length; i++) {
-			out[i] = new byte[in[i].length];
-			for (int j = 0; j < in[i].length; j++) {
-				out[i][j] = in[i][j];
-			}
-		}
-		return out;
-	}
-	
+
+	/**
+	 * Checks whether 2d byte array has null pointers.
+	 * @param in 2d byte array.
+	 * @return true if at least one null pointer is found false else.
+	 */
 	public static boolean hasNullPointer(byte[][] in) {
 		if (in == null) {
 			return true;
@@ -224,5 +255,88 @@ public class XMSSUtil {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Copy src byte array to dst byte array at offset.
+	 * @param dst Destination.
+	 * @param src Source.
+	 * @param offset Destination offset.
+	 */
+	public static void copyBytesAtOffset(byte[] dst, byte[] src, int offset) {
+		if (dst == null) {
+			throw new NullPointerException("dst == null");
+		}
+		if (src == null) {
+			throw new NullPointerException("src == null");
+		}
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset hast to be >= 0");
+		}
+		if ((src.length + offset) > dst.length) {
+			throw new IllegalArgumentException("src length + offset must not be greater then size of destination");
+		}
+		for (int i = 0; i < src.length; i++) {
+			dst[offset + i] = src[i];
+		}
+	}
+	
+	/**
+	 * Copy length bytes at position offset from src.
+	 * @param src Source byte array.
+	 * @param offset Offset in source byte array.
+	 * @param length Length of bytes to copy.
+	 * @return New byte array.
+	 */
+	public static byte[] extractBytesAtOffset(byte[] src, int offset, int length) {
+		if (src == null) {
+			throw new NullPointerException("src == null");
+		}
+		if (offset < 0) {
+			throw new IllegalArgumentException("offset hast to be >= 0");
+		}
+		if (length < 0) {
+			throw new IllegalArgumentException("length hast to be >= 0");
+		}
+		if ((offset + length) > src.length) {
+			throw new IllegalArgumentException("offset + length must not be greater then size of source array");
+		}
+		byte[] out = new byte[length];
+		for (int i = 0; i < out.length; i++) {
+			out[i] = src[offset + i];
+		}
+		return out;
+	}
+	
+	/**
+	 * Check whether an index is valid or not.
+	 * @param height Height of binary tree.
+	 * @param index Index to validate.
+	 * @return true if index is valid false else.
+	 */
+	public static boolean isIndexValid(int height, int index) {
+		if (index > (1 << height) - 1) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Determine digest size of digest.
+	 * @param digest Digest.
+	 * @return Digest size.
+	 */
+	public static int getDigestSize(Digest digest) {
+		if (digest == null) {
+			throw new NullPointerException("digest == null");
+		}
+		String algorithmName = digest.getAlgorithmName();
+		if (algorithmName.equals("SHAKE128")) {
+			return 32;
+		}
+		if (algorithmName.equals("SHAKE256")) {
+			return 64;
+		}
+		return digest.getDigestSize();
 	}
 }

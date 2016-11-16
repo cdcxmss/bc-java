@@ -10,12 +10,24 @@ public class WOTSPlusPublicKey {
 
 	private byte[][] publicKey;
 	
-	public WOTSPlusPublicKey(byte[][] publicKey) {
+	protected WOTSPlusPublicKey(WOTSPlusParameters params, byte[][] publicKey) {
 		super();
+		if (params == null) {
+			throw new NullPointerException("params == null");
+		}
+		if (publicKey == null) {
+			throw new NullPointerException("publicKey == null");
+		}
+		if (XMSSUtil.hasNullPointer(publicKey)) {
+			throw new NullPointerException("publicKey byte array == null");
+		}
+		if (publicKey.length != params.getLen()) {
+			throw new IllegalArgumentException("wrong publicKey size");
+		}
 		this.publicKey = publicKey;
 	}
 	
-	public byte[][] toByteArray() {
-		return XMSSUtil.byteArrayDeepCopy(publicKey);
+	protected byte[][] toByteArray() {
+		return XMSSUtil.cloneArray(publicKey);
 	}
 }
