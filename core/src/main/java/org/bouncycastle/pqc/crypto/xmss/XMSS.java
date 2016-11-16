@@ -119,6 +119,22 @@ public class XMSS {
 	}
 	
 	/**
+	 * Used for pseudorandom keygeneration,
+	 * generates the seed for the WOTS keypair at address
+	 * @param skSeed the secret seed
+	 * @param otsHashAddress
+	 * @return n-byte seed using 32 byte address addr.
+	 */
+	public byte[] getSeed(byte[] skSeed, OTSHashAddress otsHashAddress) {
+		// Make sure that chain addr, hash addr, and key bit are 0!
+		otsHashAddress.setChainAddress(0);
+		otsHashAddress.setHashAddress(0);
+		otsHashAddress.setKeyAndMask(0);
+		// Generate pseudorandom value
+		return khf.PRF(skSeed, otsHashAddress.toByteArray());
+	}
+	
+	/**
 	 * Randomization of nodes in binary tree.
 	 * @param left Left node.
 	 * @param right Right node.
@@ -224,6 +240,50 @@ public class XMSS {
 		Stack<XMSSNode> stack = new Stack<XMSSNode>();
 		for (int i = 0; i < (1 << targetNodeHeight); i++) {
 			wotsPlus.importKeys(getWOTSPlusSecretKey(startIndex + i), publicSeed);
+			otsHashAddress.setOTSAddress(startIndex + i);
+			lTreeAddress.setLTreeAddress(startIndex + i);
+			XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
+			hashTreeAddress.setTreeHeight(0);
+			hashTreeAddress.setTreeIndex(startIndex + i);
+			while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
+				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
+				node = randomizeHash(stack.pop(), node, publicSeed, hashTreeAddress);
+				node.setHeight(node.getHeight() + 1);
+				hashTreeAddress.setTreeHeight(hashTreeAddress.getTreeHeight() + 1);
+			}
+			stack.push(node);
+		}
+		return stack.pop();
+	}
+	
+	/**
+	 * Calculate the root node of a tree of height targetNodeHeight.
+	 * @param startIndex Start index.
+	 * @param targetNodeHeight Height of tree.
+	 * @param otsHashAddress OTS hash address.
+	 * @param lTreeAddress LTree address.
+	 * @param hashTreeAddress Hash tree address.
+	 * @return Root node.
+	 */
+	protected XMSSNode treeHash(byte[] skSeed, int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
+		if (startIndex % (1 << targetNodeHeight) != 0) {
+			throw new IllegalArgumentException("leaf at index startIndex needs to be a leftmost one");
+		}
+		if (otsHashAddress == null) {
+			throw new NullPointerException("otsHashAddress == null");
+		}
+		if (lTreeAddress == null) {
+			throw new NullPointerException("lTreeAddress == null");
+		}
+		if (hashTreeAddress == null) {
+			throw new NullPointerException("hashTreeAddress == null");
+		}
+		Stack<XMSSNode> stack = new Stack<XMSSNode>();
+		for (int i = 0; i < (1 << targetNodeHeight); i++) {
+			byte[] wotsPlusSeed = getSeed(skSeed, otsHashAddress);
+			publicSeed = new byte[params.getDigestSize()]; // need to set publicSeed 
+			prng.nextBytes(publicSeed);
+			wotsPlus.importKeys(wotsPlusSeed, publicSeed);
 			otsHashAddress.setOTSAddress(startIndex + i);
 			lTreeAddress.setLTreeAddress(startIndex + i);
 			XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);

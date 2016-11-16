@@ -36,7 +36,7 @@ public class XMSSMT {
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		HashTreeAddress hashTreeAddress = new HashTreeAddress();
-		XMSSNode root = xmss.treeHash(0, params.getHeight(), otsHashAddress, lTreeAddress, hashTreeAddress);
+		XMSSNode root = xmss.treeHash(privateKey.getSecretKeySeed(), 0, params.getHeight(), otsHashAddress, lTreeAddress, hashTreeAddress);
 		privateKey.setRoot(root.getValue());
 		publicKey = new XMSSMTPublicKey(xmss, root.getValue());
 	}

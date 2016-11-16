@@ -42,9 +42,9 @@ public class XMSSParameters {
 		this.height = height;
 		wotsPlus = new WOTSPlus(new WOTSPlusParameters(digest));
 		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, wotsPlus.getParams().getLen(), height);
-		if (oid == null) {
-			throw new InvalidParameterException();
-		}
+//		if (oid == null) {
+//			throw new InvalidParameterException();
+//		}
 		this.oid = oid;
 	}
 	
