@@ -31,15 +31,18 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 	public byte[] toByteArray() {
 		/* oid || root || seed */
 		int n = xmss.getParams().getDigestSize();
-		int oidSize = 4;
+		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
-		int totalSize = oidSize + rootSize + publicSeedSize;
+		//int totalSize = oidSize + rootSize + publicSeedSize;
+		int totalSize = rootSize + publicSeedSize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy oid */
+		/*
 		XMSSUtil.intToBytesBigEndianOffset(out, oid, position);
 		position += oidSize;
+		*/
 		/* copy root */
 		XMSSUtil.copyBytesAtOffset(out, root, position);
 		position += rootSize;
@@ -54,19 +57,22 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 			throw new NullPointerException("in == null");
 		}
 		int n = xmss.getParams().getDigestSize();
-		int oidSize = 4;
+		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
-		int totalSize = oidSize + rootSize + publicSeedSize;
+		//int totalSize = oidSize + rootSize + publicSeedSize;
+		int totalSize = rootSize + publicSeedSize;
 		if (in.length != totalSize) {
 			throw new ParseException("public key has wrong size", 0);
 		}
 		int position = 0;
+		/*
 		oid = XMSSUtil.bytesToIntBigEndian(in, position);
 		if (oid != xmss.getParams().getOid().getOid()) {
 			throw new ParseException("public key not compatible with current instance parameters", 0);
 		}
 		position += oidSize;
+		*/
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 		position += rootSize;
 		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
