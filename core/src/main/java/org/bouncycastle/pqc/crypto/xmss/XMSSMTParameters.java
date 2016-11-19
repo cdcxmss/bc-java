@@ -13,8 +13,14 @@ import org.bouncycastle.crypto.Digest;
  */
 public class XMSSMTParameters extends XMSSParameters{
 	
+	/**
+	 * 
+	 */
 	private int totalHeight;
 	
+	/**
+	 * The number of layers. This equals parameter d in the draft.
+	 */
 	private int layers;
 
 	/**
