@@ -24,7 +24,6 @@ public class XMSSPublicKeyTest extends TestCase {
 		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
 		XMSSPublicKey publicKey = new XMSSPublicKey(xmss);
-		publicKey.setOid(0x01000001);
 		byte[] root = {
 			(byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07,
 			(byte) 0x08, (byte) 0x09, (byte) 0x0a, (byte) 0x0b, (byte) 0x0c, (byte) 0x0d, (byte) 0x0e, (byte) 0x0f,
@@ -42,8 +41,6 @@ public class XMSSPublicKeyTest extends TestCase {
 			ex.printStackTrace();
 			fail();
 		}
-		assertEquals(publicKey.getOid(), publicKey2.getOid());
-		assertEquals(publicKey.getOid(), 0x01000001);
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getRoot(), publicKey2.getRoot()));
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getPublicSeed(), publicKey2.getPublicSeed()));
 	}
@@ -53,7 +50,6 @@ public class XMSSPublicKeyTest extends TestCase {
 		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
 		XMSSPublicKey publicKey = new XMSSPublicKey(xmss);
-		publicKey.setOid(0x04000004);
 		byte[] root = {
 			(byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07,
 			(byte) 0x08, (byte) 0x09, (byte) 0x0a, (byte) 0x0b, (byte) 0x0c, (byte) 0x0d, (byte) 0x0e, (byte) 0x0f,
@@ -75,8 +71,6 @@ public class XMSSPublicKeyTest extends TestCase {
 			ex.printStackTrace();
 			fail();
 		}
-		assertEquals(publicKey.getOid(), publicKey2.getOid());
-		assertEquals(publicKey.getOid(), 0x04000004);
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getRoot(), publicKey2.getRoot()));
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getPublicSeed(), publicKey2.getPublicSeed()));
 	}
