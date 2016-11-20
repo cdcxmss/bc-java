@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,14 +14,20 @@ import java.util.List;
  */
 public class XMSSMT extends XMSS{
 	
-
+	/**
+	 * 
+	 */
 	private XMSSMTParameters params;
 	
+	/**
+	 * 
+	 */
 	private XMSSMTPrivateKey privateKey;
 	
+	/**
+	 * 
+	 */
 	private XMSSMTPublicKey publicKey;
-	
-	private byte[] publicSeed;
 	
 
 	public XMSSMT(XMSSMTParameters params) {
@@ -34,25 +41,53 @@ public class XMSSMT extends XMSS{
 	/**
 	 * Calculates an XMSS^MT private key and an XMSS^MT public key.
 	 */
-	public void genKeyPair(){
+	@Override
+	public void generateKeys(){
 		privateKey = new XMSSMTPrivateKey(params);
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		HashTreeAddress hashTreeAddress = new HashTreeAddress();
 		XMSSNode root = treeHash(privateKey.getSecretKeySeed(), 0, params.getHeight(), otsHashAddress, lTreeAddress, hashTreeAddress);
 		privateKey.setRoot(root.getValue());
-		publicKey = new XMSSMTPublicKey(this, root.getValue());
+		publicKey = new XMSSMTPublicKey(this);
+		publicKey.setRoot(root.getValue());
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public void importKeys(byte[] privateKey, byte[] publicKey) throws ParseException {
+		if (privateKey == null) {
+			throw new NullPointerException("privateKey == null");
+		}
+		if (publicKey == null) {
+			throw new NullPointerException("publicKey == null");
+		}
+		XMSSMTPrivateKey tmpPrivateKey = new XMSSMTPrivateKey(params);
+		tmpPrivateKey.parseByteArray(privateKey);
+		XMSSMTPublicKey tmpPublicKey = new XMSSMTPublicKey(this);
+		tmpPublicKey.parseByteArray(publicKey);
+		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getRoot(), tmpPublicKey.getRoot())) {
+			throw new IllegalStateException("root of private key and public key do not match");
+		}
+		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getPublicSeed(), tmpPublicKey.getPublicSeed())) {
+			throw new IllegalStateException("publicSeed of private key and public key do not match");
+		}
+		this.privateKey = tmpPrivateKey;
+		this.publicKey = tmpPublicKey;
+		this.publicSeed = this.privateKey.getPublicSeed();
 	}
 	
 	/**
 	 * Generate an XMSS^MT signature and update the XMSS^MT private key
 	 * @param message the message to be signed
-	 * @param skMt {@link XMSSMTPrivateKey}
-	 * @return signature of type {@link XMSSMTSignature}
+	 * @return {@link XMSSMTSignature} as byte array
 	 */
-	public XMSSMTSignature sign(byte[] message, XMSSMTPrivateKey skMt){
+	@Override
+	public byte[] sign(byte[] message){
 		XMSSMTSignature signature = new XMSSMTSignature(params);
-		signature.setIndex(skMt.getIndex());
+		signature.setIndex(privateKey.getIndex());
 		// Init addresses
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		LTreeAddress lTreeAddress = new LTreeAddress();
@@ -62,29 +97,29 @@ public class XMSSMT extends XMSS{
 		hashTreeAddress.setLayerAddress(0);
 		
 		//update sk
-		skMt.setIndex(skMt.getIndex() + 1);
+		privateKey.setIndex(privateKey.getIndex() + 1);
 		
 		//message compression
-		byte[] random =  khf.PRF(skMt.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
-		byte[] concatenated = XMSSUtil.concat(random, skMt.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
+		byte[] random =  khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
+		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		//Sign
-		int indexTree = skMt.getIndex() >> params.getHeight();//(params.getTotalHeight() - params.getHeight());
-		int indexLeaf = skMt.getIndex() & ((1 << params.getHeight()) - 1);//params.getHeight();
+		int indexTree = privateKey.getIndex() >> params.getHeight();//(params.getTotalHeight() - params.getHeight());
+		int indexLeaf = privateKey.getIndex() & ((1 << params.getHeight()) - 1);//params.getHeight();
 		System.out.println("indexTree:\t" + indexTree);
 		System.out.println("indexLeaf:\t" + indexLeaf);
 		otsHashAddress.setTreeAddress(indexTree);
 		lTreeAddress.setTreeAddress(indexTree);
 		hashTreeAddress.setTreeAddress(indexTree);
 		otsHashAddress.setOTSAddress(indexLeaf);
-		byte[] secretSeed = getSeed(skMt.getSecretKeySeed(), otsHashAddress);
+		byte[] secretSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
 		publicSeed = new byte[params.getDigestSize()]; // need to set publicSeed 
 		prng.nextBytes(publicSeed);
 		wotsPlus.importKeys(secretSeed, publicSeed);
 //		WOTSPlusSignature wotsPlusSig = wotsPlus.sign(messageDigest, otsHashAddress);// instead of calling treeSig we call wotPlusSign and buildAuthPath
 //		List<XMSSNode> authPath = buildAuthPath(otsHashAddress);
-		XMSSSignature sigTmp = treeSig(0, messageDigest, secretSeed, otsHashAddress);
+		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, secretSeed, otsHashAddress);
 		signature.setRandomness(random);
 		signature.addReducedSignature(sigTmp);
 		
@@ -101,18 +136,25 @@ public class XMSSMT extends XMSS{
 			lTreeAddress.setTreeAddress(indexTree);
 			hashTreeAddress.setTreeAddress(indexTree);
 			otsHashAddress.setOTSAddress(indexLeaf);
-			secretSeed = getSeed(skMt.getSecretKeySeed(), otsHashAddress);
+			secretSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
 			publicSeed = new byte[params.getDigestSize()]; // need to set publicSeed 
 			prng.nextBytes(publicSeed);
 			wotsPlus.importKeys(secretSeed, publicSeed);
-			sigTmp = treeSig(j, root.getValue(), secretSeed, otsHashAddress);
+			sigTmp = treeSig(indexLeaf, root.getValue(), secretSeed, otsHashAddress);
 			signature.addReducedSignature(sigTmp);
 		}
 		
-		return signature;
+		return signature.toByteArray();
 	}
 	
-	public boolean verify(XMSSMTSignature sig, byte[] message, XMSSMTPublicKey pk) {
+	/**
+	 * 
+	 * @param sig
+	 * @param message
+	 * @return
+	 * @throws ParseException 
+	 */
+	public boolean verify(byte[] signature, byte[] message) throws ParseException {
 		// Init addresses
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		LTreeAddress lTreeAddress = new LTreeAddress();
@@ -120,8 +162,9 @@ public class XMSSMT extends XMSS{
 		otsHashAddress.setLayerAddress(0);
 		lTreeAddress.setLayerAddress(0);
 		hashTreeAddress.setLayerAddress(0);
-		
-		byte[] concatenated = XMSSUtil.concat(sig.getRandomness(), pk.getRoot(), XMSSUtil.toBytesBigEndian(sig.getIndex(), params.getDigestSize()));
+		XMSSMTSignature sig = new XMSSMTSignature(params);
+		sig.parseByteArray(signature);
+		byte[] concatenated = XMSSUtil.concat(sig.getRandomness(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(sig.getIndex(), params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		int indexTree = sig.getIndex() >> params.getHeight();//(params.getTotalHeight() - params.getHeight());
@@ -132,8 +175,8 @@ public class XMSSMT extends XMSS{
 		lTreeAddress.setTreeAddress(indexTree);
 		hashTreeAddress.setTreeAddress(indexTree);
 		otsHashAddress.setOTSAddress(indexLeaf);
-		XMSSSignature xmssSig = sig.getReducedSignature(0);
-		XMSSNode node = getRootNodeFromSignature(indexLeaf, messageDigest, xmssSig, pk.getPublicSeed(), otsHashAddress, lTreeAddress, hashTreeAddress);// index sig.getIndex or as parameter, if parameter indexTree, indexLeaf or 0 j respectively
+		ReducedXMSSSignature xmssSig = sig.getReducedSignature(0);
+		XMSSNode node = getRootNodeFromSignature(indexLeaf, messageDigest, xmssSig, publicKey.getPublicSeed(), otsHashAddress, lTreeAddress, hashTreeAddress);// index sig.getIndex or as parameter, if parameter indexTree, indexLeaf or 0 j respectively
 		System.out.println("node:\t" + Arrays.toString(node.getValue()));
 		for (int j = 1; j < params.getLayers(); j++) {
 			indexTree = indexTree >> params.getHeight();//(params.getTotalHeight() - params.getHeight());
@@ -148,13 +191,13 @@ public class XMSSMT extends XMSS{
 			lTreeAddress.setTreeAddress(indexTree);
 			hashTreeAddress.setTreeAddress(indexTree);
 			otsHashAddress.setOTSAddress(indexLeaf);
-			node = getRootNodeFromSignature(indexLeaf, messageDigest, xmssSig, pk.getPublicSeed(), otsHashAddress, lTreeAddress, hashTreeAddress);
+			node = getRootNodeFromSignature(indexLeaf, messageDigest, xmssSig, publicKey.getPublicSeed(), otsHashAddress, lTreeAddress, hashTreeAddress);
 			System.out.println("node:\t" + Arrays.toString(node.getValue()));
 		}
 		System.out.println("sig root:\t" + Arrays.toString(sig.getReducedSignature(0).getAuthPath().get(0).getValue()));
 		System.out.println("node root:\t" + Arrays.toString(node.getValue()));
-		System.out.println("pk root:\t" + Arrays.toString(pk.getRoot()));
-		if (node.getValue().equals(pk.getRoot())) {
+		System.out.println("pk root:\t" + Arrays.toString(publicKey.getRoot()));
+		if (node.getValue().equals(publicKey.getRoot())) {
 			return true;
 		}
 		return false;

@@ -13,6 +13,7 @@ import junit.framework.TestCase;
  * Test cases for XMSSAddress classes.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSAddressTest extends TestCase {
 

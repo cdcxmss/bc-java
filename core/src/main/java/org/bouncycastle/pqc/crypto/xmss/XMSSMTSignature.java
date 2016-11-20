@@ -4,6 +4,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * XMSSMT Signature.
+ * 
+ * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
+ */
 public class XMSSMTSignature implements XMSSStoreableObject {
 	
 	/**
@@ -19,7 +25,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	/**
 	 * 
 	 */
-	private List<XMSSSignature> reducedSignatures;
+	private List<ReducedXMSSSignature> reducedSignatures;
 	
 	/**
 	 * 
@@ -30,7 +36,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	 * 
 	 */
 	public XMSSMTSignature(XMSSMTParameters params) {
-		reducedSignatures = new ArrayList<XMSSSignature>();
+		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
 		this.params = params;
 	}
 
@@ -50,11 +56,11 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		this.randomness = randomness;
 	}
 
-	public List<XMSSSignature> getReducedSignatures() {
+	public List<ReducedXMSSSignature> getReducedSignatures() {
 		return reducedSignatures;
 	}
 
-	public void setReducedSignatures(List<XMSSSignature> reducedSignatures) {
+	public void setReducedSignatures(List<ReducedXMSSSignature> reducedSignatures) {
 		this.reducedSignatures = reducedSignatures;
 	}
 	
@@ -62,7 +68,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	 * 
 	 * @param sig
 	 */
-	public void addReducedSignature(XMSSSignature sig) {
+	public void addReducedSignature(ReducedXMSSSignature sig) {
 		reducedSignatures.add(sig);
 	}
 	
@@ -71,7 +77,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	 * @param index
 	 * @return
 	 */
-	public XMSSSignature getReducedSignature(int index) {
+	public ReducedXMSSSignature getReducedSignature(int index) {
 		return reducedSignatures.get(index);
 	}
 
@@ -79,9 +85,10 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	public byte[] toByteArray() {
 		/* index || random || reduced signatures */
 		int n = params.getDigestSize();
+		int len = params.getWOTSPlus().getParams().getLen();
 		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignaturesSize = (params.getTotalHeight() + params.getWOTSPlus().getParams().getLen() * params.getLayers())* n;
+		int reducedSignaturesSize = (params.getTotalHeight() + len * params.getLayers())* n;
 		int totalSize = indexSize + randomSize + reducedSignaturesSize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
@@ -92,10 +99,11 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		XMSSUtil.copyBytesAtOffset(out, randomness, position);
 		position += randomSize;
 		/* copy reduced signatures */
-		for(XMSSSignature reducedSig : reducedSignatures) {
+		int reducedXmssSigSize = (params.getHeight() + len) * n;
+		for(ReducedXMSSSignature reducedSig : reducedSignatures) {
 			byte[] signature = reducedSig.toByteArray();
 			XMSSUtil.copyBytesAtOffset(out, signature, position);
-			position += n;//not sure about this
+			position += reducedXmssSigSize;
 		}
 		return out;
 	}
@@ -123,14 +131,15 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		position += indexSize;
 		randomness = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;
-		reducedSignatures = new ArrayList<XMSSSignature>();
-		int xmssSigSize = params.getHeight() + len;
+		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
+		int reducedXmssSigSize = (params.getHeight() + len) * n;
 		XMSSParameters xmssParameters = new XMSSParameters(params.getHeight(), params.getDigest(), params.getPRNG());
 		XMSS xmss = new XMSS(xmssParameters);
-		XMSSSignature xmssSig = new XMSSSignature(xmss);
-		for (int i = 0; i < reducedSignatures.size(); i++) {
-			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, xmssSigSize));
+		while (position < in.length) {
+			ReducedXMSSSignature xmssSig = new ReducedXMSSSignature(xmss);
+			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, reducedXmssSigSize));
 			reducedSignatures.add(xmssSig);
+			position += reducedXmssSigSize;
 		}
 	}
 	

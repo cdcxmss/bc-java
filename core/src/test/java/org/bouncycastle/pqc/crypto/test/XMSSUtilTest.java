@@ -10,6 +10,7 @@ import junit.framework.TestCase;
  * Test cases for XMSSUtil class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
+ * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSUtilTest extends TestCase {
 

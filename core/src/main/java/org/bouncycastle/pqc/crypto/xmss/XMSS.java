@@ -33,7 +33,7 @@ public class XMSS {
 	/**
 	 * XMSS / WOTS+ public seed.
 	 */
-	private byte[] publicSeed;
+	protected byte[] publicSeed;
 	/**
 	 * XMSS private key.
 	 */
@@ -379,7 +379,7 @@ public class XMSS {
 	 * @param address OTS hash address.
 	 * @return Temporary signature.
 	 */
-	protected XMSSSignature treeSig(int index, byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
+	protected ReducedXMSSSignature treeSig(int index, byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
@@ -394,7 +394,7 @@ public class XMSS {
 		List<XMSSNode> authPath = buildAuthPath(index, address, publicSeed);
 		
 		/* assemble temp signature */
-		XMSSSignature tmpSignature = new XMSSSignature(this);
+		ReducedXMSSSignature tmpSignature = new ReducedXMSSSignature(this);
 		tmpSignature.setSignature(wotsSignature);
 		tmpSignature.setAuthPath(authPath);
 		return tmpSignature;
@@ -481,7 +481,7 @@ public class XMSS {
 	 * @param hashTreeAddress
 	 * @return Root node calculated from signature.
 	 */
-	protected XMSSNode getRootNodeFromSignature(int index, byte[] messageDigest, XMSSSignature signature, byte[] publicSeed, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
+	protected XMSSNode getRootNodeFromSignature(int index, byte[] messageDigest, ReducedXMSSSignature signature, byte[] publicSeed, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}

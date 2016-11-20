@@ -7,7 +7,7 @@ import junit.framework.TestSuite;
 import org.bouncycastle.util.test.SimpleTestResult;
 import org.ietf.jgss.Oid;
 
-import com.sun.org.apache.xerces.internal.xni.parser.XMLDTDContentModelSource;
+//import com.sun.org.apache.xerces.internal.xni.parser.XMLDTDContentModelSource;
 
 public class AllTests
     extends TestCase

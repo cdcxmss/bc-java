@@ -6,9 +6,13 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.XMSS;
+import org.bouncycastle.pqc.crypto.xmss.XMSSMT;
+import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
+import org.bouncycastle.pqc.crypto.xmss.XMSSMTSignature;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSSignature;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
+import org.bouncycastle.util.Arrays;
 
 import junit.framework.TestCase;
 
@@ -18,15 +22,17 @@ import junit.framework.TestCase;
  * @author Sebastian Roland <seroland86@gmail.com>
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
-public class XMSSSignatureTest extends TestCase {
+public class XMSSMTSignatureTest extends TestCase {
 
 	public void testSignatureParsingSHA256() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
-		XMSS xmss = new XMSS(params);
-		xmss.generateKeys();
+		int totalHeight = 20;
+		int layers = 2;
+		XMSSMTParameters params = new XMSSMTParameters(layers, totalHeight, new SHA256Digest(), new NullPRNG());
+		XMSSMT xmssMt = new XMSSMT(params);
+		xmssMt.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmss.sign(message);
-		XMSSSignature sig2 = new XMSSSignature(xmss);
+		byte[] sig1 = xmssMt.sign(message);
+		XMSSMTSignature sig2 = new XMSSMTSignature(params);
 		try {
 			sig2.parseByteArray(sig1);
 		} catch (ParseException ex) {
@@ -34,16 +40,18 @@ public class XMSSSignatureTest extends TestCase {
 			fail();
 		}
 		byte[] sig3 = sig2.toByteArray();
-		assertEquals(true, XMSSUtil.compareByteArray(sig1, sig3));
+		assertEquals(true, Arrays.areEqual(sig1, sig3));
 	}
 	
 	public void testSignatureParsingSHA512() {
-		XMSSParameters params = new XMSSParameters(10, new SHA512Digest(), new NullPRNG());
-		XMSS xmss = new XMSS(params);
-		xmss.generateKeys();
+		int totalHeight = 20;
+		int layers = 2;
+		XMSSMTParameters params = new XMSSMTParameters(layers, totalHeight, new SHA512Digest(), new NullPRNG());
+		XMSSMT xmssMt = new XMSSMT(params);
+		xmssMt.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmss.sign(message);
-		XMSSSignature sig2 = new XMSSSignature(xmss);
+		byte[] sig1 = xmssMt.sign(message);
+		XMSSSignature sig2 = new XMSSSignature(xmssMt);
 		try {
 			sig2.parseByteArray(sig1);
 		} catch (ParseException ex) {
@@ -51,6 +59,6 @@ public class XMSSSignatureTest extends TestCase {
 			fail();
 		}
 		byte[] sig3 = sig2.toByteArray();
-		assertEquals(true, XMSSUtil.compareByteArray(sig1, sig3));
+		assertEquals(true, Arrays.areEqual(sig1, sig3));
 	}
 }
