@@ -425,10 +425,8 @@ public class XMSS {
 		signature.setRandom(random);
 		
 		/* update index */
-		try {
-			privateKey.setIndex(index + 1);
-		} catch (IllegalArgumentException ex) { };
-		
+		privateKey.setIndex(index + 1);
+
 		return signature.toByteArray();
 	}
 	
