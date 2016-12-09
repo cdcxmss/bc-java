@@ -1,4 +1,4 @@
-package org.bouncycastle.pqc.crypto.xmss;
+	package org.bouncycastle.pqc.crypto.xmss;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -117,9 +117,6 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 	 * @param index
 	 */
 	public void setIndex(int index) {
-		if (!XMSSUtil.isIndexValid(xmss.getParams().getHeight(), index)) {
-			throw new IllegalArgumentException("index out of bounds");
-		}
 		this.index = index;
 	}
 

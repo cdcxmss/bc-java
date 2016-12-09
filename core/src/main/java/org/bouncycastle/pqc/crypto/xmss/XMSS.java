@@ -445,8 +445,11 @@ public class XMSS {
 	 */
 	public byte[] sign(byte[] message) {
 		checkState();
-		/* reinitialize WOTS+ object */
 		int index = privateKey.getIndex();
+		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
+		/* reinitialize WOTS+ object */
 		wotsPlus.importKeys(getWOTSPlusSecretKey(index), publicSeed);
 
 		/* create (randomized keyed) messageDigest of message */
@@ -461,6 +464,7 @@ public class XMSS {
 		
 		/* update index */
 		privateKey.setIndex(index + 1);
+
 		return signature.toByteArray();
 	}
 	
