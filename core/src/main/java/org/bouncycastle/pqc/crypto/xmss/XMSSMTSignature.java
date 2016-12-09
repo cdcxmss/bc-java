@@ -115,7 +115,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		}
 		int n = params.getDigestSize();
 		int len = params.getWOTSPlus().getParams().getLen();
-		int height = params.getHeight();// height or TotalHeight?
+		int height = params.getHeight();
 		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
 		int randomSize = n;
 		int reducedSignaturesSize = (params.getTotalHeight() + len * params.getLayers())* n;
@@ -124,7 +124,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 			throw new ParseException("signature has wrong size", 0);
 		}
 		int position = 0;
-		index = XMSSUtil.bytesToIntBigEndian(in, position);
+		index = (int)XMSSUtil.bytesToXBigEndian(in, position, indexSize);
 		if (!XMSSUtil.isIndexValid(height, index)) {
 			throw new ParseException("index out of bounds", 0);
 		}

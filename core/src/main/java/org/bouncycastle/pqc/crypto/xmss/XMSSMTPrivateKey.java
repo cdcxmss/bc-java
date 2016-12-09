@@ -92,7 +92,7 @@ public class XMSSMTPrivateKey  implements XMSSStoreableObject {
 			throw new NullPointerException("in == null");
 		}
 		int n = params.getDigestSize();
-		int height = params.getHeight(); // totalHeight, Layers ??
+		int height = params.getHeight();
 		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;

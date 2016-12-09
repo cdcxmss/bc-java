@@ -120,7 +120,7 @@ public class XMSSUtil {
      * @param size.
      * @return Long.
      */
-    private static long bytesToXBigEndian(byte[] in, int offset, int size) {
+    public static long bytesToXBigEndian(byte[] in, int offset, int size) {
     	if (in == null) {
     		throw new NullPointerException("in == null");
     	}
@@ -338,5 +338,49 @@ public class XMSSUtil {
 			return 64;
 		}
 		return digest.getDigestSize();
+	}
+	
+	/**
+	 * 
+	 * @param src
+	 * @param n
+	 * @param h
+	 * @return
+	 */
+	public static int getLSB(int src, int n, int h){
+		if (n == 0) {
+			throw new IllegalArgumentException("n has to be at least 1.");
+		}
+		if (n > h) {
+			throw new IllegalArgumentException("n has to be smaller than h.");
+		}
+		if (h > 64) {
+			throw new IllegalArgumentException("h has to be smaller than 64.");
+		}
+		int result = src << (64 - n);
+		result = result >> (64 - n);
+		return result;
+	}
+	
+	/**
+	 * 
+	 * @param src
+	 * @param n
+	 * @param h
+	 * @return
+	 */
+	public static int getMSB(int src, int n, int h){
+		if (n == 0) {
+			throw new IllegalArgumentException("n has to be at least 1.");
+		}
+		if (n > h) {
+			throw new IllegalArgumentException("n has to be smaller than h.");
+		}
+		if (h > 64) {
+			throw new IllegalArgumentException("h has to be smaller than 64.");
+		}
+		int result = src << (64 - h);
+		result = result >> (64 - n);
+		return result;
 	}
 }

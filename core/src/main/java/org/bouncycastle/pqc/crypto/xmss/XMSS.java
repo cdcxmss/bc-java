@@ -183,7 +183,7 @@ public class XMSS {
 	 * @param address Address.
 	 * @return Compressed n-byte string of public key.
 	 */
-	private XMSSNode lTree(WOTSPlusPublicKey publicKey, byte[] publicSeed, LTreeAddress address) {
+	public XMSSNode lTree(WOTSPlusPublicKey publicKey, byte[] publicSeed, LTreeAddress address) {
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
@@ -266,7 +266,7 @@ public class XMSS {
 	 * @param hashTreeAddress Hash tree address.
 	 * @return Root node.
 	 */
-	protected XMSSNode treeHash(byte[] skSeed, int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
+	protected XMSSNode treeHash(byte[] skSeed, byte[] publicSeed, int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
 		if (startIndex % (1 << targetNodeHeight) != 0) {
 			throw new IllegalArgumentException("leaf at index startIndex needs to be a leftmost one");
 		}
@@ -329,20 +329,58 @@ public class XMSS {
 	 * @param seed
 	 * @return Authentication path nodes.
 	 */
-	protected List<XMSSNode> buildAuthPath(int index, OTSHashAddress address, byte[] seed) {
-		if (address == null) {
+	protected List<XMSSNode> buildAuthPath(int index, OTSHashAddress otsAddress, byte[] skSeed, byte[] pkSeed) {
+		if (otsAddress == null) {
 			throw new NullPointerException("address == null");
 		}
 		int treeHeight = params.getHeight();
-		int indexOfPublicKey = index;
-		List<XMSSNode> authPath = new ArrayList<XMSSNode>();
-		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
-			int indexOfNodeOnHeight = ((int)Math.floor(indexOfPublicKey / (1 << currentHeight))) ^ 1;
-			int startLeafIndex = (indexOfNodeOnHeight * (1 << currentHeight));
-			XMSSNode node = treeHash(seed, startLeafIndex, currentHeight, address, new LTreeAddress(), new HashTreeAddress());
-			authPath.add(node);
+//		int indexOfPublicKey = index;
+//		List<XMSSNode> authPath = new ArrayList<XMSSNode>();
+//		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
+//			int indexOfNodeOnHeight = ((int)Math.floor(indexOfPublicKey / (1 << currentHeight))) ^ 1;
+//			int startLeafIndex = (indexOfNodeOnHeight * (1 << currentHeight));
+//			XMSSNode node = treeHash(skSeed, pkSeed, startLeafIndex, currentHeight, address, new LTreeAddress(), new HashTreeAddress());
+//			authPath.add(node);
+//		}
+//		return authPath;
+		LTreeAddress lTreeAddress = new LTreeAddress();
+		HashTreeAddress nodeAddr = new HashTreeAddress();
+		int digestSize = params.getDigestSize();
+		// Compute all leaves
+		List<XMSSNode> tree = new ArrayList<XMSSNode>();
+		for (int i = 0; i < (1 << treeHeight); i++) {
+		  lTreeAddress.setLTreeAddress(i);
+		  otsAddress.setOTSAddress(i);
+		  WOTSPlusPublicKey wotsPK = wotsPlus.getPublicKey(otsAddress);
+		  byte[] seed = getSeed(skSeed, otsAddress);
+		  XMSSNode node = lTree(wotsPK, pkSeed, lTreeAddress);
+		  tree.add(node);
+//		  gen_leaf_wots(tree+((1<<h)*n + i*n), sk_seed, params, pub_seed, ltree_addr, ots_addr);
 		}
-		return authPath;
+//		int level = 0;
+//		// Compute tree:
+//		// Outer loop: For each inner layer
+//		for (int i = (1 << treeHeight); i > 1; i>>=1){
+//			nodeAddr.setTreeHeight(level);
+//			// Inner loop: for each pair of sibling nodes
+//			for (int j = 0; j < i; j+=2){
+//				nodeAddr.setTreeIndex(j>>1);
+//				byte[] key = khf.PRF(privateKey.getPublicSeed(), nodeAddr.toByteArray());
+//				khf.H(key, leaves.get(i+j).getValue());
+//			}
+//			level++;
+//		}
+		//copy authpath
+		List<XMSSNode> authpath = new ArrayList<XMSSNode>();
+		for (int i = 0; i < treeHeight; i++){
+			int treeIndex = (1<<treeHeight)>>i;//1024,512,...,2
+			int leafIndex = (index >> i) ^1;//1
+			XMSSNode node = tree.get(treeIndex-leafIndex);
+			authpath.add(node);
+		}
+		
+		return authpath;
+		
 	}
 	
 	/**
@@ -379,7 +417,7 @@ public class XMSS {
 	 * @param address OTS hash address.
 	 * @return Temporary signature.
 	 */
-	protected ReducedXMSSSignature treeSig(int index, byte[] messageDigest, byte[] publicSeed, OTSHashAddress address) {
+	protected ReducedXMSSSignature treeSig(int index, byte[] messageDigest, byte[] skSeed, byte[] pkSeed, OTSHashAddress address) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
@@ -391,7 +429,7 @@ public class XMSS {
 		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
-		List<XMSSNode> authPath = buildAuthPath(index, address, publicSeed);
+		List<XMSSNode> authPath = buildAuthPath(index, address, skSeed, pkSeed);
 		
 		/* assemble temp signature */
 		ReducedXMSSSignature tmpSignature = new ReducedXMSSSignature(this);
@@ -492,21 +530,20 @@ public class XMSS {
 			throw new IllegalArgumentException("size of publicSeed needs to be equal to size of digest");
 		}
 		/* calculate WOTS+ public key and compress to obtain original leaf hash */
-//		index = signature.getIndex();
-		otsHashAddress.setOTSAddress(index);// sig.getIndex or as parameter
-		WOTSPlusPublicKey wotsPlusPK = wotsPlus.getPublicKeyFromSignature(messageDigest, signature.getSignature(), otsHashAddress);
+		WOTSPlusPublicKey wotsPlusPK = wotsPlus.getPublicKeyFromSignature(messageDigest, signature.getSignature(), otsHashAddress, publicSeed);
 		lTreeAddress.setLTreeAddress(index);
 		XMSSNode[] node = new XMSSNode[2];
 		node[0] = lTree(wotsPlusPK, publicSeed, lTreeAddress);
 		hashTreeAddress.setTreeIndex(index);
+		lTreeAddress.setTreeIndex(index);
 		for (int k = 0; k < params.getHeight(); k++){
 			hashTreeAddress.setTreeHeight(k);
 			if (Math.floor(index / (1 << k)) % 2 == 0) {
-				hashTreeAddress.setTreeIndex(hashTreeAddress.getTreeIndex() / 2);
+				hashTreeAddress.setTreeIndex(hashTreeAddress.getTreeIndex() >> 1);
 				node[1] = randomizeHash(node[0], signature.getAuthPath().get(k), publicSeed, hashTreeAddress);
 				node[1].setHeight(node[1].getHeight() + 1);
 			} else {
-				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
+				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) >> 1);
 				node[1] = randomizeHash(signature.getAuthPath().get(k), node[0], publicSeed, hashTreeAddress);
 				node[1].setHeight(node[1].getHeight() + 1);
 			}
@@ -557,6 +594,16 @@ public class XMSS {
 	 */
 	private byte[] getWOTSPlusSecretKey(int index) {
 		return khf.PRF(privateKey.getSecretKeySeed(), XMSSUtil.toBytesBigEndian(index, 32));
+	}
+	
+	/**
+	 * Derive WOTS+ secret key for specific index.
+	 * @param index Index.
+	 * @param secretSeed
+	 * @return WOTS+ secret key at index.
+	 */
+	private byte[] getWOTSPlusSecretKey(int index, byte[] secretSeed) {
+		return khf.PRF(secretSeed, XMSSUtil.toBytesBigEndian(index, 32));
 	}
 	
 	/**
