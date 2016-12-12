@@ -3,6 +3,8 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+
 /**
  * This class implements the WOTS+ one-time signature system
  * as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
@@ -79,6 +81,30 @@ public class WOTSPlus {
 		for (int i = 0; i < params.getLen(); i++) {
 			otsHashAddress.setChainAddress(i);
 			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddress);
+		}
+		return new WOTSPlusPublicKey(params, publicKey);
+	}
+	
+	/**
+	 * Calculates a new public key based on the state of secretKeySeed, publicSeed and otsHashAddress.
+	 * @param otsHashAddress OTS hash address for randomization.
+	 * @return WOTS+ public key.
+	 */
+	protected WOTSPlusPublicKey getPublicKey(OTSHashAddress otsHashAddress, byte[] skSeed, byte[] pubSeed) {
+//		checkState();
+		if (otsHashAddress == null) {
+			throw new NullPointerException("otsHashAddress == null");
+		}
+		byte[][] publicKey = new byte[params.getLen()][];
+		/* derive public key from secretKeySeed */
+		HexBinaryAdapter adapter = new HexBinaryAdapter();
+		for (int i = 0; i < params.getLen(); i++) {
+			otsHashAddress.setChainAddress(i);
+			byte[] expandedSeed = expandSecretKeySeed(i);
+			String expandedSeedString = adapter.marshal(expandedSeed);
+			publicKey[i] = chain(expandedSeed, 0, params.getWinternitzParameter() - 1, pubSeed, otsHashAddress);
+			String pkI = adapter.marshal(publicKey[i]);
+			System.out.println(pkI);
 		}
 		return new WOTSPlusPublicKey(params, publicKey);
 	}
@@ -288,8 +314,9 @@ public class WOTSPlus {
 	 * @return Value obtained by iterating F for steps times on input startHash, using the outputs of PRF.
 	 */
 	private byte[] chain(byte[] startHash, int startIndex, int steps, byte[] publicSeed, OTSHashAddress otsHashAddress) {
-		checkState();
+		//checkState();
 		int n = params.getDigestSize();
+		int w = params.getWinternitzParameter();
 		if (startHash == null) {
 			throw new NullPointerException("startHash == null");
 		}
@@ -302,7 +329,7 @@ public class WOTSPlus {
 		if (otsHashAddress.toByteArray() == null) {
 			throw new NullPointerException("otsHashAddress byte array == null");
 		}
-		if ((startIndex + steps) > params.getWinternitzParameter() - 1) {
+		if ((startIndex + steps) > w - 1) {
 			throw new IllegalArgumentException("max chain length must not be greater than w");
 		}
 		
@@ -310,17 +337,19 @@ public class WOTSPlus {
 			return startHash;
 		}
 		
-		byte[] tmp = chain(startHash, startIndex, steps - 1, publicSeed, otsHashAddress);
-		otsHashAddress.setHashAddress(startIndex + steps - 1);
-		otsHashAddress.setKeyAndMask(0);
-		byte[] key = khf.PRF(publicSeed, otsHashAddress.toByteArray());
-		otsHashAddress.setKeyAndMask(1);
-		byte[] bitmask = khf.PRF(publicSeed, otsHashAddress.toByteArray());
-		byte[] tmpMasked = new byte[n];
-		for (int i = 0; i < n; i++) {
-			tmpMasked[i] = (byte)(tmp[i] ^ bitmask[i]);
+		byte[] tmp = startHash;
+		for (int i = startIndex; i < startIndex + steps && i < w; i++) {
+			otsHashAddress.setHashAddress(i);
+			otsHashAddress.setKeyAndMask(0);
+			byte[] key = khf.PRF(publicSeed, otsHashAddress.toByteArray());
+			otsHashAddress.setKeyAndMask(1);
+			byte[] bitmask = khf.PRF(publicSeed, otsHashAddress.toByteArray());
+			byte[] tmpMasked = new byte[n];
+			for (int j = 0; j < n; j++) {
+				tmpMasked[j] = (byte)(tmp[j] ^ bitmask[j]);
+			}
+			tmp = khf.F(key, tmpMasked);
 		}
-		tmp = khf.F(key, tmpMasked);
 		return tmp;
 	}
 	

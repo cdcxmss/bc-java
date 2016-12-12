@@ -134,7 +134,7 @@ public class XMSSMT extends XMSS{
 		wotsPlus.importKeys(secretSeed, publicSeed);
 //		WOTSPlusSignature wotsPlusSig = wotsPlus.sign(messageDigest, otsHashAddress);// instead of calling treeSig we call wotPlusSign and buildAuthPath
 //		List<XMSSNode> authPath = buildAuthPath(indexLeaf,otsHashAddress,);
-		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, secretSeed, privateKey.getPublicSeed(), otsHashAddress);//secretSeed
+		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), otsHashAddress);//secretSeed
 		String xmssSigString = adapter.marshal(sigTmp.toByteArray());
 		signature.setRandomness(random);
 		signature.addReducedSignature(sigTmp);
@@ -154,29 +154,29 @@ public class XMSSMT extends XMSS{
 			otsHashAddress.setOTSAddress(indexLeaf);
 			secretSeed = getWOTSPlusSecretKey(indexTree, j, index);
 			wotsPlus.importKeys(secretSeed, publicSeed);
-			sigTmp = treeSig(indexLeaf, root.getValue(), secretSeed, privateKey.getPublicSeed(), otsHashAddress);//secretSeed
+			sigTmp = treeSig(indexLeaf, root.getValue(), privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), otsHashAddress);//secretSeed
 			signature.addReducedSignature(sigTmp);
 		}
 		
 		return signature.toByteArray();
 	}
 	
-	/**
-	 * Used for pseudorandom keygeneration,
-	 * generates the seed for the WOTS keypair at address
-	 * @param skSeed the secret seed
-	 * @param otsHashAddress
-	 * @return n-byte seed using 32 byte address addr.
-	 */
-	public byte[] getSeed(byte[] skSeed, OTSHashAddress otsHashAddress) {
-		// Make sure that chain addr, hash addr, and key bit are 0!
-		otsHashAddress.setChainAddress(0);
-		otsHashAddress.setHashAddress(0);
-		otsHashAddress.setKeyAndMask(0);
-		// Generate pseudorandom value
-		return khf.PRF(skSeed, otsHashAddress.toByteArray());
-	}
-	
+//	/**
+//	 * Used for pseudorandom keygeneration,
+//	 * generates the seed for the WOTS keypair at address
+//	 * @param skSeed the secret seed
+//	 * @param otsHashAddress
+//	 * @return n-byte seed using 32 byte address addr.
+//	 */
+//	public byte[] getSeed(byte[] skSeed, OTSHashAddress otsHashAddress) {
+//		// Make sure that chain addr, hash addr, and key bit are 0!
+//		otsHashAddress.setChainAddress(0);
+//		otsHashAddress.setHashAddress(0);
+//		otsHashAddress.setKeyAndMask(0);
+//		// Generate pseudorandom value
+//		return khf.PRF(skSeed, otsHashAddress.toByteArray());
+//	}
+//	
 	/**
 	 * Verify an {@link XMSSMTSignature} on a message using the {@link XMSSMTPublicKey} of this instance.
 	 * @param {@link XMSSMTSignature} signature
