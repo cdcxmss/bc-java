@@ -40,7 +40,7 @@ public class ReducedXMSSSignature implements XMSSStoreableObject {
 
 	@Override
 	public byte[] toByteArray() {
-		/* index || random || signature || authentication path */
+		/* signature || authentication path */
 		int n = xmss.getParams().getDigestSize();
 		int signatureSize = xmss.getWOTSPlus().getParams().getLen() * n;
 		int authPathSize = xmss.getParams().getHeight() * n;
@@ -131,4 +131,5 @@ public class ReducedXMSSSignature implements XMSSStoreableObject {
 		}
 		this.authPath = authPath;
 	}
+	
 }

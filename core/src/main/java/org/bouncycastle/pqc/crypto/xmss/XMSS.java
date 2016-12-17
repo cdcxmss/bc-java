@@ -153,7 +153,7 @@ public class XMSS {
 	 * @param address Address.
 	 * @return Randomized hash of parent of left / right node.
 	 */
-	private XMSSNode randomizeHash(XMSSNode left, XMSSNode right, byte[] publicSeed, XMSSAddress address) {
+	protected XMSSNode randomizeHash(XMSSNode left, XMSSNode right, byte[] publicSeed, XMSSAddress address) {
 		if (left == null) {
 			throw new NullPointerException("left == null");
 		}
@@ -292,20 +292,20 @@ public class XMSS {
 		}
 		Stack<XMSSNode> stack = new Stack<XMSSNode>();
 		for (int i = 0; i < (1 << targetNodeHeight); i++) {
-			byte[] wotsPlusSeed = getSeed(skSeed, otsHashAddress);
-			HexBinaryAdapter adapter = new HexBinaryAdapter();
-			String wotsPlusSeedString = adapter.marshal(wotsPlusSeed);
-			publicSeed = new byte[params.getDigestSize()]; // need to set publicSeed 
-			prng.nextBytes(publicSeed);
-			wotsPlus.importKeys(wotsPlusSeed, publicSeed);
+			byte[] seed = getSeed(skSeed, otsHashAddress);
 			otsHashAddress.setOTSAddress(startIndex + i);
+			HexBinaryAdapter adapter = new HexBinaryAdapter();
+			String wotsPlusSeedString = adapter.marshal(seed);
+			WOTSPlusPublicKey wotsPK = wotsPlus.getPublicKey(otsHashAddress, seed, publicSeed);
+			String wotsPKString = adapter.marshal(wotsPK.toByteArray()[0]);
 			lTreeAddress.setLTreeAddress(startIndex + i);
-			XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
+			XMSSNode node = lTree(wotsPK, seed, lTreeAddress);
+			String nodeString = adapter.marshal(node.getValue());
 			hashTreeAddress.setTreeHeight(0);
 			hashTreeAddress.setTreeIndex(startIndex + i);
 			while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
 				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
-				node = randomizeHash(stack.pop(), node, publicSeed, hashTreeAddress);
+				node = randomizeHash(stack.pop(), node, seed, hashTreeAddress);
 				node.setHeight(node.getHeight() + 1);
 				hashTreeAddress.setTreeHeight(hashTreeAddress.getTreeHeight() + 1);
 			}
@@ -336,74 +336,6 @@ public class XMSS {
 	}
 	
 	/**
-	 * Calculate the authentication path.
-	 * @param index
-	 * @param address OTS hash address.
-	 * @param seed
-	 * @return Authentication path nodes.
-	 */
-	protected List<XMSSNode> buildAuthPath(int index, OTSHashAddress otsAddress, byte[] skSeed, byte[] pkSeed) {
-		if (otsAddress == null) {
-			throw new NullPointerException("address == null");
-		}
-		int treeHeight = params.getHeight();
-		int indexOfPublicKey = index;
-//		List<XMSSNode> authPath = new ArrayList<XMSSNode>();
-//		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
-//			int indexOfNodeOnHeight = ((int)Math.floor(indexOfPublicKey / (1 << currentHeight))) ^ 1;
-//			int startLeafIndex = 0;//(indexOfNodeOnHeight * (1 << currentHeight));
-//			XMSSNode node = treeHash(skSeed, pkSeed, startLeafIndex, currentHeight, otsAddress, new LTreeAddress(), new HashTreeAddress());
-//			HexBinaryAdapter adapter = new HexBinaryAdapter();
-//			String nodeString = adapter.marshal(node.getValue());
-//			authPath.add(node);
-//		}
-//		return authPath;
-		OTSHashAddress otsHashAddress = new OTSHashAddress();
-		LTreeAddress lTreeAddress = new LTreeAddress();
-		HashTreeAddress nodeAddr = new HashTreeAddress();
-		int digestSize = params.getDigestSize();
-		// Compute all leaves
-		List<XMSSNode> leaves = new ArrayList<XMSSNode>();
-		HexBinaryAdapter adapter = new HexBinaryAdapter();
-		for (int i = 0; i < (1 << treeHeight); i++) {
-		  lTreeAddress.setLTreeAddress(i);
-		  otsHashAddress.setOTSAddress(i);
-		  byte[] seed = getSeed(skSeed, otsHashAddress);
-		  String seedString = adapter.marshal(seed);
-		  WOTSPlusPublicKey wotsPK = wotsPlus.getPublicKey(otsHashAddress, seed, pkSeed);
-		  String wotsPKString = adapter.marshal(wotsPK.toByteArray()[0]);
-		  XMSSNode leaf = lTree(wotsPK, pkSeed, lTreeAddress);
-		  String leafString = adapter.marshal(leaf.getValue());
-		  leaves.add(leaf);
-//		  gen_leaf_wots(leaves+((1<<h)*n + i*n), sk_seed, params, pub_seed, ltree_addr, ots_addr);
-		}
-		int level = 0;
-		// Compute tree:
-		// Outer loop: For each inner layer
-		for (int i = (1 << treeHeight); i > 1; i>>=1){
-			nodeAddr.setTreeHeight(level);
-			// Inner loop: for each pair of sibling nodes
-			for (int j = 0; j < i; j+=2){
-				nodeAddr.setTreeIndex(j>>1);
-				byte[] key = khf.PRF(privateKey.getPublicSeed(), nodeAddr.toByteArray());
-				khf.H(key, leaves.get(i+j).getValue());
-			}
-			level++;
-		}
-//		copy authpath
-		List<XMSSNode> authpath = new ArrayList<XMSSNode>();
-		for (int i = 0; i < treeHeight; i++){
-			int treeIndex = (1<<treeHeight)>>i;//1024,512,...,2
-			int leafIndex = (index >> i) ^1;//1
-			XMSSNode node = leaves.get(treeIndex-leafIndex);
-			authpath.add(node);
-		}
-		
-		return authpath;
-		
-	}
-	
-	/**
 	 * Generate a WOTS+ signature on a message with corresponding authentication path
 	 * @param messageDigest Message digest of length n.
 	 * @param address OTS hash address.
@@ -425,39 +357,6 @@ public class XMSS {
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(this);
-		tmpSignature.setSignature(wotsSignature);
-		tmpSignature.setAuthPath(authPath);
-		return tmpSignature;
-	}
-	
-	/**
-	 * Generate a WOTS+ signature on a message with corresponding authentication path
-	 * @param index 
-	 * @param messageDigest Message digest of length n.
-	 * @param address OTS hash address.
-	 * @return Temporary signature.
-	 */
-	protected ReducedXMSSSignature treeSig(int index, byte[] messageDigest, byte[] skSeed, byte[] pkSeed, OTSHashAddress address) {
-		if (messageDigest.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
-		}
-		if (address == null) {
-			throw new NullPointerException("address == null");
-		}
-		HexBinaryAdapter adapter = new HexBinaryAdapter();
-		String msgString = adapter.marshal(messageDigest);
-		String skSeedString = adapter.marshal(skSeed);
-		String pkSeedString = adapter.marshal(pkSeed);
-		
-		/* create WOTS+ signature */
-		address.setOTSAddress(index);
-		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
-		String wotsString = adapter.marshal(wotsSignature.toByteArray()[0]);
-		/* add authPath */
-		List<XMSSNode> authPath = buildAuthPath(index, new OTSHashAddress(), skSeed, pkSeed);
-		String authpath0 = adapter.marshal(authPath.get(0).getValue());
-		/* assemble temp signature */
-		ReducedXMSSSignature tmpSignature = new ReducedXMSSSignature(this);
 		tmpSignature.setSignature(wotsSignature);
 		tmpSignature.setAuthPath(authPath);
 		return tmpSignature;

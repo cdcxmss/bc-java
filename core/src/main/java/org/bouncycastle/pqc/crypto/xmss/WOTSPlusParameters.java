@@ -107,7 +107,7 @@ public class WOTSPlusParameters {
 	 * Getter len.
 	 * @return len.
 	 */
-	protected int getLen() {
+	public int getLen() {
 		return len;
 	}
 	

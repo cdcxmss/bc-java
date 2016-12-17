@@ -1,5 +1,7 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.Xof;
 
@@ -66,6 +68,36 @@ public class KeyedHashFunctions {
 			throw new IllegalArgumentException("wrong in length");
 		}
 		return coreDigest(1, key, in);
+	}
+	
+	public byte[] H(byte[] in, byte[] pubSeed, XMSSAddress addr) {
+		if (pubSeed.length != digestSize) {
+			throw new IllegalArgumentException("wrong key length");
+		}
+		addr.setKeyAndMask(0);
+		byte[] key = PRF(pubSeed, addr.toByteArray());
+		HexBinaryAdapter adapter = new HexBinaryAdapter();
+		String keyString = adapter.marshal(key);
+		addr.setKeyAndMask(1);
+		byte[] bitmask = PRF(pubSeed, addr.toByteArray());
+		String bitmaskString = adapter.marshal(bitmask);
+		addr.setKeyAndMask(2);
+		byte[] bitmask2 = PRF(pubSeed, addr.toByteArray());
+		String bitmask2String = adapter.marshal(bitmask2);
+		byte[] tmpMask = new byte[2 * digestSize];
+		int inlenght = in.length;
+		for (int i = 0; i < digestSize; i++) {
+			String inI = adapter.marshal(new byte[]{in[i]});
+			tmpMask[i] = (byte)(in[i] ^ bitmask[i]);
+		}
+		for (int i = 0; i < digestSize; i++) {
+			String inI = adapter.marshal(new byte[]{in[i + digestSize]});
+			tmpMask[i+digestSize] = (byte)(in[i + digestSize] ^ bitmask2[i]);
+		}
+		String tmpMaskString = adapter.marshal(tmpMask);
+		byte[] result = coreDigest(1, key, tmpMask);
+		String resultString = adapter.marshal(result);
+		return result;
 	}
 	
 	public byte[] HMsg(byte[] key, byte[] in) {
