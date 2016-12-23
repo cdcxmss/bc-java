@@ -44,7 +44,7 @@ public class XMSSMTParameters extends XMSSParameters{
 	 * @param totalHeight the total height of the {@link XMSSMT}
 	 * @return the totalHeight divided by layers if it is greater or equal to 2 and divides without remainder otherwise an {@link IllegalArgumentException} is thrown
 	 */
-	private static int XMSSTreeHeight(int layers, int totalHeight){
+	private static int XMSSTreeHeight(int layers, int totalHeight) throws IllegalArgumentException{
 		if (totalHeight < 2) {
 			throw new IllegalArgumentException("totalHeight is less than 2");
 		}

@@ -1,6 +1,5 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
-import java.security.InvalidParameterException;
 import java.security.SecureRandom;
 
 import org.bouncycastle.crypto.Digest;

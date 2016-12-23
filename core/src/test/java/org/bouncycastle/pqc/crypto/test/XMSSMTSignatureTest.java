@@ -5,13 +5,10 @@ import java.text.ParseException;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
-import org.bouncycastle.pqc.crypto.xmss.XMSS;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMT;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTSignature;
-import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSSignature;
-import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 import org.bouncycastle.util.Arrays;
 
 import junit.framework.TestCase;
@@ -31,7 +28,7 @@ public class XMSSMTSignatureTest extends TestCase {
 		XMSSMT xmssMt = new XMSSMT(params);
 		xmssMt.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmssMt.sign(message);
+		byte[] sig1 = xmssMt.signMT(message);
 		XMSSMTSignature sig2 = new XMSSMTSignature(params);
 		try {
 			sig2.parseByteArray(sig1);
@@ -50,7 +47,7 @@ public class XMSSMTSignatureTest extends TestCase {
 		XMSSMT xmssMt = new XMSSMT(params);
 		xmssMt.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmssMt.sign(message);
+		byte[] sig1 = xmssMt.signMT(message);
 		XMSSSignature sig2 = new XMSSSignature(xmssMt);
 		try {
 			sig2.parseByteArray(sig1);

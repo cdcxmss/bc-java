@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-
 /**
  * XMSS.
  * 
@@ -268,53 +266,6 @@ public class XMSS {
 	}
 	
 	/**
-	 * Calculate the root node of a tree of height targetNodeHeight.
-	 * @param skSeed the secret key seed
-	 * @param startIndex Start index.
-	 * @param targetNodeHeight Height of tree.
-	 * @param otsHashAddress OTS hash address.
-	 * @param lTreeAddress LTree address.
-	 * @param hashTreeAddress Hash tree address.
-	 * @return Root node.
-	 */
-	protected XMSSNode treeHash(byte[] skSeed, byte[] publicSeed, int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) {
-		if (startIndex % (1 << targetNodeHeight) != 0) {
-			throw new IllegalArgumentException("leaf at index startIndex needs to be a leftmost one");
-		}
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		if (lTreeAddress == null) {
-			throw new NullPointerException("lTreeAddress == null");
-		}
-		if (hashTreeAddress == null) {
-			throw new NullPointerException("hashTreeAddress == null");
-		}
-		Stack<XMSSNode> stack = new Stack<XMSSNode>();
-		for (int i = 0; i < (1 << targetNodeHeight); i++) {
-			byte[] seed = getSeed(skSeed, otsHashAddress);
-			otsHashAddress.setOTSAddress(startIndex + i);
-			HexBinaryAdapter adapter = new HexBinaryAdapter();
-			String wotsPlusSeedString = adapter.marshal(seed);
-			WOTSPlusPublicKey wotsPK = wotsPlus.getPublicKey(otsHashAddress, seed, publicSeed);
-			String wotsPKString = adapter.marshal(wotsPK.toByteArray()[0]);
-			lTreeAddress.setLTreeAddress(startIndex + i);
-			XMSSNode node = lTree(wotsPK, seed, lTreeAddress);
-			String nodeString = adapter.marshal(node.getValue());
-			hashTreeAddress.setTreeHeight(0);
-			hashTreeAddress.setTreeIndex(startIndex + i);
-			while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
-				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
-				node = randomizeHash(stack.pop(), node, seed, hashTreeAddress);
-				node.setHeight(node.getHeight() + 1);
-				hashTreeAddress.setTreeHeight(hashTreeAddress.getTreeHeight() + 1);
-			}
-			stack.push(node);
-		}
-		return stack.pop();
-	}
-	
-	/**
 	 * Calculate the authentication path.
 	 * @param address OTS hash address.
 	 * @return Authentication path nodes.
@@ -367,7 +318,7 @@ public class XMSS {
 	 * @param message Message to sign.
 	 * @return XMSS signature on digest of message.
 	 */
-	public byte[] sign(byte[] message) {
+	public byte[] signMT(byte[] message) {
 		checkState();
 		int index = privateKey.getIndex();
 		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
@@ -520,18 +471,8 @@ public class XMSS {
 	 * @param index Index.
 	 * @return WOTS+ secret key at index.
 	 */
-	private byte[] getWOTSPlusSecretKey(int index) {
+	protected byte[] getWOTSPlusSecretKey(int index) {
 		return khf.PRF(privateKey.getSecretKeySeed(), XMSSUtil.toBytesBigEndian(index, 32));
-	}
-	
-	/**
-	 * Derive WOTS+ secret key for specific index.
-	 * @param index Index.
-	 * @param secretSeed
-	 * @return WOTS+ secret key at index.
-	 */
-	private byte[] getWOTSPlusSecretKey(int index, byte[] secretSeed) {
-		return khf.PRF(secretSeed, XMSSUtil.toBytesBigEndian(index, 32));
 	}
 	
 	/**

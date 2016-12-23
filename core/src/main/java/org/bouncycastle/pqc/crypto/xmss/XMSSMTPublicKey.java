@@ -2,8 +2,6 @@ package org.bouncycastle.pqc.crypto.xmss;
 
 import java.text.ParseException;
 
-import org.ietf.jgss.Oid;
-
 /**
  * XMSSMT Public Key.
  * 

@@ -3,8 +3,6 @@ package org.bouncycastle.pqc.crypto.xmss;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-
 /**
  * This class implements the WOTS+ one-time signature system
  * as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
@@ -97,13 +95,10 @@ public class WOTSPlus {
 		}
 		byte[][] publicKey = new byte[params.getLen()][];
 		/* derive public key from secretKeySeed */
-		HexBinaryAdapter adapter = new HexBinaryAdapter();
 		for (int i = 0; i < params.getLen(); i++) {
 			otsHashAddress.setChainAddress(i);
 			byte[] expandedSeed = expandSecretKeySeed(i, skSeed);
-			String expandedSeedString = adapter.marshal(expandedSeed);
 			publicKey[i] = chain(expandedSeed, 0, params.getWinternitzParameter() - 1, pubSeed, otsHashAddress);
-			String pkI = adapter.marshal(publicKey[i]);
 		}
 		return new WOTSPlusPublicKey(params, publicKey);
 	}
@@ -164,8 +159,6 @@ public class WOTSPlus {
 		if (otsHashAddress == null) {
 			throw new NullPointerException("otsHashAddress == null");
 		}
-		HexBinaryAdapter adapter = new HexBinaryAdapter();
-		String msgDigestString = adapter.marshal(messageDigest);
 		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
 		/* create checksum */
 		int checksum = 0;
