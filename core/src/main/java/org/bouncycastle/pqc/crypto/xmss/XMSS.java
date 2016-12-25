@@ -2,6 +2,7 @@ package org.bouncycastle.pqc.crypto.xmss;
 
 import java.security.SecureRandom;
 import java.text.ParseException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -42,6 +43,42 @@ public class XMSS {
 	 * XMSS public key.
 	 */
 	private XMSSPublicKey publicKey;
+	
+	/**
+	 * BDS parameter k.
+	 * This "BDS parameter" k provides a performance trade-off for the authentication path computation
+	 * h - k must be even, with h > k >= 2
+	 * Let's hardcode k = 2 for our implementation
+	 */
+	private int k = 2;
+	/**
+	 * 
+	 */
+	private XMSSNode[] stack;
+	
+	/**
+	 * Seeds
+	 */
+	private ArrayList<byte[]> seed;
+	
+	/**
+	 *  Authentication path
+	 */
+    private XMSSNode[] auth;
+    
+    /**
+     * Tree Nodes
+     */
+    XMSSNode[] treeHash;
+    /**
+     * Retain stack 
+     */
+    private ArrayList<ArrayDeque<XMSSNode>> retain;
+    
+    /**
+     * Keep
+     */
+    private XMSSNode[] keep;
 	
 	/**
 	 * XMSS constructor...
@@ -318,7 +355,7 @@ public class XMSS {
 	 * @param message Message to sign.
 	 * @return XMSS signature on digest of message.
 	 */
-	public byte[] signMT(byte[] message) {
+	public byte[] sign(byte[] message) {
 		checkState();
 		int index = privateKey.getIndex();
 		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
@@ -482,6 +519,146 @@ public class XMSS {
 		if (privateKey == null || publicKey == null || publicSeed == null) {
 			throw new IllegalStateException("not initialized");
 		}
+	}
+	
+	/**
+     * Initialize the XMSS tree.
+     *
+     * @return Root of the XMSS tree
+     */
+    public XMSSNode initializeTree() {
+    	int h = params.getHeight();
+    	// Loop for all 2^h leafs
+    	for (int i = 0; i < (1 << h); i++) {
+    		// Generate ith leaf
+    		// This function is defined below
+    		updateLeaf(i);
+		}
+    	return stack[h].clone();
+    }
+
+    /**
+     * Updates the leaf s.
+     *
+     * @param s Index of the leaf
+     */
+    public void updateLeaf(int s, OTSHashAddress otsHashAddress, LTreeAddress ltreeAddress) {
+		// Create new seed
+		byte[] otsSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
+	
+		// Create OTS key pair for leaf s
+		wotsPlus.importKeys(privateKey.getSecretKeySeed(), otsSeed);
+	
+		// Create new leaf from OTS public key
+		XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, ltreeAddress);
+	
+		// Store seed
+		final int seedHeight = seed.size();
+		int h = params.getHeight();
+		if (s == (3 * (1 << seedHeight)) && seedHeight < (h - k)) seed.add(otsSeed);
+	
+		int height = 0;
+		while (stack[height] != null) {
+		    // Determine the index (j) of the node on each level (v_h[j])
+		    final int index = ((s + 1) >> height) - 1;
+	
+		    if (index == 1){
+		    	// Store every right node on each level in the auth path (v_h[1])
+				auth[height] = node;
+		    }
+			else if (index == 3 && height < (h - k)){
+				// Store every next auth node on each level at the tree hash instance (v_h[3])
+				treeHash[height] = new XMSSNode(0, node.getValue());
+			}
+			else if (index >= 3 && (index & 1) == 1 && height >= (h - k) && height <= (h - 2)){
+				// Store right auth node close to the root in retain (v_h[2j+3])
+				retain.get(height - (h - k)).addFirst(new XMSSNode(0, node.getValue()));
+			}
+		    // Create new parent node
+		    node = randomizeHash(stack[height], node, publicSeed, ltreeAddress);//correct address?
+	
+		    // Remove node from stack and increase height
+		    stack[height] = null;
+		    height++;
+		}
+	
+		// Push node on stack
+		stack[height] = node.clone();
+    }
+    
+    /**
+     * Calculates the new authentication path for leaf s+1.
+     *
+     * @param s Index of leaf
+     * @param leaf New left leaf
+     * @return Authentication path for leaf s+1
+     */
+    public XMSSNode[] updateAuthPath(int s, XMSSNode leaf, LTreeAddress lTreeAddress) {
+    	// The numbers appearing in the next comments refer to the steps of "Algorithm 2" of the BDS paper
+    	int h = params.getHeight();
+		for (int i = 0; i < h - k; i++) {
+			byte[] otsSeed = getSeed();
+		    seed.set(i, otsSeed);
+		}
+		// 1.
+		int tau = calculateTau(s);
+		// 2.
+		if (tau < h - 1 && (s >>> tau + 1) % 2 == 0){
+			keep[tau] = auth[tau].clone();
+		}
+		// 3.
+		if (tau == 0) auth[0] = leaf;
+		
+		else {
+			// 4.a
+			// create a parent node from two input nodes.
+		    auth[tau] = randomizeHash(auth[tau - 1], keep[tau - 1], publicSeed, lTreeAddress);
+		    // 4.b
+		    for (int height = 0; height < tau; height++) {
+				if (height < h - k){
+					auth[height] = treeHash[height];
+				}
+				else {
+					auth[height] = retain.get(height - (h - k)).pop();
+				}
+		    }
+		    // 4.c
+		    final int x = Math.min(tau, h - k);
+		    for (int height = 0; height < x; height++) {
+				if (s + 1 + (3 * (1 << height)) < (1 << h)){
+					treeHash[height].initialize(seed.get(height));
+				}
+		    }
+		}
+		// 5.
+		final int x = (h - k) / 2;
+		for (int i = 0; i < x; i++) {
+			// 5.a
+		    int index = -1;
+		    int minheight = Integer.MAX_VALUE;
+		    for (int j = 0; j < h - k; j++) {
+			
+				if (treeHash[j].getHeight() < minheight) {
+				    minheight = treeHash[j].getHeight();
+				    index = j;
+				}
+		    }
+		    // 5.b
+		    if (index > -1) {
+				wotsPlus.generateKeyPair(treeHash[index].state.getRandom());
+				treeHash[index].state = prng.nextState(treeHash[index].state);
+				XMSSNode n = nodeCalc.getLeafNode(wotsPlus.getPublicKey());
+				treeHash[index].update(n);
+		    }
+		}
+		// 6.
+		return auth;
+    }
+    
+	private int calculateTau(int s) {
+		int tau = params.getHeight();
+		while (((s + 1) & ((1 << tau) - 1)) > 0) tau--;
+		return tau;
 	}
 
 	/**

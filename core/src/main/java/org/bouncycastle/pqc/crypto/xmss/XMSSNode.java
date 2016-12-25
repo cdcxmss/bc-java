@@ -32,4 +32,9 @@ public class XMSSNode {
 	public void setValue(byte[] value) {
 		this.value = value;
 	}
+	
+	@Override
+    public XMSSNode clone() {
+	return new XMSSNode(height, XMSSUtil.cloneArray(value));
+    }
 }

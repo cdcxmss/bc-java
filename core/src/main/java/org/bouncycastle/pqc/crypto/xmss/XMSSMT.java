@@ -98,7 +98,6 @@ public class XMSSMT extends XMSS{
 	 * @param message the message to be signed
 	 * @return {@link XMSSMTSignature} as byte array
 	 */
-	@Override
 	public byte[] signMT(byte[] message){
 		XMSSMTSignature signature = new XMSSMTSignature(params);
 		int index = privateKey.getIndex();
@@ -136,7 +135,6 @@ public class XMSSMT extends XMSS{
 		// Now loop over remaining layers...
 		for (int j = 1; j < params.getLayers(); j++) {
 			// Prepare Address
-//			XMSSNode root = treeHash(privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), 0, params.getHeight(), otsHashAddress, lTreeAddress, hashTreeAddress);//secretSeed
 			indexLeaf = indexTree & ((1 << params.getHeight()) - 1);
 			indexTree = indexTree >> params.getHeight();
 			otsHashAddress.setLayerAddress(j);

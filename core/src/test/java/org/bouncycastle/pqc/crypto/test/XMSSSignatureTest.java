@@ -25,7 +25,7 @@ public class XMSSSignatureTest extends TestCase {
 		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmss.signMT(message);
+		byte[] sig1 = xmss.sign(message);
 		XMSSSignature sig2 = new XMSSSignature(xmss);
 		try {
 			sig2.parseByteArray(sig1);
@@ -42,7 +42,7 @@ public class XMSSSignatureTest extends TestCase {
 		XMSS xmss = new XMSS(params);
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
-		byte[] sig1 = xmss.signMT(message);
+		byte[] sig1 = xmss.sign(message);
 		XMSSSignature sig2 = new XMSSSignature(xmss);
 		try {
 			sig2.parseByteArray(sig1);
