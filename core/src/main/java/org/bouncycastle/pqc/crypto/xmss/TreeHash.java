@@ -38,65 +38,46 @@ public class TreeHash {
     }
 	
 	/**
-     * Updates the TreeHash.
+     * Updates the TreeHash. This means it executes Algorithm 1 Treehash from BDS paper once.
      *
-     * @param node Node
+     * @param startIndex
+     * @param otsHashAddress
      */
-    public void update(XMSSNode node, XMSSAddress address) {
-		node = new XMSSNode(0, node.getValue());
-		while (!sharedStack.isEmpty() && sharedStack.getLast().getHeight() == node.getHeight()) {
-		    node = xmss.randomizeHash(sharedStack.pop(), node, xmss.getPublicSeed(), address);
-		}
-	
-		if (storedNode == null) {
-		    storedNode = node;
-		} else {
-		    if (storedNode.getHeight() == node.getHeight()) {
-		    	storedNode = xmss.randomizeHash(storedNode, node, xmss.getPublicSeed(), address);
-		    } else {
-		    	sharedStack.push(node);
-		    }
-		}
-	
-		if (storedNode.getHeight() == initHeight) {
-		    height = Integer.MAX_VALUE;
-		} else {
-		    height = node.getHeight();
-		}
-    }
-    
-    public XMSSNode update(int startIndex, int targetNodeHeight, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress){
-    	if (startIndex % (1 << targetNodeHeight) != 0) {
-			throw new IllegalArgumentException("leaf at index startIndex needs to be a leftmost one");
-		}
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		if (lTreeAddress == null) {
-			throw new NullPointerException("lTreeAddress == null");
-		}
-		if (hashTreeAddress == null) {
-			throw new NullPointerException("hashTreeAddress == null");
-		}
+    public void update(int startIndex,  OTSHashAddress otsHashAddress){
+    	OTSHashAddress oAddress = new OTSHashAddress();
+		oAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		oAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		LTreeAddress lTreeAddress = new LTreeAddress();
+		lTreeAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		lTreeAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		HashTreeAddress hashTreeAddress = new HashTreeAddress();
+		hashTreeAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		hashTreeAddress.setTreeAddress(otsHashAddress.getTreeAddress());
 		Stack<XMSSNode> stack = new Stack<XMSSNode>();
-		for (int i = 0; i < (1 << targetNodeHeight); i++) {
-			xmss.wotsPlus.importKeys(xmss.getWOTSPlusSecretKey(startIndex + i), xmss.publicSeed);
-			otsHashAddress.setOTSAddress(startIndex + i);
-			lTreeAddress.setLTreeAddress(startIndex + i);
-			XMSSNode node = xmss.lTree(xmss.wotsPlus.getPublicKey(otsHashAddress), xmss.publicSeed, lTreeAddress);
-			hashTreeAddress.setTreeHeight(0);
-			hashTreeAddress.setTreeIndex(startIndex + i);
-			while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
-				hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
-				node = xmss.randomizeHash(stack.pop(), node, xmss.publicSeed, hashTreeAddress);
-				node.setHeight(node.getHeight() + 1);
-				hashTreeAddress.setTreeHeight(hashTreeAddress.getTreeHeight() + 1);
-			}
-			stack.push(node);
+		otsHashAddress.setOTSAddress(startIndex);
+		lTreeAddress.setLTreeAddress(startIndex);
+		xmss.wotsPlus.importKeys(xmss.getWOTSPlusSecretKey(startIndex), xmss.publicSeed);
+			
+		XMSSNode node = xmss.lTree(xmss.wotsPlus.getPublicKey(otsHashAddress), xmss.publicSeed, lTreeAddress);
+		while(!stack.isEmpty() && stack.peek().getHeight() == node.getHeight()) {
+			node = xmss.randomizeHash(stack.pop(), node, xmss.publicSeed, hashTreeAddress);
+			hashTreeAddress.setTreeHeight(hashTreeAddress.getTreeHeight() + 1);
+			hashTreeAddress.setTreeIndex((hashTreeAddress.getTreeIndex() - 1) / 2);
+			node.setHeight(node.getHeight() + 1);
 		}
-		return stack.pop();
+		stack.push(node);
+		if(node.getHeight() == this.height){
+			this.storedNode = node;
+		}
+		else {
+			this.sharedStack.push(node);
+		}
     }
     
+    /**
+     * initialize the TreeHash with the given seed and set the height.
+     * @param seed
+     */
     public void initialize(byte[] seed){
     	this.seed = seed;
     	height = initHeight;
