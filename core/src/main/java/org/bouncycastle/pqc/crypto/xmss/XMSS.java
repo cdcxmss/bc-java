@@ -327,7 +327,7 @@ public class XMSS {
 	protected List<XMSSNode> buildAuthPathEfficient(OTSHashAddress otsHashAddress){
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		initializeDataStructure();
-		XMSSNode root = initializeTree(otsHashAddress, lTreeAddress);
+		XMSSNode root = initializeTree(otsHashAddress);
 		if (!Arrays.equals(root.getValue(), publicKey.getRoot())) {
 			throw new IllegalArgumentException("Invalid parameter");
 		}
@@ -353,8 +353,8 @@ public class XMSS {
 		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
-//		List<XMSSNode> authPath = buildAuthPath(address);
-		List<XMSSNode> authPath = buildAuthPathEfficient(address);
+		List<XMSSNode> authPath = buildAuthPath(address);
+//		List<XMSSNode> authPath = buildAuthPathEfficient(address);
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(this);
@@ -539,13 +539,13 @@ public class XMSS {
      *
      * @return Root of the XMSS tree
      */
-    public XMSSNode initializeTree(OTSHashAddress otsHashAddress, LTreeAddress ltreeAddress) {
+    public XMSSNode initializeTree(OTSHashAddress otsHashAddress) {
     	int h = params.getHeight();
     	// Loop for all 2^h leafs
     	for (int i = 0; i < (1 << h); i++) {
     		// Generate ith leaf
     		// This function is defined below
-    		updateLeaf(i, otsHashAddress, ltreeAddress);
+    		updateLeaf(i, otsHashAddress);
 		}
     	return stack[h].clone();
     }
@@ -555,7 +555,16 @@ public class XMSS {
      *
      * @param s Index of the leaf
      */
-    public void updateLeaf(int s, OTSHashAddress otsHashAddress, LTreeAddress ltreeAddress) {
+    public void updateLeaf(int s, OTSHashAddress otsHashAddress) {
+    	OTSHashAddress oAddress = new OTSHashAddress();
+		oAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		oAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		LTreeAddress lAddress = new LTreeAddress();
+		lAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		lAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		HashTreeAddress hAddres = new HashTreeAddress();
+		hAddres.setLayerAddress(otsHashAddress.getLayerAddress());
+		hAddres.setTreeAddress(otsHashAddress.getTreeAddress());
 		// Create new seed
 		byte[] otsSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
 	
@@ -564,7 +573,7 @@ public class XMSS {
 		WOTSPlusPublicKey wotsPK = wotsPlus.getPublicKey(otsHashAddress, otsSeed, publicSeed);
 	
 		// Create new leaf from OTS public key
-		XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, ltreeAddress);
+		XMSSNode node = lTree(wotsPK, publicSeed, lAddress);
 	
 		// Store seed
 //		final int seedHeight = seed.size();
@@ -594,7 +603,7 @@ public class XMSS {
 				retain.get(height - (h - k)).addFirst(new XMSSNode(0, node.getValue()));
 			}
 		    // Create new parent node
-		    node = randomizeHash(stack[height], node, publicSeed, ltreeAddress);//correct address?
+		    node = randomizeHash(stack[height], node, publicSeed, lAddress);//correct address?
 	
 		    // Remove node from stack and increase height
 		    stack[height] = null;
@@ -615,6 +624,15 @@ public class XMSS {
     public List<XMSSNode> updateAuthPath(int s, XMSSNode leaf, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress) {
     	// The numbers appearing in the next comments refer to the steps of "Algorithm 2" of the BDS paper
     	int h = params.getHeight();
+    	OTSHashAddress oAddress = new OTSHashAddress();
+		oAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		oAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		LTreeAddress lAddress = new LTreeAddress();
+		lAddress.setLayerAddress(lTreeAddress.getLayerAddress());
+		lAddress.setTreeAddress(lTreeAddress.getTreeAddress());
+		HashTreeAddress hAddres = new HashTreeAddress();
+		hAddres.setLayerAddress(otsHashAddress.getLayerAddress());
+		hAddres.setTreeAddress(otsHashAddress.getTreeAddress());
 		// 1.
 		int tau = calculateTau(s);
 		// 2.
@@ -644,15 +662,6 @@ public class XMSS {
 		    for (int height = 0; height < x; height++) {
 		    	int startIndex = s + 1 + (3 * (1 << height));
 				if (startIndex < (1 << h)){
-					OTSHashAddress oAddress = new OTSHashAddress();
-					oAddress.setLayerAddress(otsHashAddress.getLayerAddress());
-					oAddress.setTreeAddress(otsHashAddress.getTreeAddress());
-					LTreeAddress lAddress = new LTreeAddress();
-					lAddress.setLayerAddress(lTreeAddress.getLayerAddress());
-					lAddress.setTreeAddress(lTreeAddress.getTreeAddress());
-					HashTreeAddress hAddres = new HashTreeAddress();
-					hAddres.setLayerAddress(otsHashAddress.getLayerAddress());
-					hAddres.setTreeAddress(otsHashAddress.getTreeAddress());
 					byte[] seed = getSeed(privateKey.getSecretKeySeed(), oAddress);
 					treeHash[height].initialize(seed);
 				}
