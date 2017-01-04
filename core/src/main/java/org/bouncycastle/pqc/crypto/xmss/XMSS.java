@@ -94,6 +94,7 @@ public class XMSS {
 		this.wotsPlus = params.getWOTSPlus();
 		this.prng = params.getPRNG();
 		khf = new KeyedHashFunctions(params.getDigest(), params.getDigestSize());
+		initializeDataStructure();
 	}
 	
 	/**
@@ -326,7 +327,6 @@ public class XMSS {
 	
 	protected List<XMSSNode> buildAuthPathEfficient(OTSHashAddress otsHashAddress){
 		LTreeAddress lTreeAddress = new LTreeAddress();
-		initializeDataStructure();
 		XMSSNode root = initializeTree(otsHashAddress);
 		XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
 		return updateAuthPath(privateKey.getIndex(), node, otsHashAddress, lTreeAddress);
@@ -350,8 +350,8 @@ public class XMSS {
 		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
-//		List<XMSSNode> authPath = buildAuthPath(address);
-		List<XMSSNode> authPath = buildAuthPathEfficient(address);
+		List<XMSSNode> authPath = buildAuthPath(address);
+//		List<XMSSNode> authPath = buildAuthPathEfficient(address);
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(this);
@@ -541,10 +541,14 @@ public class XMSS {
     	// Loop for all 2^h leafs
     	for (int i = 0; i < (1 << h); i++) {
     		// Generate ith leaf
-    		// This function is defined below
     		updateLeaf(i, otsHashAddress);
 		}
-    	return stack[h].clone();
+    	if(h < stack.length){
+    		return stack[h].clone();
+    	}else{
+    		return stack[stack.length - 1].clone();
+    	}
+    	
     }
 
     /**
@@ -575,7 +579,7 @@ public class XMSS {
 		int h = params.getHeight();
 	
 		int height = 0;
-		while (stack[height] != null) {
+		while (height < stack.length && stack[height] != null) {
 		    // Determine the index (j) of the node on each level (v_h[j])
 		    final int index = ((s + 1) >> height) - 1;
 	
@@ -592,7 +596,7 @@ public class XMSS {
 				retain.get(height - (h - k)).addFirst(new XMSSNode(0, node.getValue()));
 			}
 		    // Create new parent node
-		    node = randomizeHash(stack[height], node, publicSeed, lAddress);//correct address?
+		    node = randomizeHash(stack[height], node, publicSeed, lAddress);
 	
 		    // Remove node from stack and increase height
 		    stack[height] = null;
@@ -600,7 +604,9 @@ public class XMSS {
 		}
 	
 		// Push node on stack
-		stack[height] = node.clone();
+		if (height < stack.length) {
+			stack[height] = node.clone();
+		}
     }
     
     /**
@@ -639,6 +645,7 @@ public class XMSS {
 			// 4.a
 			// create a parent node from two input nodes.
 		    auth.set(tau, randomizeHash(auth.get(tau - 1), keep[tau - 1], publicSeed, lTreeAddress));
+		    keep[tau - 1] = null;
 		    // 4.b
 		    for (int height = 0; height < tau; height++) {
 				if (height < h - k){
@@ -702,7 +709,6 @@ public class XMSS {
 		auth = new ArrayList<XMSSNode>(h);
 		keep = new XMSSNode[h - 1];
 		stack = new XMSSNode[h + 1];
-//		seed = new ArrayList<State>(h - k);
 	
 		// Retain stack
 		retain = new ArrayList<ArrayDeque<XMSSNode>>(k - 1);

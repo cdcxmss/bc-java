@@ -115,7 +115,7 @@ public class XMSSMT extends XMSS{
 		
 		//message compression
 		
-		byte[] random =  khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
+		byte[] random =  khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(signature.getIndex(), 32));
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		

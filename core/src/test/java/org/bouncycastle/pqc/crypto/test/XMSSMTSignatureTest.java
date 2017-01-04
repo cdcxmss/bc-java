@@ -48,7 +48,7 @@ public class XMSSMTSignatureTest extends TestCase {
 		xmssMt.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmssMt.signMT(message);
-		XMSSSignature sig2 = new XMSSSignature(xmssMt);
+		XMSSMTSignature sig2 = new XMSSMTSignature(params);
 		try {
 			sig2.parseByteArray(sig1);
 		} catch (ParseException ex) {
