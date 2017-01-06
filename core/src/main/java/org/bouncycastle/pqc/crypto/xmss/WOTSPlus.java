@@ -371,8 +371,8 @@ public class WOTSPlus {
 		}
 		
 		byte[] tmp = startHash;
-		for (int i = startIndex; i < (startIndex + steps) && i < w; i++) {//er kommt heir oben immer mit hash = 0 und mit key = i an
-			otsHashAddress.setHashAddress(i);//sieht aus als würde er anstatt hashaddr den key auf i setzen und nichts mit hash machen - beim i=6 ist hash am ende =1 und beim i=7 ist i=0 am anfang ist key = 0
+		for (int i = startIndex; i < (startIndex + steps) && i < w; i++) {
+			otsHashAddress.setHashAddress(i);
 			otsHashAddress.setKeyAndMask(0);
 			byte[] key = khf.PRF(publicSeed, otsHashAddress.toByteArray());
 			otsHashAddress.setKeyAndMask(1);

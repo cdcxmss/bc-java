@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bouncycastle.util.encoders.Hex;
+
 
 /**
  * Multi-Tree XMSS 
@@ -114,7 +116,6 @@ public class XMSSMT extends XMSS{
 		privateKey.setIndex(index + 1);
 		
 		//message compression
-		
 		byte[] random =  khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(signature.getIndex(), 32));
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(signature.getIndex(), params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
@@ -128,7 +129,7 @@ public class XMSSMT extends XMSS{
 		otsHashAddress.setOTSAddress(indexLeaf);
 		byte[] secretSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
 		wotsPlus.importKeys(secretSeed, publicSeed);
-		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), otsHashAddress);//secretSeed
+		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), otsHashAddress);
 		signature.setRandomness(random);
 		signature.addReducedSignature(sigTmp);
 		
@@ -220,9 +221,9 @@ public class XMSSMT extends XMSS{
 		
 		/* create WOTS+ signature */
 		address.setOTSAddress(index);
-		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, pkSeed, address);//after this hash =0 not 10
+		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, pkSeed, address);
 		/* add authPath */
-		List<XMSSNode> authPath = buildAuthPath(index, address, skSeed, pkSeed);//new address as param -> no as param new in method
+		List<XMSSNode> authPath = buildAuthPath(index, address, skSeed, pkSeed);
 		/* assemble temp signature */
 		ReducedXMSSSignature tmpSignature = new ReducedXMSSSignature(this);
 		tmpSignature.setSignature(wotsSignature);
@@ -244,7 +245,7 @@ public class XMSSMT extends XMSS{
 		}
 		int treeHeight = params.getHeight();
 		//work around otherwise have to have all addresses as parameter
-		OTSHashAddress otsHashAddress = otsAddress;//new OTSHashAddress();
+		OTSHashAddress otsHashAddress = otsAddress;
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		HashTreeAddress nodeAddr = new HashTreeAddress();
 		lTreeAddress.setLayerAddress(otsHashAddress.getLayerAddress());
@@ -279,7 +280,7 @@ public class XMSSMT extends XMSS{
 		
 		//tree[0] is not set in reference it is just 0.
 		//here it is null and causes problems so we set it manually to 0.
-		tree[0] = new byte[32];
+		tree[0] = new byte[params.getDigestSize()];
 		
 //		copy authpath
 		for (int i = 0; i < treeHeight; i++){
