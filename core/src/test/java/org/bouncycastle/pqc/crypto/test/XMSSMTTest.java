@@ -258,6 +258,7 @@ public class XMSSMTTest extends TestCase {
 		assertTrue(Arrays.areEqual(Hex.decode(referenceSig), signature));
 	}
 	
+	/*
 	public void testverifyMTSHA512Layer4(){
 		int totalHeight = 20;
 		int layers = 4;
@@ -285,5 +286,5 @@ public class XMSSMTTest extends TestCase {
 		byte[] signature1 = xmssMT.signMT(message);
 		assertTrue(Arrays.areEqual(Hex.decode(referenceSig1), signature1));
 	}
-	
+	*/
 }

@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.bouncycastle.util.encoders.Hex;
+
 /**
  * XMSS.
  * 
@@ -324,12 +326,14 @@ public class XMSS {
 		return authPath;
 	}
 	
+	/*
 	protected List<XMSSNode> buildAuthPathEfficient(OTSHashAddress otsHashAddress){
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		XMSSNode root = initializeTree(otsHashAddress);
 		XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
 		return updateAuthPath(privateKey.getIndex(), node, otsHashAddress, lTreeAddress);
 	}
+	*/
 	
 	/**
 	 * Generate a WOTS+ signature on a message with corresponding authentication path
