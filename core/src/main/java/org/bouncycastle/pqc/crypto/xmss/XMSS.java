@@ -169,17 +169,22 @@ public class XMSS {
 		// Make sure that chain addr, hash addr are 0!
 		otsHashAddress.setChainAddress(0);
 		otsHashAddress.setHashAddress(0);
+		
+		otsHashAddress.setKeyAndMask(0);
 		//save ots address
+		/*
 		int tmpOTSAddress = otsHashAddress.getOTSAddress();
 		otsHashAddress.setKeyAndMask(tmpOTSAddress);
 		otsHashAddress.setOTSAddress(0);
-		
+		*/
 		// Generate pseudorandom value
 		byte[] seed = khf.PRF(skSeed, otsHashAddress.toByteArray());
 		
 		//restore ots addr
+		/*
 		otsHashAddress.setOTSAddress(tmpOTSAddress);
 		otsHashAddress.setKeyAndMask(0);
+		*/
 		return seed;
 	}
 	
