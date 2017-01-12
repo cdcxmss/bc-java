@@ -168,17 +168,23 @@ public class XMSS {
 		// Make sure that chain addr, hash addr are 0!
 		otsHashAddress.setChainAddress(0);
 		otsHashAddress.setHashAddress(0);
+		
+		otsHashAddress.setKeyAndMask(0);
 		//save ots address
+		/*
 		int tmpOTSAddress = otsHashAddress.getOTSAddress();
 		otsHashAddress.setKeyAndMask(tmpOTSAddress);
 		otsHashAddress.setOTSAddress(0);
 		
+		*/
 		// Generate pseudorandom value
 		byte[] seed = khf.PRF(skSeed, otsHashAddress.toByteArray());
 		
 		//restore ots addr
+		/*
 		otsHashAddress.setOTSAddress(tmpOTSAddress);
 		otsHashAddress.setKeyAndMask(0);
+		*/
 		return seed;
 	}
 	
@@ -325,12 +331,14 @@ public class XMSS {
 		return authPath;
 	}
 	
+	/*
 	protected List<XMSSNode> buildAuthPathEfficient(OTSHashAddress otsHashAddress){
 		LTreeAddress lTreeAddress = new LTreeAddress();
 		XMSSNode root = initializeTree(otsHashAddress);
 		XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
 		return updateAuthPath(privateKey.getIndex(), node, otsHashAddress, lTreeAddress);
 	}
+	*/
 	
 	/**
 	 * Generate a WOTS+ signature on a message with corresponding authentication path

@@ -104,6 +104,7 @@ public class XMSSMT extends XMSS{
 		XMSSMTSignature signature = new XMSSMTSignature(params);
 		int index = privateKey.getIndex();
 		signature.setIndex(index);
+
 		// Init addresses
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		LTreeAddress lTreeAddress = new LTreeAddress();
@@ -123,12 +124,14 @@ public class XMSSMT extends XMSS{
 		//Sign
 		int indexTree = index >> params.getHeight();
 		int indexLeaf = index & ((1 << params.getHeight()) - 1);
+
 		otsHashAddress.setTreeAddress(indexTree);
 		lTreeAddress.setTreeAddress(indexTree);
 		hashTreeAddress.setTreeAddress(indexTree);
 		otsHashAddress.setOTSAddress(indexLeaf);
 		byte[] secretSeed = getSeed(privateKey.getSecretKeySeed(), otsHashAddress);
 		wotsPlus.importKeys(secretSeed, publicSeed);
+
 		ReducedXMSSSignature sigTmp = treeSig(indexLeaf, messageDigest, privateKey.getSecretKeySeed(), privateKey.getPublicSeed(), otsHashAddress);
 		signature.setRandomness(random);
 		signature.addReducedSignature(sigTmp);
