@@ -63,7 +63,7 @@ public abstract class XMSSAddress {
 		this.type = type;
 	}
 
-	public int getKeyAndMask() {
+	public long getKeyAndMask() {
 		return keyAndMask;
 	}
 

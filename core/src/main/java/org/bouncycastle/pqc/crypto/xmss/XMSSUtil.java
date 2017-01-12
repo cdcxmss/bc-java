@@ -313,7 +313,7 @@ public class XMSSUtil {
 	 * @param index Index to validate.
 	 * @return true if index is valid false else.
 	 */
-	public static boolean isIndexValid(int height, int index) {
+	public static boolean isIndexValid(int height, long index) {
 		if (index > (1 << height) - 1) {
 			return false;
 		}
@@ -346,7 +346,7 @@ public class XMSSUtil {
 	 * @param h
 	 * @return
 	 */
-	public static int getLSB(int src, int n, int h){
+	public static int getLSB(long src, int n, int h){
 		if (n == 0) {
 			throw new IllegalArgumentException("n has to be at least 1.");
 		}
@@ -356,7 +356,7 @@ public class XMSSUtil {
 		if (h > 64) {
 			throw new IllegalArgumentException("h has to be smaller than 64.");
 		}
-		int result = src << (64 - n);
+		int result = (int)(src << (64 - n));
 		result = result >> (64 - n);
 		return result;
 	}
@@ -368,7 +368,7 @@ public class XMSSUtil {
 	 * @param h
 	 * @return
 	 */
-	public static int getMSB(int src, int n, int h){
+	public static long getMSB(long src, int n, int h){
 		if (n == 0) {
 			throw new IllegalArgumentException("n has to be at least 1.");
 		}
@@ -378,7 +378,7 @@ public class XMSSUtil {
 		if (h > 64) {
 			throw new IllegalArgumentException("h has to be smaller than 64.");
 		}
-		int result = src << (64 - h);
+		long result = src << (64 - h);
 		result = result >> (64 - n);
 		return result;
 	}
