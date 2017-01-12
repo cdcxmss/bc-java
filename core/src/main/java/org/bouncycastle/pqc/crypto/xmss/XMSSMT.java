@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bouncycastle.util.encoders.Hex;
-
-
 /**
  * Multi-Tree XMSS 
  * As described in https://tools.ietf.org/html/draft-irtf-cfrg-xmss-hash-based-signatures-07#section-4.2
@@ -174,7 +171,6 @@ public class XMSSMT extends XMSS{
 		sig.parseByteArray(signature);
 		long  index = sig.getIndex();
 		int height = params.getHeight();
-		int totalHeight = params.getTotalHeight();
 		int layers = params.getLayers();
 		byte[] concatenated = XMSSUtil.concat(sig.getRandomness(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(sig.getIndex(), params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
