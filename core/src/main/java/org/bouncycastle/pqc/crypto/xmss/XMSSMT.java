@@ -176,7 +176,7 @@ public class XMSSMT extends XMSS{
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		long indexTree = index >> height;//XMSSUtil.getMSB(index, totalHeight - height, totalHeight);
-		int indexLeaf = (int)(index & ((1 << height) -1));//XMSSUtil.getLSB(index, height, totalHeight);
+		int indexLeaf = (int)(index & ((1L << height) -1));//XMSSUtil.getLSB(index, height, totalHeight);
 		otsHashAddress.setTreeAddress(indexTree);
 		lTreeAddress.setTreeAddress(indexTree);
 		hashTreeAddress.setTreeAddress(indexTree);
@@ -184,8 +184,8 @@ public class XMSSMT extends XMSS{
 		ReducedXMSSSignature xmssSig = sig.getReducedSignature(0);
 		XMSSNode node = getRootNodeFromSignature(indexLeaf, messageDigest, xmssSig, publicSeed, otsHashAddress, lTreeAddress, hashTreeAddress);
 		for (int j = 1; j < layers; j++) {
+			indexLeaf =  (int)(indexTree & ((1L << height) -1));//XMSSUtil.getLSB(indexTree, height, totalHeight);
 			indexTree = indexTree >> height;//XMSSUtil.getMSB(indexTree, totalHeight - height, totalHeight);
-			indexLeaf =  (int)(indexTree & ((1 << height) -1));//XMSSUtil.getLSB(indexTree, height, totalHeight);
 			xmssSig = sig.getReducedSignature(j);
 			otsHashAddress = new OTSHashAddress();
 			otsHashAddress.setLayerAddress(j);

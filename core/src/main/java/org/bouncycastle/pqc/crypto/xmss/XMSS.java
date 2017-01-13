@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-
 /**
  * XMSS.
  * 
@@ -469,7 +468,6 @@ public class XMSS {
 		XMSSNode[] node = new XMSSNode[2];
 		node[0] = lTree(wotsPlusPK, publicSeed, lTreeAddress);
 		hashTreeAddress.setTreeIndex(index);
-//		lTreeAddress.setTreeIndex(index);
 		for (int k = 0; k < params.getHeight(); k++){
 			hashTreeAddress.setTreeHeight(k);
 			if (Math.floor(index / (1 << k)) % 2 == 0) {
