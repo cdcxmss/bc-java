@@ -8,53 +8,19 @@ import java.text.ParseException;
  * @author Sebastian Roland <seroland86@gmail.com>
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
-public class XMSSMTPrivateKey  implements XMSSStoreableObject {
+public class XMSSMTPrivateKey implements XMSSStoreableObject {
 	
-	/**
-	 * single (ceil(h / 8))-byte index
-	 */
-	private int index;
-	
-	/**
-	 * 
-	 */
+	private XMSSMTParameters params;
+	private long globalIndex;
 	private byte[] secretKeySeed;
-	
-	/**
-	 * single n-byte pseudorandom function key
-	 */
 	private byte[] secretKeyPRF;
-	
-	/**
-	 * 
-	 */
 	private byte[] publicSeed;
-	
-	/**
-	 * 
-	 */
 	private byte[] root;
 	
-	/**
-	 * 
-	 */
-	private XMSSMTParameters params;
-	
-	/**
-	 * 
-	 * @param params
-	 */
 	public XMSSMTPrivateKey(XMSSMTParameters params) {
 		super();
 		this.params = params;
-		index = 0;
-		int n = params.getDigestSize();
-		secretKeySeed = new byte[n];
-		params.getPRNG().nextBytes(secretKeySeed);
-		secretKeyPRF = new byte[n];
-		params.getPRNG().nextBytes(secretKeyPRF);
-		publicSeed = new byte[params.getDigestSize()];
-		this.root = new byte[n];
+		globalIndex = 0;
 	}
 	
 	@Override
@@ -70,7 +36,7 @@ public class XMSSMTPrivateKey  implements XMSSStoreableObject {
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
-		XMSSUtil.intToBytesBigEndianOffset(out, index, position);
+		XMSSUtil.longToBytesBigEndianOffset(out, globalIndex, position);
 		position += indexSize;
 		/* copy secretKeySeed */
 		XMSSUtil.copyBytesAtOffset(out, secretKeySeed, position);
@@ -103,8 +69,8 @@ public class XMSSMTPrivateKey  implements XMSSStoreableObject {
 			throw new ParseException("private key has wrong size", 0);
 		}
 		int position = 0;
-		index = XMSSUtil.bytesToIntBigEndian(in, position);
-		if (!XMSSUtil.isIndexValid(height, index)) {
+		globalIndex = XMSSUtil.bytesToIntBigEndian(in, position);
+		if (!XMSSUtil.isIndexValid(height, globalIndex)) {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
@@ -117,12 +83,12 @@ public class XMSSMTPrivateKey  implements XMSSStoreableObject {
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 	}
 	
-	public int getIndex() {
-		return index;
+	public long getGlobalIndex() {
+		return globalIndex;
 	}
 
-	public void setIndex(int index) {
-		this.index = index;
+	public void setGlobalIndex(long globalIndex) {
+		this.globalIndex = globalIndex;
 	}
 
 	public byte[] getSecretKeySeed() {

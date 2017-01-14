@@ -24,7 +24,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 			throw new NullPointerException("xmss == null");
 		}
 		this.xmss = xmss;
-		oid = xmss.getParams().getOid().getOid();
+		//oid = xmss.getParams().getOid().getOid();
 	}
 	
 	@Override

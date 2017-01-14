@@ -12,29 +12,11 @@ import java.util.List;
  */
 public class XMSSMTSignature implements XMSSStoreableObject {
 	
-	/**
-	 * 
-	 */
+	private XMSSMTParameters params;
 	private long index;
-	
-	/**
-	 * 
-	 */
-	private byte[] randomness;
-	
-	/**
-	 * 
-	 */
+	private byte[] random;
 	private List<ReducedXMSSSignature> reducedSignatures;
 	
-	/**
-	 * 
-	 */
-	private XMSSMTParameters params;
-	
-	/**
-	 * 
-	 */
 	public XMSSMTSignature(XMSSMTParameters params) {
 		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
 		this.params = params;
@@ -48,12 +30,12 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		this.index = index;
 	}
 
-	public byte[] getRandomness() {
-		return randomness;
+	public byte[] getRandom() {
+		return random;
 	}
 
-	public void setRandomness(byte[] randomness) {
-		this.randomness = randomness;
+	public void setRandom(byte[] randomness) {
+		this.random = randomness;
 	}
 
 	public List<ReducedXMSSSignature> getReducedSignatures() {
@@ -64,19 +46,10 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		this.reducedSignatures = reducedSignatures;
 	}
 	
-	/**
-	 * 
-	 * @param sig
-	 */
 	public void addReducedSignature(ReducedXMSSSignature sig) {
 		reducedSignatures.add(sig);
 	}
 	
-	/**
-	 * 
-	 * @param index
-	 * @return
-	 */
 	public ReducedXMSSSignature getReducedSignature(int index) {
 		return reducedSignatures.get(index);
 	}
@@ -86,25 +59,25 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		/* index || random || reduced signatures */
 		int n = params.getDigestSize();
 		int len = params.getWOTSPlus().getParams().getLen();
-		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignaturesSize = (params.getTotalHeight() + len * params.getLayers())* n;
+		int reducedSignaturesSize = ((params.getHeight() + len) * n) * params.getLayers();
 		int totalSize = indexSize + randomSize + reducedSignaturesSize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
 		byte[] indexBytes = XMSSUtil.toBytesBigEndian(index, indexSize);
-		System.arraycopy(indexBytes, 0, out, position, indexSize);
+		XMSSUtil.copyBytesAtOffset(out, indexBytes, 0);
 		position += indexSize;
 		/* copy random */
-		XMSSUtil.copyBytesAtOffset(out, randomness, position);
+		XMSSUtil.copyBytesAtOffset(out, random, position);
 		position += randomSize;
 		/* copy reduced signatures */
-		int reducedXmssSigSize = (params.getHeight() + len) * n;
-		for(ReducedXMSSSignature reducedSig : reducedSignatures) {
-			byte[] signature = reducedSig.toByteArray();
+		int reducedXMSSSignatureSize = (params.getHeight() + len) * n;
+		for(ReducedXMSSSignature reducedSignature : reducedSignatures) {
+			byte[] signature = reducedSignature.toByteArray();
 			XMSSUtil.copyBytesAtOffset(out, signature, position);
-			position += reducedXmssSigSize;
+			position += reducedXMSSSignatureSize;
 		}
 		return out;
 	}
@@ -130,7 +103,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
-		randomness = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
+		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;
 		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
 		int reducedXmssSigSize = (params.getHeight() + len) * n;
@@ -147,6 +120,4 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	private boolean isIndexValidMT(int height, long index) {
 		return index <= 1L << height;
 	}
-	
-	
 }

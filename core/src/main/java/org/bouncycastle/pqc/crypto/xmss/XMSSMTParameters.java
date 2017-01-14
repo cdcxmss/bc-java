@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.Digest;
  * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  *
  */
-public class XMSSMTParameters extends XMSSParameters{
+public class XMSSMTParameters extends XMSSParameters {
 	
 	/**
 	 * 
@@ -44,14 +44,14 @@ public class XMSSMTParameters extends XMSSParameters{
 	 * @param totalHeight the total height of the {@link XMSSMT}
 	 * @return the totalHeight divided by layers if it is greater or equal to 2 and divides without remainder otherwise an {@link IllegalArgumentException} is thrown
 	 */
-	private static int XMSSTreeHeight(int layers, int totalHeight) throws IllegalArgumentException{
+	private static int XMSSTreeHeight(int layers, int totalHeight) throws IllegalArgumentException {
 		if (totalHeight < 2) {
 			throw new IllegalArgumentException("totalHeight is less than 2");
 		}
 		if (totalHeight % layers != 0){
 			throw new IllegalArgumentException("totalHeight has to be divided by layers without remainder");
 		}
-		return (int)(totalHeight / layers);
+		return totalHeight / layers;
 	}
 
 	public int getTotalHeight() {
@@ -61,5 +61,4 @@ public class XMSSMTParameters extends XMSSParameters{
 	public int getLayers() {
 		return layers;
 	}
-
 }

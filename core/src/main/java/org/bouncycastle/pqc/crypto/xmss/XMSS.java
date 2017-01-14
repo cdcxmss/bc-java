@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.bouncycastle.util.encoders.Hex;
+
 /**
  * XMSS.
  * 
@@ -93,7 +95,7 @@ public class XMSS {
 		this.wotsPlus = params.getWOTSPlus();
 		this.prng = params.getPRNG();
 		khf = new KeyedHashFunctions(params.getDigest(), params.getDigestSize());
-		initializeDataStructure();
+		//initializeDataStructure();
 	}
 	
 	/**
@@ -121,6 +123,13 @@ public class XMSS {
 		this.privateKey = tmpPrivateKey;
 		this.publicKey = tmpPublicKey;
 		this.publicSeed = this.privateKey.getPublicSeed();
+	}
+	
+	protected void importKeysGenRoot(byte[] privateKey, byte[] publicKey, OTSHashAddress otsHashAddress, LTreeAddress lTreeAddress, HashTreeAddress hashTreeAddress) throws ParseException {
+		importKeys(privateKey, publicKey);
+		XMSSNode root = treeHash(0, params.getHeight(), otsHashAddress, lTreeAddress, hashTreeAddress);
+		this.privateKey.setRoot(root.getValue());
+		this.publicKey.setRoot(root.getValue());
 	}
 	
 	/**
@@ -292,8 +301,8 @@ public class XMSS {
 		}
 		Stack<XMSSNode> stack = new Stack<XMSSNode>();
 		for (int i = 0; i < (1 << targetNodeHeight); i++) {
-			wotsPlus.importKeys(getWOTSPlusSecretKey(startIndex + i), publicSeed);
 			otsHashAddress.setOTSAddress(startIndex + i);
+			wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), publicSeed);
 			lTreeAddress.setLTreeAddress(startIndex + i);
 			XMSSNode node = lTree(wotsPlus.getPublicKey(otsHashAddress), publicSeed, lTreeAddress);
 			hashTreeAddress.setTreeHeight(0);
@@ -314,17 +323,25 @@ public class XMSS {
 	 * @param address OTS hash address.
 	 * @return Authentication path nodes.
 	 */
-	protected List<XMSSNode> buildAuthPath(OTSHashAddress address) {
-		if (address == null) {
-			throw new NullPointerException("address == null");
+	protected List<XMSSNode> buildAuthPath(OTSHashAddress otsHashAddress) {
+		if (otsHashAddress == null) {
+			throw new NullPointerException("otsHashAddress == null");
 		}
 		int treeHeight = params.getHeight();
 		int indexOfPublicKey = privateKey.getIndex();
 		List<XMSSNode> authPath = new ArrayList<XMSSNode>();
+		
+		LTreeAddress lTreeAddress = new LTreeAddress();
+		lTreeAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		lTreeAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		HashTreeAddress hashTreeAddress = new HashTreeAddress();
+		hashTreeAddress.setLayerAddress(otsHashAddress.getLayerAddress());
+		hashTreeAddress.setTreeAddress(otsHashAddress.getTreeAddress());
+		
 		for (int currentHeight = 0; currentHeight < treeHeight; currentHeight++) {
 			int indexOfNodeOnHeight = ((int)Math.floor(indexOfPublicKey / (1 << currentHeight))) ^ 1;
 			int startLeafIndex = (indexOfNodeOnHeight * (1 << currentHeight));
-			XMSSNode node = treeHash(startLeafIndex, currentHeight, address, new LTreeAddress(), new HashTreeAddress());
+			XMSSNode node = treeHash(startLeafIndex, currentHeight, otsHashAddress, lTreeAddress, hashTreeAddress);
 			authPath.add(node);
 		}
 		return authPath;
@@ -353,12 +370,10 @@ public class XMSS {
 			throw new NullPointerException("address == null");
 		}	
 		/* create WOTS+ signature */
-		address.setOTSAddress(privateKey.getIndex());
 		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
 		
 		/* add authPath */
 		List<XMSSNode> authPath = buildAuthPath(address);
-//		List<XMSSNode> authPath = buildAuthPathEfficient(address);
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(this);
@@ -379,7 +394,10 @@ public class XMSS {
 			throw new IllegalArgumentException("index out of bounds");
 		}
 		/* reinitialize WOTS+ object */
-		wotsPlus.importKeys(getWOTSPlusSecretKey(index), publicSeed);
+		OTSHashAddress otsHashAddress = new OTSHashAddress();
+		otsHashAddress.setOTSAddress(index);
+		
+		wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), publicSeed);
 
 		/* create (randomized keyed) messageDigest of message */
 		byte[] random = khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 32));
@@ -387,7 +405,7 @@ public class XMSS {
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		/* create signature for messageDigest */
-		XMSSSignature signature = treeSig(messageDigest, publicSeed, new OTSHashAddress());
+		XMSSSignature signature = treeSig(messageDigest, publicSeed, otsHashAddress);
 		signature.setIndex(index);
 		signature.setRandom(random);
 		
@@ -520,12 +538,24 @@ public class XMSS {
 	}
 	
 	/**
-	 * Derive WOTS+ secret key for specific index.
+	 * Derive WOTS+ secret key for specific index according to draft.
 	 * @param index Index.
 	 * @return WOTS+ secret key at index.
 	 */
 	protected byte[] getWOTSPlusSecretKey(int index) {
 		return khf.PRF(privateKey.getSecretKeySeed(), XMSSUtil.toBytesBigEndian(index, 32));
+	}
+	
+	/**
+	 * Derive WOTS+ secret key for specific index as in XMSS ref impl Andreas Huelsing.
+	 * @param index Index.
+	 * @return WOTS+ secret key at index.
+	 */
+	protected byte[] getWOTSPlusSecretKey(OTSHashAddress otsHashAddress) {
+		otsHashAddress.setChainAddress(0);
+		otsHashAddress.setHashAddress(0);
+		otsHashAddress.setKeyAndMask(0);
+		return khf.PRF(privateKey.getSecretKeySeed(), otsHashAddress.toByteArray());
 	}
 	
 	/**
@@ -770,6 +800,10 @@ public class XMSS {
 			throw new IllegalStateException("not initialized");
 		}
 		return privateKey.getIndex();
+	}
+	
+	public void setIndex(int index) {
+		privateKey.setIndex(index);
 	}
 	
 	/**

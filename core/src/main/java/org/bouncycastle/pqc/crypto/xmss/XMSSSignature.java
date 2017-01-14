@@ -16,6 +16,7 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 	 * Index of signature.
 	 */
 	private int index;
+	
 	/**
 	 * Random used to create digest of message.
 	 */

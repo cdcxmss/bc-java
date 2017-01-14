@@ -338,48 +338,12 @@ public class XMSSUtil {
 		}
 		return digest.getDigestSize();
 	}
-	
-	/**
-	 * 
-	 * @param src
-	 * @param n
-	 * @param h
-	 * @return
-	 */
-	public static int getLSB(long src, int n, int h){
-		if (n == 0) {
-			throw new IllegalArgumentException("n has to be at least 1.");
-		}
-		if (n > h) {
-			throw new IllegalArgumentException("n has to be smaller than h.");
-		}
-		if (h > 64) {
-			throw new IllegalArgumentException("h has to be smaller than 64.");
-		}
-		int result = (int)(src << (64 - n));
-		result = result >> (64 - n);
-		return result;
+
+	public static int getLeafIndex(long index, int xmssTreeHeight) {
+		return (int) (index & ((1L << xmssTreeHeight) - 1L));
 	}
 	
-	/**
-	 * 
-	 * @param src
-	 * @param n
-	 * @param h
-	 * @return
-	 */
-	public static long getMSB(long src, int n, int h){
-		if (n == 0) {
-			throw new IllegalArgumentException("n has to be at least 1.");
-		}
-		if (n > h) {
-			throw new IllegalArgumentException("n has to be smaller than h.");
-		}
-		if (h > 64) {
-			throw new IllegalArgumentException("h has to be smaller than 64.");
-		}
-		long result = src << (64 - h);
-		result = result >> (64 - n);
-		return result;
+	public static long getTreeIndex(long index, int xmssTreeHeight) {
+		return index >> xmssTreeHeight;
 	}
 }
