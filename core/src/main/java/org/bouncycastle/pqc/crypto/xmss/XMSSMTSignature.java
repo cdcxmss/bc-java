@@ -8,7 +8,6 @@ import java.util.List;
  * XMSSMT Signature.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSMTSignature implements XMSSStoreableObject {
 	
@@ -18,40 +17,12 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 	private List<ReducedXMSSSignature> reducedSignatures;
 	
 	public XMSSMTSignature(XMSSMTParameters params) {
+		super();
+		if (params == null) {
+			throw new NullPointerException("params == null");
+		}
 		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
 		this.params = params;
-	}
-
-	public long getIndex() {
-		return index;
-	}
-
-	public void setIndex(long index) {
-		this.index = index;
-	}
-
-	public byte[] getRandom() {
-		return random;
-	}
-
-	public void setRandom(byte[] randomness) {
-		this.random = randomness;
-	}
-
-	public List<ReducedXMSSSignature> getReducedSignatures() {
-		return reducedSignatures;
-	}
-
-	public void setReducedSignatures(List<ReducedXMSSSignature> reducedSignatures) {
-		this.reducedSignatures = reducedSignatures;
-	}
-	
-	public void addReducedSignature(ReducedXMSSSignature sig) {
-		reducedSignatures.add(sig);
-	}
-	
-	public ReducedXMSSSignature getReducedSignature(int index) {
-		return reducedSignatures.get(index);
 	}
 
 	@Override
@@ -99,7 +70,7 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		}
 		int position = 0;
 		index = XMSSUtil.bytesToXBigEndian(in, position, indexSize);
-		if (!isIndexValidMT(totalHeight, index)) {
+		if (!XMSSUtil.isIndexValid(totalHeight, index)) {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
@@ -117,7 +88,35 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		}
 	}
 
-	private boolean isIndexValidMT(int height, long index) {
-		return index <= 1L << height;
+	public long getIndex() {
+		return index;
+	}
+
+	public void setIndex(long index) {
+		this.index = index;
+	}
+
+	public byte[] getRandom() {
+		return random;
+	}
+
+	public void setRandom(byte[] randomness) {
+		this.random = randomness;
+	}
+
+	public List<ReducedXMSSSignature> getReducedSignatures() {
+		return reducedSignatures;
+	}
+
+	public void setReducedSignatures(List<ReducedXMSSSignature> reducedSignatures) {
+		this.reducedSignatures = reducedSignatures;
+	}
+	
+	public void addReducedSignature(ReducedXMSSSignature sig) {
+		reducedSignatures.add(sig);
+	}
+	
+	public ReducedXMSSSignature getReducedSignature(int index) {
+		return reducedSignatures.get(index);
 	}
 }

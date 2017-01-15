@@ -8,7 +8,6 @@ import org.bouncycastle.util.encoders.Hex;
  * Utils for XMSS implementation.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSUtil {
 
@@ -314,10 +313,7 @@ public class XMSSUtil {
 	 * @return true if index is valid false else.
 	 */
 	public static boolean isIndexValid(int height, long index) {
-		if (index > (1 << height) - 1) {
-			return false;
-		}
-		return true;
+		return index < (1L << height);
 	}
 	
 	/**

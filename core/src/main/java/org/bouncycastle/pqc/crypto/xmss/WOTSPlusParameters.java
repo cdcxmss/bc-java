@@ -8,7 +8,6 @@ import org.bouncycastle.crypto.Digest;
  * Parameters for the WOTS+ one-time signature system as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class WOTSPlusParameters {
 
@@ -69,7 +68,6 @@ public class WOTSPlusParameters {
 		len2 = (int)Math.floor(XMSSUtil.log2(len1 * (winternitzParameter - 1)) / XMSSUtil.log2(winternitzParameter)) + 1;
 		len = len1 + len2;
 	}
-
 	
 	/**
 	 * Getter OID.

@@ -6,7 +6,6 @@ import java.text.ParseException;
  * Interface for XMSS objects that need to be storeable as a byte array.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public interface XMSSStoreableObject {
 

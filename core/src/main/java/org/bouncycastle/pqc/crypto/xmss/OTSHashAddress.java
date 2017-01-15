@@ -7,11 +7,10 @@ import java.text.ParseException;
  * OTS Hash address.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class OTSHashAddress extends XMSSAddress {
 	
-	private static final int TYPE = 0;
+	private static final int TYPE = 0x00;
 	private int otsAddress;
 	private int chainAddress;
 	private int hashAddress;

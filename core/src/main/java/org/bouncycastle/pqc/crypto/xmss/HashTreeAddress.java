@@ -7,11 +7,10 @@ import java.text.ParseException;
  * XMSS Hash Tree address.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class HashTreeAddress extends XMSSAddress {
 	
-	private static final int TYPE = 2;
+	private static final int TYPE = 0x02;
 	private static final int PADDING = 0x00;
 	
 	private int padding;

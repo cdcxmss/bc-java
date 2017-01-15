@@ -8,17 +8,13 @@ import org.bouncycastle.crypto.Digest;
  * XMSS Parameters.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSParameters {
 
 	private XMSSOid oid;
-	private Digest digest;
-	private SecureRandom prng;
-	private int digestSize;
-	private int winternitzParameter;
-	private int height;
 	private WOTSPlus wotsPlus;
+	private SecureRandom prng;
+	private int height;
 
 	/**
 	 * XMSS Constructor...
@@ -34,16 +30,15 @@ public class XMSSParameters {
 		if (prng == null) {
 			throw new NullPointerException("prng == null");
 		}
-		this.digest = digest;
-		this.prng = prng;
-		digestSize = XMSSUtil.getDigestSize(digest);
-		winternitzParameter = 16;
-		this.height = height;
 		wotsPlus = new WOTSPlus(new WOTSPlusParameters(digest));
-		XMSSOid oid = XMSSOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, wotsPlus.getParams().getLen(), height);
-//		if (oid == null) {
-//			throw new InvalidParameterException();
-//		}
+		this.prng = prng;
+		this.height = height;
+		XMSSOid oid = XMSSOid.lookup(getDigest().getAlgorithmName(), getDigestSize(), getWinternitzParameter(), wotsPlus.getParams().getLen(), height);
+		/* TODO: XMSS single variant params are incompatible to those in XMSS^MT
+		if (oid == null) {
+			throw new InvalidParameterException();
+		}
+		*/
 		this.oid = oid;
 	}
 	
@@ -52,7 +47,7 @@ public class XMSSParameters {
 	}
 
 	public Digest getDigest() {
-		return digest;
+		return wotsPlus.getParams().getDigest();
 	}
 	
 	public SecureRandom getPRNG() {
@@ -60,11 +55,11 @@ public class XMSSParameters {
 	}
 	
 	public int getDigestSize() {
-		return digestSize;
+		return wotsPlus.getParams().getDigestSize();
 	}
 	
 	public int getWinternitzParameter() {
-		return winternitzParameter;
+		return wotsPlus.getParams().getWinternitzParameter();
 	}
 	
 	public int getHeight() {

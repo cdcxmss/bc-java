@@ -8,7 +8,6 @@ import java.util.List;
  * as described in draft-irtf-cfrg-xmss-hash-based-signatures-06.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class WOTSPlus {
 
@@ -63,46 +62,7 @@ public class WOTSPlus {
 		this.secretKeySeed = secretKeySeed;
 		this.publicSeed = publicSeed;
 	}
-	
-	/**
-	 * Calculates a new public key based on the state of secretKeySeed, publicSeed and otsHashAddress.
-	 * @param otsHashAddress OTS hash address for randomization.
-	 * @return WOTS+ public key.
-	 */
-	protected WOTSPlusPublicKey getPublicKey(OTSHashAddress otsHashAddress) {
-		checkState();
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		byte[][] publicKey = new byte[params.getLen()][];
-		/* derive public key from secretKeySeed */
-		for (int i = 0; i < params.getLen(); i++) {
-			otsHashAddress.setChainAddress(i);
-			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddress);
-		}
-		return new WOTSPlusPublicKey(params, publicKey);
-	}
-	
-	/**
-	 * Calculates a new public key based on the state of secretKeySeed, publicSeed and otsHashAddress.
-	 * @param otsHashAddress OTS hash address for randomization.
-	 * @return WOTS+ public key.
-	 */
-	protected WOTSPlusPublicKey getPublicKey(OTSHashAddress otsHashAddress, byte[] skSeed, byte[] pubSeed) {
-//		checkState();
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		byte[][] publicKey = new byte[params.getLen()][];
-		/* derive public key from secretKeySeed */
-		for (int i = 0; i < params.getLen(); i++) {
-			otsHashAddress.setChainAddress(i);
-			byte[] expandedSeed = expandSecretKeySeed(i, skSeed);
-			publicKey[i] = chain(expandedSeed, 0, params.getWinternitzParameter() - 1, pubSeed, otsHashAddress);
-		}
-		return new WOTSPlusPublicKey(params, publicKey);
-	}
-	
+
 	/**
 	 * Creates a signature for the n-byte messageDigest.
 	 * @param messageDigest Digest to sign.
@@ -138,45 +98,6 @@ public class WOTSPlus {
 		for (int i = 0; i < params.getLen(); i++) {
 			otsHashAddress.setChainAddress(i);
 			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), otsHashAddress);
-		}
-		return new WOTSPlusSignature(params, signature);
-	}
-	
-	/**
-	 * Creates a signature for the n-byte messageDigest.
-	 * @param messageDigest Digest to sign.
-	 * @param otsHashAddress OTS hash address for randomization.
-	 * @return WOTS+ signature.
-	 */
-	protected WOTSPlusSignature sign(byte[] messageDigest, byte[] pkSeed, OTSHashAddress otsHashAddress) {
-		checkState();
-		if (messageDigest == null) {
-			throw new NullPointerException("messageDigest == null");
-		}
-		if (messageDigest.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
-		}
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
-		/* create checksum */
-		int checksum = 0;
-		for (int i = 0; i < params.getLen1(); i++) {
-			checksum += params.getWinternitzParameter() - 1 - baseWMessage.get(i);
-		}
-		checksum <<= (8 - ((params.getLen2() * XMSSUtil.log2(params.getWinternitzParameter())) % 8));
-		int len2Bytes = (int)Math.ceil((double)(params.getLen2() * XMSSUtil.log2(params.getWinternitzParameter())) / 8);
-		List<Integer> baseWChecksum = convertToBaseW(XMSSUtil.toBytesBigEndian(checksum, len2Bytes), params.getWinternitzParameter(), params.getLen2());
-		
-		/* msg || checksum */
-		baseWMessage.addAll(baseWChecksum);
-
-		/* create signature */
-		byte[][] signature = new byte[params.getLen()][];
-		for (int i = 0; i < params.getLen(); i++) {
-			otsHashAddress.setChainAddress(i);
-			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), pkSeed, otsHashAddress);
 		}
 		return new WOTSPlusSignature(params, signature);
 	}
@@ -250,49 +171,6 @@ public class WOTSPlus {
 	}
 	
 	/**
-	 * Calculates a public key based on digest and signature.
-	 * @param messageDigest The digest that was signed.
-	 * @param signature Signarure on digest.
-	 * @param otsHashAddress OTS hash address for randomization.
-	 * @param publicSeed
-	 * @return WOTS+ public key derived from digest and signature.
-	 */
-	protected WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress, byte[] publicSeed) {
-//		checkState();
-		if (messageDigest == null) {
-			throw new NullPointerException("messageDigest == null");
-		}
-		if (messageDigest.length != params.getDigestSize()) {
-			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
-		}
-		if (signature == null) {
-			throw new NullPointerException("signature == null");
-		}
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		List<Integer> baseWMessage = convertToBaseW(messageDigest, params.getWinternitzParameter(), params.getLen1());
-		/* create checksum */
-		int checksum = 0;
-		for (int i = 0; i < params.getLen1(); i++) {
-			checksum += params.getWinternitzParameter() - 1 - baseWMessage.get(i);
-		}
-		checksum <<= (8 - ((params.getLen2() * XMSSUtil.log2(params.getWinternitzParameter())) % 8));
-		int len2Bytes = (int)Math.ceil((double)(params.getLen2() * XMSSUtil.log2(params.getWinternitzParameter())) / 8);
-		List<Integer> baseWChecksum = convertToBaseW(XMSSUtil.toBytesBigEndian(checksum, len2Bytes), params.getWinternitzParameter(), params.getLen2());
-		
-		/* msg || checksum */
-		baseWMessage.addAll(baseWChecksum);
-		
-		byte[][] publicKey = new byte[params.getLen()][];
-		for (int i = 0; i < params.getLen(); i++) {
-			otsHashAddress.setChainAddress(i);
-			publicKey[i] = chain(signature.toByteArray()[i], baseWMessage.get(i), params.getWinternitzParameter() - 1 - baseWMessage.get(i), publicSeed, otsHashAddress);
-		}
-		return new WOTSPlusPublicKey(params, publicKey);
-	}
-	
-	/**
 	 * Computes an iteration of F on an n-byte input using outputs of PRF.
 	 * @param startHash Starting point.
 	 * @param startIndex Start index.
@@ -338,55 +216,6 @@ public class WOTSPlus {
 	}
 	
 	/**
-	 * Computes an iteration of F on an n-byte input using outputs of PRF.
-	 * @param startHash Starting point.
-	 * @param startIndex Start index.
-	 * @param steps Steps to take.
-	 * @param publicSeed
-	 * @param otsHashAddress OTS hash address for randomization.
-	 * @return Value obtained by iterating F for steps times on input startHash, using the outputs of PRF.
-	 */
-	private byte[] chain(byte[] startHash, int startIndex, int steps, byte[] publicSeed, OTSHashAddress otsHashAddress) {
-		//checkState();
-		int n = params.getDigestSize();
-		int w = params.getWinternitzParameter();
-		if (startHash == null) {
-			throw new NullPointerException("startHash == null");
-		}
-		if (startHash.length != n) {
-			throw new IllegalArgumentException("startHash needs to be " + n + "bytes");
-		}
-		if (otsHashAddress == null) {
-			throw new NullPointerException("otsHashAddress == null");
-		}
-		if (otsHashAddress.toByteArray() == null) {
-			throw new NullPointerException("otsHashAddress byte array == null");
-		}
-		if ((startIndex + steps) > w - 1) {
-			throw new IllegalArgumentException("max chain length must not be greater than w");
-		}
-		
-		if (steps == 0) {
-			return startHash;
-		}
-		
-		byte[] tmp = startHash;
-		for (int i = startIndex; i < (startIndex + steps) && i < w; i++) {
-			otsHashAddress.setHashAddress(i);
-			otsHashAddress.setKeyAndMask(0);
-			byte[] key = khf.PRF(publicSeed, otsHashAddress.toByteArray());
-			otsHashAddress.setKeyAndMask(1);
-			byte[] bitmask = khf.PRF(publicSeed, otsHashAddress.toByteArray());
-			byte[] tmpMasked = new byte[n];
-			for (int j = 0; j < n; j++) {
-				tmpMasked[j] = (byte)(tmp[j] ^ bitmask[j]);
-			}
-			tmp = khf.F(key, tmpMasked);
-		}
-		return tmp;
-	}
-	
-	/**
 	 * Obtain base w values from Input.
 	 * @param messageDigest Input data.
 	 * @param w Base.
@@ -394,6 +223,7 @@ public class WOTSPlus {
 	 * @return outLength-length list of base w integers. 
 	 */
 	private List<Integer> convertToBaseW(byte[] messageDigest, int w, int outLength) {
+		checkState();
 		if (messageDigest == null) {
 			throw new NullPointerException("msg == null");
 		}
@@ -421,7 +251,7 @@ public class WOTSPlus {
 	 * Check whether keys are set.
 	 */
 	private void checkState() {
-		if (secretKeySeed == null || publicSeed == null) {//
+		if (secretKeySeed == null || publicSeed == null) {
 			throw new IllegalStateException("not initialized");
 		}
 	}
@@ -440,33 +270,11 @@ public class WOTSPlus {
 	}
 	
 	/**
-	 * Expands an n-byte array into a len*n byte array.
-	 * @param byte[] skSeed.
-	 * @return byte[] Expanded private key seed.
-	 */
-	private byte[] expandSecretKeySeed(int index, byte[] skSeed) {
-		//checkState();
-		byte[] expandedSeed = null;
-		byte[] bytes = XMSSUtil.toBytesBigEndian(index, 32);
-		expandedSeed = khf.PRF(skSeed, bytes);
-		return expandedSeed;
-	}
-
-	/**
 	 * Getter parameters.
 	 * @return params.
 	 */
-	public WOTSPlusParameters getParams() {
+	protected WOTSPlusParameters getParams() {
 		return params;
-	}
-	
-	/**
-	 * Getter public seed.
-	 * @return public seed.
-	 */
-	protected byte[] getPublicSeed() {
-		checkState();
-		return publicSeed;
 	}
 	
 	/**
@@ -476,7 +284,7 @@ public class WOTSPlus {
 	protected KeyedHashFunctions getKhf() {
 		return khf;
 	}
-	
+
 	/**
 	 * Getter secret key seed.
 	 * @return secret key seed.
@@ -484,6 +292,15 @@ public class WOTSPlus {
 	protected byte[] getSecretKeySeed() {
 		checkState();
 		return secretKeySeed;
+	}
+
+	/**
+	 * Getter public seed.
+	 * @return public seed.
+	 */
+	protected byte[] getPublicSeed() {
+		checkState();
+		return publicSeed;
 	}
 	
 	/**
@@ -497,5 +314,24 @@ public class WOTSPlus {
 			privateKey[i] = expandSecretKeySeed(i);
 		}
 		return new WOTSPlusPrivateKey(params, privateKey);
+	}
+	
+	/**
+	 * Calculates a new public key based on the state of secretKeySeed, publicSeed and otsHashAddress.
+	 * @param otsHashAddress OTS hash address for randomization.
+	 * @return WOTS+ public key.
+	 */
+	protected WOTSPlusPublicKey getPublicKey(OTSHashAddress otsHashAddress) {
+		checkState();
+		if (otsHashAddress == null) {
+			throw new NullPointerException("otsHashAddress == null");
+		}
+		byte[][] publicKey = new byte[params.getLen()][];
+		/* derive public key from secretKeySeed */
+		for (int i = 0; i < params.getLen(); i++) {
+			otsHashAddress.setChainAddress(i);
+			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddress);
+		}
+		return new WOTSPlusPublicKey(params, publicKey);
 	}
 }

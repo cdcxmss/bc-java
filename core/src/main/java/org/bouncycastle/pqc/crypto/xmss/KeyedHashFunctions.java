@@ -7,7 +7,6 @@ import org.bouncycastle.crypto.Xof;
  * Crypto related functions for XMSS.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class KeyedHashFunctions {
 

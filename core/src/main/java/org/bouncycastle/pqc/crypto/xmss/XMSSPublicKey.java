@@ -6,31 +6,30 @@ import java.text.ParseException;
  * XMSS Public Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSPublicKey implements XMSSStoreableObject {
 
 	/**
-	 * XMSS object.
+	 * XMSS parameters object.
 	 */
-	private XMSS xmss;
+	private XMSSParameters xmssParams;
 	private int oid;
 	private byte[] root;
 	private byte[] publicSeed;
 	
-	public XMSSPublicKey(XMSS xmss) {
+	public XMSSPublicKey(XMSSParameters xmssParams) {
 		super();
-		if (xmss == null) {
-			throw new NullPointerException("xmss == null");
+		if (xmssParams == null) {
+			throw new NullPointerException("xmssParams == null");
 		}
-		this.xmss = xmss;
-		//oid = xmss.getParams().getOid().getOid();
+		this.xmssParams = xmssParams;
+		//oid = xmssParams.getOid().getOid();
 	}
 	
 	@Override
 	public byte[] toByteArray() {
 		/* oid || root || seed */
-		int n = xmss.getParams().getDigestSize();
+		int n = xmssParams.getDigestSize();
 		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
@@ -56,7 +55,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (in == null) {
 			throw new NullPointerException("in == null");
 		}
-		int n = xmss.getParams().getDigestSize();
+		int n = xmssParams.getDigestSize();
 		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
@@ -94,7 +93,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (root == null) {
 			throw new NullPointerException("root == null");
 		}
-		if (root.length != xmss.getParams().getDigestSize()) {
+		if (root.length != xmssParams.getDigestSize()) {
 			throw new IllegalArgumentException("length of root must be equal to length of digest");
 		}
 		this.root = root;
@@ -108,7 +107,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (publicSeed == null) {
 			throw new NullPointerException("publicSeed == null");
 		}
-		if (publicSeed.length != xmss.getParams().getDigestSize()) {
+		if (publicSeed.length != xmssParams.getDigestSize()) {
 			throw new IllegalArgumentException("size of publicSeed needs to be equal size of digest");
 		}
 		this.publicSeed = publicSeed;

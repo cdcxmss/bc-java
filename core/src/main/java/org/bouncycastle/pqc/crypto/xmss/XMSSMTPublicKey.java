@@ -6,16 +6,12 @@ import java.text.ParseException;
  * XMSSMT Public Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSMTPublicKey implements XMSSStoreableObject {
 	
 	private int oid;
-	
 	private byte[] root;
-	
 	private byte[] publicSeed;
-	
 	private XMSSMT xmssMt;
 	
 	public XMSSMTPublicKey(XMSSMT xmssMt) {
@@ -24,7 +20,6 @@ public class XMSSMTPublicKey implements XMSSStoreableObject {
 			throw new NullPointerException("xmss == null");
 		}	
 		this.xmssMt = xmssMt;
-		publicSeed = xmssMt.getPublicSeed();
 	}
 	
 	public byte[] toByteArray() {

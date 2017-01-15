@@ -6,7 +6,6 @@ import java.text.ParseException;
  * XMSSMT Private Key.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSMTPrivateKey implements XMSSStoreableObject {
 	
@@ -130,5 +129,4 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 	public void setParams(XMSSMTParameters params) {
 		this.params = params;
 	}
-
 }
