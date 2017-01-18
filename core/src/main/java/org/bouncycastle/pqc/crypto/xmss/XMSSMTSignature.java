@@ -14,14 +14,14 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 	private XMSSMTParameters params;
 	private long index;
 	private byte[] random;
-	private List<ReducedXMSSSignature> reducedSignatures;
+	private List<XMSSReducedSignature> reducedSignatures;
 	
 	public XMSSMTSignature(XMSSMTParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
-		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
+		reducedSignatures = new ArrayList<XMSSReducedSignature>();
 		this.params = params;
 	}
 
@@ -45,7 +45,7 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		XMSSUtil.copyBytesAtOffset(out, random, position);
 		position += randomSize;
 		/* copy reduced signatures */
-		for(ReducedXMSSSignature reducedSignature : reducedSignatures) {
+		for(XMSSReducedSignature reducedSignature : reducedSignatures) {
 			byte[] signature = reducedSignature.toByteArray();
 			XMSSUtil.copyBytesAtOffset(out, signature, position);
 			position += reducedSignatureSizeSingle;
@@ -77,9 +77,9 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		position += indexSize;
 		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;
-		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
+		reducedSignatures = new ArrayList<XMSSReducedSignature>();
 		while (position < in.length) {
-			ReducedXMSSSignature xmssSig = new ReducedXMSSSignature(params);
+			XMSSReducedSignature xmssSig = new XMSSReducedSignature(params);
 			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, reducedSignatureSizeSingle));
 			reducedSignatures.add(xmssSig);
 			position += reducedSignatureSizeSingle;
@@ -98,15 +98,15 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		return random;
 	}
 
-	public void setRandom(byte[] randomness) {
-		this.random = randomness;
+	public void setRandom(byte[] random) {
+		this.random = random;
 	}
 
-	public List<ReducedXMSSSignature> getReducedSignatures() {
+	public List<XMSSReducedSignature> getReducedSignatures() {
 		return reducedSignatures;
 	}
 
-	public void setReducedSignatures(List<ReducedXMSSSignature> reducedSignatures) {
+	public void setReducedSignatures(List<XMSSReducedSignature> reducedSignatures) {
 		this.reducedSignatures = reducedSignatures;
 	}
 }

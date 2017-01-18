@@ -4,7 +4,6 @@ import java.text.ParseException;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
-import org.bouncycastle.pqc.crypto.xmss.XMSS;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSPrivateKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
@@ -15,15 +14,13 @@ import junit.framework.TestCase;
  * Test cases for XMSSPrivateKey class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSPrivateKeyTest extends TestCase {
 
 	public void testPrivateKeyParsing() {
 		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
-		XMSS xmss = new XMSS(params);
 		int n = params.getDigestSize();
-		XMSSPrivateKey privateKey = new XMSSPrivateKey(xmss);
+		XMSSPrivateKey privateKey = new XMSSPrivateKey(params);
 		privateKey.setIndex(0xaa);
 		byte[] root = {
 			(byte) 0x00, (byte) 0x01, (byte) 0x02, (byte) 0x03, (byte) 0x04, (byte) 0x05, (byte) 0x06, (byte) 0x07,
@@ -37,7 +34,7 @@ public class XMSSPrivateKeyTest extends TestCase {
 		privateKey.setRoot(root);
 		byte[] export = privateKey.toByteArray();
 		
-		XMSSPrivateKey privateKey2 = new XMSSPrivateKey(xmss);
+		XMSSPrivateKey privateKey2 = new XMSSPrivateKey(params);
 		try {
 			privateKey2.parseByteArray(export);
 		} catch (ParseException ex) {

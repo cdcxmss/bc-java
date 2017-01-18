@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreableObjectInterface {
+public class XMSSSignature extends XMSSReducedSignature implements XMSSStoreableObjectInterface {
 
 	/**
 	 * Index of signature.

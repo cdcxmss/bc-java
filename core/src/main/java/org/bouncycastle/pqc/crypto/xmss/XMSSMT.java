@@ -135,7 +135,7 @@ public class XMSSMT extends XMSS {
 		
 		/* sign message digest */
 		XMSSSignature tmpSignature = treeSig(messageDigest, otsHashAddress);
-		ReducedXMSSSignature reducedSignature = new ReducedXMSSSignature(params);
+		XMSSReducedSignature reducedSignature = new XMSSReducedSignature(params);
 		reducedSignature.setSignature(tmpSignature.getSignature());
 		reducedSignature.setAuthPath(tmpSignature.getAuthPath());
 		signature.getReducedSignatures().add(reducedSignature);
@@ -157,7 +157,7 @@ public class XMSSMT extends XMSS {
 			
 			/* sign root digest of layer - 1 */
 			tmpSignature = treeSig(root.getValue(), otsHashAddress);
-			reducedSignature = new ReducedXMSSSignature(params);
+			reducedSignature = new XMSSReducedSignature(params);
 			reducedSignature.setSignature(tmpSignature.getSignature());
 			reducedSignature.setAuthPath(tmpSignature.getAuthPath());
 			signature.getReducedSignatures().add(reducedSignature);
@@ -195,7 +195,7 @@ public class XMSSMT extends XMSS {
 		wotsPlus.importKeys(new byte[params.getDigestSize()], publicKey.getPublicSeed());
 
 		/* get root node on layer 0 */
-		ReducedXMSSSignature xmssMTSignature = signature.getReducedSignatures().get(0);
+		XMSSReducedSignature xmssMTSignature = signature.getReducedSignatures().get(0);
 		XMSSNode rootNode = getRootNodeFromSignature(messageDigest, xmssMTSignature, otsHashAddress);
 		for (int layer = 1; layer < params.getLayers(); layer++) {
 			xmssMTSignature = signature.getReducedSignatures().get(layer);

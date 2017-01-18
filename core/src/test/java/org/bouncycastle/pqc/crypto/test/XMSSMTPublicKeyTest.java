@@ -4,7 +4,6 @@ import java.text.ParseException;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
-import org.bouncycastle.pqc.crypto.xmss.XMSSMT;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTPublicKey;
 import org.bouncycastle.util.Arrays;
@@ -30,9 +29,8 @@ public class XMSSMTPublicKeyTest extends TestCase {
 				(byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00
 		};
 		
-		XMSSMTParameters params = new XMSSMTParameters(layers, totalHeight, new SHA256Digest(), new NullPRNG());
-		XMSSMT xmssMt = new XMSSMT(params);
-		XMSSMTPublicKey publicKey = new XMSSMTPublicKey(xmssMt);
+		XMSSMTParameters params = new XMSSMTParameters(totalHeight, layers, new SHA256Digest(), new NullPRNG());
+		XMSSMTPublicKey publicKey = new XMSSMTPublicKey(params);
 		try {
 			publicKey.parseByteArray(publicKeyBytes);
 			byte[] export = publicKey.toByteArray();
@@ -42,6 +40,4 @@ public class XMSSMTPublicKeyTest extends TestCase {
 			fail();
 		}
 	}
-	
-	
 }

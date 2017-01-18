@@ -35,7 +35,7 @@ public class XMSSMTPrivateKeyTest extends TestCase {
 				(byte)0xd4 
 				};
 		
-		XMSSMTParameters params = new XMSSMTParameters(layers, totalHeight, new SHA256Digest(), new NullPRNG());
+		XMSSMTParameters params = new XMSSMTParameters(totalHeight, layers, new SHA256Digest(), new NullPRNG());
 		XMSSMTPrivateKey privateKey = new XMSSMTPrivateKey(params);
 		try {
 			privateKey.parseByteArray(privateKeyBytes);
@@ -46,5 +46,4 @@ public class XMSSMTPrivateKeyTest extends TestCase {
 			fail();
 		}
 	}
-		
 }

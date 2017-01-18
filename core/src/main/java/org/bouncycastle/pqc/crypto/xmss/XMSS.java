@@ -324,7 +324,7 @@ public class XMSS {
 	 * @param signature XMSS signature.
 	 * @return Root node calculated from signature.
 	 */
-	protected XMSSNode getRootNodeFromSignature(byte[] messageDigest, ReducedXMSSSignature signature, OTSHashAddress otsHashAddress) {
+	protected XMSSNode getRootNodeFromSignature(byte[] messageDigest, XMSSReducedSignature signature, OTSHashAddress otsHashAddress) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
@@ -389,8 +389,11 @@ public class XMSS {
 		XMSSPublicKey publicKey = new XMSSPublicKey(params);
 		publicKey.parseByteArray(pubKey);
 
-		/* reinitialize WOTS+ object */
+		/* set index */
 		int index = signature.getIndex();
+		setIndex(index);
+
+		/* reinitialize WOTS+ object */
 		byte[] publicSeed = publicKey.getPublicSeed();
 		wotsPlus.importKeys(new byte[params.getDigestSize()], publicSeed);
 		
@@ -449,7 +452,7 @@ public class XMSS {
 	 * Getter WOTS+.
 	 * @return WOTS+ instance.
 	 */
-	protected WOTSPlus getWOTSPlus() {
+	public WOTSPlus getWOTSPlus() {
 		return wotsPlus;
 	}
 	

@@ -15,7 +15,7 @@ import org.bouncycastle.util.encoders.Hex;
 import junit.framework.TestCase;
 
 /**
- * Test cases for XMSSUtil class.
+ * Test cases for KeyedHashFunctions class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */

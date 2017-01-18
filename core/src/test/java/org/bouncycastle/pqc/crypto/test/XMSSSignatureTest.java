@@ -16,7 +16,6 @@ import junit.framework.TestCase;
  * Test cases for XMSSSignature class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
 public class XMSSSignatureTest extends TestCase {
 
@@ -26,7 +25,7 @@ public class XMSSSignatureTest extends TestCase {
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);
-		XMSSSignature sig2 = new XMSSSignature(xmss);
+		XMSSSignature sig2 = new XMSSSignature(params);
 		try {
 			sig2.parseByteArray(sig1);
 		} catch (ParseException ex) {
@@ -43,7 +42,7 @@ public class XMSSSignatureTest extends TestCase {
 		xmss.generateKeys();
 		byte[] message = new byte[1024];
 		byte[] sig1 = xmss.sign(message);
-		XMSSSignature sig2 = new XMSSSignature(xmss);
+		XMSSSignature sig2 = new XMSSSignature(params);
 		try {
 			sig2.parseByteArray(sig1);
 		} catch (ParseException ex) {

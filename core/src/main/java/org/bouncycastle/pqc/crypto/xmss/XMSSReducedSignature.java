@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class ReducedXMSSSignature implements XMSSStoreableObjectInterface {
+public class XMSSReducedSignature implements XMSSStoreableObjectInterface {
 	
 	/**
 	 * XMSS object.
@@ -29,7 +29,7 @@ public class ReducedXMSSSignature implements XMSSStoreableObjectInterface {
 	 * @param signature The WOTS+ signature.
 	 * @param authPath The authentication path.
 	 */
-	public ReducedXMSSSignature(XMSSParameters params) {
+	public XMSSReducedSignature(XMSSParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");

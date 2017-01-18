@@ -13,11 +13,11 @@ import org.bouncycastle.crypto.Digest;
 public class XMSSMTParameters extends XMSSParameters {
 	
 	private XMSSOidInterface oid;
-	private int layers;
 	private int totalHeight;
+	private int layers;
 
-	public XMSSMTParameters(int layers, int totalHeight, Digest digest, SecureRandom prng) {
-		super(XMSSTreeHeight(layers, totalHeight), digest, prng);
+	public XMSSMTParameters(int totalHeight, int layers, Digest digest, SecureRandom prng) {
+		super(XMSSTreeHeight(totalHeight, layers), digest, prng);
 		this.layers = layers;
 		this.totalHeight = totalHeight;
 		oid = XMSSMTOid.lookup(getDigest().getAlgorithmName(), getDigestSize(), getWinternitzParameter(), getWOTSPlus().getParams().getLen(), totalHeight, layers);
@@ -28,7 +28,7 @@ public class XMSSMTParameters extends XMSSParameters {
 		*/
 	}
 	
-	private static int XMSSTreeHeight(int layers, int totalHeight) throws IllegalArgumentException {
+	private static int XMSSTreeHeight(int totalHeight, int layers) throws IllegalArgumentException {
 		if (totalHeight < 2) {
 			throw new IllegalArgumentException("totalHeight must be > 1");
 		}
@@ -42,11 +42,11 @@ public class XMSSMTParameters extends XMSSParameters {
 		return oid;
 	}
 	
-	public int getLayers() {
-		return layers;
-	}
-
 	public int getTotalHeight() {
 		return totalHeight;
+	}
+	
+	public int getLayers() {
+		return layers;
 	}
 }
