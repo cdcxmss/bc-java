@@ -35,9 +35,9 @@ public class XMSSMT extends XMSS {
 		xmssPublicKey.setPublicSeed(privateKey.getPublicSeed());
 		xmssPublicKey.setRoot(new byte[params.getDigestSize()]);
 		
-		/* import and generate root for top level tree */
+		/* import to xmss */
 		try {
-			importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
+			super.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -78,7 +78,6 @@ public class XMSSMT extends XMSS {
 		return privateKey;
 	}
 	
-	/*
 	@Override
 	public void importKeys(byte[] privateKey, byte[] publicKey) throws ParseException {
 		if (privateKey == null) {
@@ -87,21 +86,37 @@ public class XMSSMT extends XMSS {
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
-		XMSSMTPrivateKey tmpPrivateKey = new XMSSMTPrivateKey(params);
-		tmpPrivateKey.parseByteArray(privateKey);
-		XMSSMTPublicKey tmpPublicKey = new XMSSMTPublicKey(this);
-		tmpPublicKey.parseByteArray(publicKey);
-		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getRoot(), tmpPublicKey.getRoot())) {
+		XMSSMTPrivateKey xmssMTPrivateKey = new XMSSMTPrivateKey(params);
+		xmssMTPrivateKey.parseByteArray(privateKey);
+		XMSSMTPublicKey xmssMTPublicKey = new XMSSMTPublicKey(params);
+		xmssMTPublicKey.parseByteArray(publicKey);
+		if (!XMSSUtil.compareByteArray(xmssMTPrivateKey.getRoot(), xmssMTPublicKey.getRoot())) {
 			throw new IllegalStateException("root of private key and public key do not match");
 		}
-		if (!XMSSUtil.compareByteArray(tmpPrivateKey.getPublicSeed(), tmpPublicKey.getPublicSeed())) {
+		if (!XMSSUtil.compareByteArray(xmssMTPrivateKey.getPublicSeed(), xmssMTPublicKey.getPublicSeed())) {
 			throw new IllegalStateException("publicSeed of private key and public key do not match");
 		}
-		this.privateKey = tmpPrivateKey;
-		this.publicKey = tmpPublicKey;
-		this.publicSeed = this.publicKey.getPublicSeed();
+
+		/* init global xmss */
+		XMSSPrivateKey xmssPrivateKey = new XMSSPrivateKey(params);
+		xmssPrivateKey.setSecretKeySeed(xmssMTPrivateKey.getSecretKeySeed());
+		xmssPrivateKey.setSecretKeyPRF(xmssMTPrivateKey.getSecretKeyPRF());
+		xmssPrivateKey.setPublicSeed(xmssMTPrivateKey.getPublicSeed());
+		xmssPrivateKey.setRoot(xmssMTPrivateKey.getRoot());
+
+		XMSSPublicKey xmssPublicKey = new XMSSPublicKey(params);
+		xmssPublicKey.setPublicSeed(xmssMTPrivateKey.getPublicSeed());
+		xmssPublicKey.setRoot(xmssMTPrivateKey.getRoot());
+		
+		/* import to xmss */
+		try {
+			super.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		this.privateKey = xmssMTPrivateKey;
+		this.publicKey = xmssMTPublicKey;
 	}
-	*/
 	
 	@Override
 	public byte[] sign(byte[] message) {

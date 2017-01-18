@@ -36,7 +36,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		int position = 0;
 		/* copy index */
 		byte[] indexBytes = XMSSUtil.toBytesBigEndian(globalIndex, indexSize);
-		XMSSUtil.copyBytesAtOffset(out, indexBytes, 0);
+		XMSSUtil.copyBytesAtOffset(out, indexBytes, position);
 		position += indexSize;
 		/* copy secretKeySeed */
 		XMSSUtil.copyBytesAtOffset(out, secretKeySeed, position);
@@ -58,8 +58,8 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 			throw new NullPointerException("in == null");
 		}
 		int n = params.getDigestSize();
-		int height = params.getHeight();
-		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
+		int totalHeight = params.getTotalHeight();
+		int indexSize = (int)Math.ceil(totalHeight / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
@@ -69,8 +69,8 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 			throw new ParseException("private key has wrong size", 0);
 		}
 		int position = 0;
-		globalIndex = XMSSUtil.bytesToLongBigEndian(in, position);
-		if (!XMSSUtil.isIndexValid(height, globalIndex)) {
+		globalIndex = XMSSUtil.bytesToXBigEndian(in, position, indexSize);
+		if (!XMSSUtil.isIndexValid(totalHeight, globalIndex)) {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;

@@ -39,7 +39,7 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		int position = 0;
 		/* copy index */
 		byte[] indexBytes = XMSSUtil.toBytesBigEndian(index, indexSize);
-		XMSSUtil.copyBytesAtOffset(out, indexBytes, 0);
+		XMSSUtil.copyBytesAtOffset(out, indexBytes, position);
 		position += indexSize;
 		/* copy random */
 		XMSSUtil.copyBytesAtOffset(out, random, position);
