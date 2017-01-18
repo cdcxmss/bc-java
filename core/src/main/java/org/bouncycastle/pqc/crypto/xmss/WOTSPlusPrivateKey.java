@@ -21,12 +21,17 @@ public class WOTSPlusPrivateKey {
 			throw new NullPointerException("privateKey byte array == null");
 		}
 		if (privateKey.length != params.getLen()) {
-			throw new IllegalArgumentException("wrong privateKey size");
+			throw new IllegalArgumentException("wrong privateKey format");
+		}
+		for (int i = 0; i < privateKey.length; i++) {
+			if (privateKey[i].length != params.getDigestSize()) {
+				throw new IllegalArgumentException("wrong privateKey format");
+			}
 		}
 		this.privateKey = privateKey;
 	}
 	
-	protected byte[][] toByteArray() {
+	public byte[][] toByteArray() {
 		return XMSSUtil.cloneArray(privateKey);
 	}
 }

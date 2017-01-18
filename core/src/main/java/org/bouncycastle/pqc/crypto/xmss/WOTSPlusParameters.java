@@ -14,7 +14,7 @@ public class WOTSPlusParameters {
 	/**
 	 * OID.
 	 */
-	private WOTSPlusOid oid;
+	private XMSSOidInterface oid;
 	/**
 	 * Digest used in WOTS+.
 	 */
@@ -53,11 +53,10 @@ public class WOTSPlusParameters {
 		digestSize = XMSSUtil.getDigestSize(digest);
 		winternitzParameter = 16;
 		calculateLen();
-		WOTSPlusOid oid = WOTSPlusOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, len);
+		oid = WOTSPlusOid.lookup(digest.getAlgorithmName(), digestSize, winternitzParameter, len);
 		if (oid == null) {
 			throw new InvalidParameterException();
 		}
-		this.oid = oid;
 	}
 	
 	/**
@@ -73,7 +72,7 @@ public class WOTSPlusParameters {
 	 * Getter OID.
 	 * @return WOTS+ OID.
 	 */
-	protected WOTSPlusOid getOid() {
+	protected XMSSOidInterface getOid() {
 		return oid;
 	}
 	

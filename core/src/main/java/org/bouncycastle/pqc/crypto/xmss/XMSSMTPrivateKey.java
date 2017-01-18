@@ -7,7 +7,7 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSMTPrivateKey implements XMSSStoreableObject {
+public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	
 	private XMSSMTParameters params;
 	private long globalIndex;
@@ -26,7 +26,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 	public byte[] toByteArray() {
 		/* index || secretKeySeed || secretKeyPRF || publicSeed || root */
 		int n = params.getDigestSize();
-		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
@@ -35,7 +35,8 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
-		XMSSUtil.longToBytesBigEndianOffset(out, globalIndex, position);
+		byte[] indexBytes = XMSSUtil.toBytesBigEndian(globalIndex, indexSize);
+		XMSSUtil.copyBytesAtOffset(out, indexBytes, 0);
 		position += indexSize;
 		/* copy secretKeySeed */
 		XMSSUtil.copyBytesAtOffset(out, secretKeySeed, position);
@@ -58,7 +59,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 		}
 		int n = params.getDigestSize();
 		int height = params.getHeight();
-		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
@@ -68,7 +69,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 			throw new ParseException("private key has wrong size", 0);
 		}
 		int position = 0;
-		globalIndex = XMSSUtil.bytesToIntBigEndian(in, position);
+		globalIndex = XMSSUtil.bytesToLongBigEndian(in, position);
 		if (!XMSSUtil.isIndexValid(height, globalIndex)) {
 			throw new ParseException("index out of bounds", 0);
 		}
@@ -120,13 +121,5 @@ public class XMSSMTPrivateKey implements XMSSStoreableObject {
 
 	public void setRoot(byte[] root) {
 		this.root = root;
-	}
-
-	public XMSSMTParameters getParams() {
-		return params;
-	}
-
-	public void setParams(XMSSMTParameters params) {
-		this.params = params;
 	}
 }

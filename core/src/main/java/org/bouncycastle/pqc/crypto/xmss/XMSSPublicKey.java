@@ -7,29 +7,29 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSPublicKey implements XMSSStoreableObject {
+public class XMSSPublicKey implements XMSSStoreableObjectInterface {
 
 	/**
 	 * XMSS parameters object.
 	 */
-	private XMSSParameters xmssParams;
+	private XMSSParameters params;
 	private int oid;
 	private byte[] root;
 	private byte[] publicSeed;
 	
-	public XMSSPublicKey(XMSSParameters xmssParams) {
+	public XMSSPublicKey(XMSSParameters params) {
 		super();
-		if (xmssParams == null) {
-			throw new NullPointerException("xmssParams == null");
+		if (params == null) {
+			throw new NullPointerException("params == null");
 		}
-		this.xmssParams = xmssParams;
+		this.params = params;
 		//oid = xmssParams.getOid().getOid();
 	}
 	
 	@Override
 	public byte[] toByteArray() {
 		/* oid || root || seed */
-		int n = xmssParams.getDigestSize();
+		int n = params.getDigestSize();
 		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
@@ -55,7 +55,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (in == null) {
 			throw new NullPointerException("in == null");
 		}
-		int n = xmssParams.getDigestSize();
+		int n = params.getDigestSize();
 		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
@@ -74,15 +74,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		*/
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 		position += rootSize;
-		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
-	}
-	
-	public int getOid() {
-		return oid;
-	}
-	
-	public void setOid(int oid) {
-		this.oid = oid;
+		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, publicSeedSize);
 	}
 	
 	public byte[] getRoot() {
@@ -93,7 +85,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (root == null) {
 			throw new NullPointerException("root == null");
 		}
-		if (root.length != xmssParams.getDigestSize()) {
+		if (root.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("length of root must be equal to length of digest");
 		}
 		this.root = root;
@@ -107,7 +99,7 @@ public class XMSSPublicKey implements XMSSStoreableObject {
 		if (publicSeed == null) {
 			throw new NullPointerException("publicSeed == null");
 		}
-		if (publicSeed.length != xmssParams.getDigestSize()) {
+		if (publicSeed.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of publicSeed needs to be equal size of digest");
 		}
 		this.publicSeed = publicSeed;

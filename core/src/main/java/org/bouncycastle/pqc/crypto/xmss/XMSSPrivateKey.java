@@ -7,12 +7,12 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSPrivateKey implements XMSSStoreableObject {
+public class XMSSPrivateKey implements XMSSStoreableObjectInterface {
 
 	/**
 	 * XMSS parameters object.
 	 */
-	private XMSSParameters xmssParams;
+	private XMSSParameters params;
 	/**
 	 * Index for WOTS+ keys (randomization factor).
 	 */
@@ -34,19 +34,19 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 	 */
 	private byte[] root;
 	
-	public XMSSPrivateKey(XMSSParameters xmssParams) {
+	public XMSSPrivateKey(XMSSParameters params) {
 		super();
-		if (xmssParams == null) {
-			throw new NullPointerException("xmssParams == null");
+		if (params == null) {
+			throw new NullPointerException("params == null");
 		}
-		this.xmssParams = xmssParams;
+		this.params = params;
 		index = 0;
 	}
 	
 	@Override
 	public byte[] toByteArray() {
 		/* index || secretKeySeed || secretKeyPRF || publicSeed || root */
-		int n = xmssParams.getDigestSize();
+		int n = params.getDigestSize();
 		int indexSize = 4;
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
@@ -77,8 +77,8 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 		if (in == null) {
 			throw new NullPointerException("in == null");
 		}
-		int n = xmssParams.getDigestSize();
-		int height = xmssParams.getHeight();
+		int n = params.getDigestSize();
+		int height = params.getHeight();
 		int indexSize = 4;
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
@@ -119,7 +119,7 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 		if (secretKeySeed == null) {
 			throw new NullPointerException("secretKeySeed == null");
 		}
-		if (secretKeySeed.length != xmssParams.getDigestSize()) {
+		if (secretKeySeed.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of secretKeySeed needs to be equal size of digest");
 		}
 		this.secretKeySeed = secretKeySeed;
@@ -133,7 +133,7 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 		if (secretKeyPRF == null) {
 			throw new NullPointerException("secretKeyPRF == null");
 		}
-		if (secretKeyPRF.length != xmssParams.getDigestSize()) {
+		if (secretKeyPRF.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of secretKeyPRF needs to be equal size of digest");
 		}
 		this.secretKeyPRF = secretKeyPRF;
@@ -147,7 +147,7 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 		if (publicSeed == null) {
 			throw new NullPointerException("publicSeed == null");
 		}
-		if (publicSeed.length != xmssParams.getDigestSize()) {
+		if (publicSeed.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of publicSeed needs to be equal size of digest");
 		}
 		this.publicSeed = publicSeed;
@@ -161,7 +161,7 @@ public class XMSSPrivateKey implements XMSSStoreableObject {
 		if (root == null) {
 			throw new NullPointerException("root == null");
 		}
-		if (root.length != xmssParams.getDigestSize()) {
+		if (root.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of root needs to be equal size of digest");
 		}
 		this.root = root;

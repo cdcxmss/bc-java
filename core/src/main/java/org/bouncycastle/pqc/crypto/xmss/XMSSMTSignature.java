@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSMTSignature implements XMSSStoreableObject {
+public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 	
 	private XMSSMTParameters params;
 	private long index;
@@ -32,8 +32,9 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		int len = params.getWOTSPlus().getParams().getLen();
 		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignaturesSize = ((params.getHeight() + len) * n) * params.getLayers();
-		int totalSize = indexSize + randomSize + reducedSignaturesSize;
+		int reducedSignatureSizeSingle = (params.getHeight() + len) * n;
+		int reducedSignaturesSizeTotal = reducedSignatureSizeSingle * params.getLayers();
+		int totalSize = indexSize + randomSize + reducedSignaturesSizeTotal;
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
@@ -44,11 +45,10 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		XMSSUtil.copyBytesAtOffset(out, random, position);
 		position += randomSize;
 		/* copy reduced signatures */
-		int reducedXMSSSignatureSize = (params.getHeight() + len) * n;
 		for(ReducedXMSSSignature reducedSignature : reducedSignatures) {
 			byte[] signature = reducedSignature.toByteArray();
 			XMSSUtil.copyBytesAtOffset(out, signature, position);
-			position += reducedXMSSSignatureSize;
+			position += reducedSignatureSizeSingle;
 		}
 		return out;
 	}
@@ -61,10 +61,11 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		int n = params.getDigestSize();
 		int len = params.getWOTSPlus().getParams().getLen();
 		int totalHeight = params.getTotalHeight();
-		int indexSize = (int) Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignaturesSize = (params.getTotalHeight() + len * params.getLayers())* n;
-		int totalSize = indexSize + randomSize + reducedSignaturesSize;
+		int reducedSignatureSizeSingle = (params.getHeight() + len) * n;
+		int reducedSignaturesSizeTotal = reducedSignatureSizeSingle * params.getLayers();
+		int totalSize = indexSize + randomSize + reducedSignaturesSizeTotal;
 		if (in.length != totalSize) {
 			throw new ParseException("signature has wrong size", 0);
 		}
@@ -77,14 +78,11 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;
 		reducedSignatures = new ArrayList<ReducedXMSSSignature>();
-		int reducedXmssSigSize = (params.getHeight() + len) * n;
-		XMSSParameters xmssParameters = new XMSSParameters(params.getHeight(), params.getDigest(), params.getPRNG());
-		XMSS xmss = new XMSS(xmssParameters);
 		while (position < in.length) {
-			ReducedXMSSSignature xmssSig = new ReducedXMSSSignature(xmss);
-			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, reducedXmssSigSize));
+			ReducedXMSSSignature xmssSig = new ReducedXMSSSignature(params);
+			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, reducedSignatureSizeSingle));
 			reducedSignatures.add(xmssSig);
-			position += reducedXmssSigSize;
+			position += reducedSignatureSizeSingle;
 		}
 	}
 
@@ -110,13 +108,5 @@ public class XMSSMTSignature implements XMSSStoreableObject {
 
 	public void setReducedSignatures(List<ReducedXMSSSignature> reducedSignatures) {
 		this.reducedSignatures = reducedSignatures;
-	}
-	
-	public void addReducedSignature(ReducedXMSSSignature sig) {
-		reducedSignatures.add(sig);
-	}
-	
-	public ReducedXMSSSignature getReducedSignature(int index) {
-		return reducedSignatures.get(index);
 	}
 }

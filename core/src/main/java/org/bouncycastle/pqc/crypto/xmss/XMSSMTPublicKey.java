@@ -7,33 +7,36 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSMTPublicKey implements XMSSStoreableObject {
+public class XMSSMTPublicKey implements XMSSStoreableObjectInterface {
 	
 	private int oid;
 	private byte[] root;
 	private byte[] publicSeed;
-	private XMSSMT xmssMt;
+	private XMSSMTParameters params;
 	
-	public XMSSMTPublicKey(XMSSMT xmssMt) {
+	public XMSSMTPublicKey(XMSSMTParameters params) {
 		super();
-		if (xmssMt == null) {
-			throw new NullPointerException("xmss == null");
+		if (params == null) {
+			throw new NullPointerException("params == null");
 		}	
-		this.xmssMt = xmssMt;
+		this.params = params;
 	}
 	
 	public byte[] toByteArray() {
 		/* oid || root || seed */
-		int n = xmssMt.getParams().getDigestSize();
-//		int oidSize = 4;
+		int n = params.getDigestSize();
+		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
-		int totalSize = rootSize + publicSeedSize;//oidSize + 
+		int totalSize = rootSize + publicSeedSize;
+		//int totalSize = oidSize + rootSize + publicSeedSize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy oid */
-//		XMSSUtil.intToBytesBigEndianOffset(out, oid, position);
-//		position += oidSize;
+		/*
+		XMSSUtil.intToBytesBigEndianOffset(out, oid, position);
+		position += oidSize;
+		*/
 		/* copy root */
 		XMSSUtil.copyBytesAtOffset(out, root, position);
 		position += rootSize;
@@ -47,23 +50,25 @@ public class XMSSMTPublicKey implements XMSSStoreableObject {
 		if (in == null) {
 			throw new NullPointerException("in == null");
 		}
-		int n = xmssMt.getParams().getDigestSize();
-//		int oidSize = 4;
+		int n = params.getDigestSize();
+		//int oidSize = 4;
 		int rootSize = n;
 		int publicSeedSize = n;
-		int totalSize = rootSize + publicSeedSize;//oidSize + 
+		int totalSize = rootSize + publicSeedSize;
 		if (in.length != totalSize) {
 			throw new ParseException("public key has wrong size", 0);
 		}
 		int position = 0;
-//		oid = XMSSUtil.bytesToIntBigEndian(in, position);
-//		if (oid != xmssMt.getParams().getOid().getOid()) {
-//			throw new ParseException("public key not compatible with current instance parameters", 0);
-//		}
-//		position += oidSize;
+		/*
+		oid = XMSSUtil.bytesToIntBigEndian(in, position);
+		if (oid != params.getOid().getOid()) {
+			throw new ParseException("wrong oid", 0);
+		}
+		position += oidSize;
+		*/
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 		position += rootSize;
-		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
+		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, publicSeedSize);
 	}
 	
 	public byte[] getRoot() {
@@ -81,5 +86,4 @@ public class XMSSMTPublicKey implements XMSSStoreableObject {
 	public void setPublicSeed(byte[] seed) {
 		publicSeed = seed;
 	}
-
 }

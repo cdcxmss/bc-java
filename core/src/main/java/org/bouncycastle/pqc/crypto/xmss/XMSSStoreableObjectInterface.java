@@ -7,7 +7,7 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public interface XMSSStoreableObject {
+public interface XMSSStoreableObjectInterface {
 
 	/**
 	 * Create byte representation of object.

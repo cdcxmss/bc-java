@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.Digest;
  */
 public class XMSSParameters {
 
-	private XMSSOid oid;
+	private XMSSOidInterface oid;
 	private WOTSPlus wotsPlus;
 	private SecureRandom prng;
 	private int height;
@@ -33,24 +33,23 @@ public class XMSSParameters {
 		wotsPlus = new WOTSPlus(new WOTSPlusParameters(digest));
 		this.prng = prng;
 		this.height = height;
-		XMSSOid oid = XMSSOid.lookup(getDigest().getAlgorithmName(), getDigestSize(), getWinternitzParameter(), wotsPlus.getParams().getLen(), height);
-		/* TODO: XMSS single variant params are incompatible to those in XMSS^MT
+		oid = XMSSOid.lookup(getDigest().getAlgorithmName(), getDigestSize(), getWinternitzParameter(), wotsPlus.getParams().getLen(), height);
+		/*
 		if (oid == null) {
 			throw new InvalidParameterException();
 		}
 		*/
-		this.oid = oid;
 	}
 	
-	public XMSSOid getOid() {
+	public XMSSOidInterface getOid() {
 		return oid;
 	}
 
-	public Digest getDigest() {
+	protected Digest getDigest() {
 		return wotsPlus.getParams().getDigest();
 	}
 	
-	public SecureRandom getPRNG() {
+	protected SecureRandom getPRNG() {
 		return prng;
 	}
 	
@@ -66,7 +65,7 @@ public class XMSSParameters {
 		return height;
 	}
 	
-	public WOTSPlus getWOTSPlus() {
+	protected WOTSPlus getWOTSPlus() {
 		return wotsPlus;
 	}
 }

@@ -4,7 +4,7 @@ import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.Xof;
 
 /**
- * Crypto related functions for XMSS.
+ * Crypto functions for XMSS.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */

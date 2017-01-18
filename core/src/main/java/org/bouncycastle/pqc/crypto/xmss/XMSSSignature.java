@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreableObject {
+public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreableObjectInterface {
 
 	/**
 	 * Index of signature.
@@ -26,22 +26,21 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 	 * @param signature The WOTS+ signature.
 	 * @param authPath The authentication path.
 	 */
-	public XMSSSignature(XMSS xmss) {
-		super(xmss);
-		if (xmss == null) {
-			throw new NullPointerException("xmss == null");
+	public XMSSSignature(XMSSParameters params) {
+		super(params);
+		if (params == null) {
+			throw new NullPointerException("params == null");
 		}
-		this.xmss = xmss;
 	}
 
 	@Override
 	public byte[] toByteArray() {
 		/* index || random || signature || authentication path */
-		int n = xmss.getParams().getDigestSize();
+		int n = getParams().getDigestSize();
 		int indexSize = 4;
 		int randomSize = n;
-		int signatureSize = xmss.getWOTSPlus().getParams().getLen() * n;
-		int authPathSize = xmss.getParams().getHeight() * n;
+		int signatureSize = getParams().getWOTSPlus().getParams().getLen() * n;
+		int authPathSize = getParams().getHeight() * n;
 		int totalSize = indexSize + randomSize + signatureSize + authPathSize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
@@ -52,14 +51,14 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 		XMSSUtil.copyBytesAtOffset(out, random, position);
 		position += randomSize;
 		/* copy signature */
-		byte[][] signature = this.signature.toByteArray();
+		byte[][] signature = getSignature().toByteArray();
 		for (int i = 0; i < signature.length; i++) {
 			XMSSUtil.copyBytesAtOffset(out, signature[i], position);
 			position += n;
 		}
 		/* copy authentication path */
-		for (int i = 0; i < authPath.size(); i++) {
-			byte[] value = authPath.get(i).getValue();
+		for (int i = 0; i < getAuthPath().size(); i++) {
+			byte[] value = getAuthPath().get(i).getValue();
 			XMSSUtil.copyBytesAtOffset(out, value, position);
 			position += n;
 		}
@@ -71,9 +70,9 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 		if (in == null) {
 			throw new NullPointerException("in == null");
 		}
-		int n = xmss.getParams().getDigestSize();
-		int len = xmss.getWOTSPlus().getParams().getLen();
-		int height = xmss.getParams().getHeight();
+		int n = getParams().getDigestSize();
+		int len = getParams().getWOTSPlus().getParams().getLen();
+		int height = getParams().getHeight();
 		int indexSize = 4;
 		int randomSize = n;
 		int signatureSize = len * n;
@@ -90,18 +89,18 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 		position += indexSize;
 		random = XMSSUtil.extractBytesAtOffset(in, position, randomSize);
 		position += randomSize;
-		byte[][] wotsPlusSignature = new byte[xmss.getWOTSPlus().getParams().getLen()][];
+		byte[][] wotsPlusSignature = new byte[len][];
 		for (int i = 0; i < wotsPlusSignature.length; i++) {
 			wotsPlusSignature[i] = XMSSUtil.extractBytesAtOffset(in, position, n);
 			position += n;
 		}
-		signature = new WOTSPlusSignature(xmss.getWOTSPlus().getParams(), wotsPlusSignature);
+		setSignature(new WOTSPlusSignature(getParams().getWOTSPlus().getParams(), wotsPlusSignature));
 		List<XMSSNode> nodeList = new ArrayList<XMSSNode>();
 		for (int i = 0; i < height; i++) {
 			nodeList.add(new XMSSNode(i, XMSSUtil.extractBytesAtOffset(in, position, n)));
 			position += n;
 		}
-		authPath = nodeList;
+		setAuthPath(nodeList);
 	}
 
 	/**
@@ -136,50 +135,9 @@ public class XMSSSignature extends ReducedXMSSSignature implements XMSSStoreable
 		if (random == null) {
 			throw new NullPointerException("random == null");
 		}
-		if (random.length != xmss.getParams().getDigestSize()) {
+		if (random.length != getParams().getDigestSize()) {
 			throw new IllegalArgumentException("size of random needs to be equal to size of digest");
 		}
 		this.random = random;
-	}
-
-	/**
-	 * Getter signature.
-	 * @return WOTS+ signature.
-	 */
-	public WOTSPlusSignature getSignature() {
-		return signature;
-	}
-	
-	/**
-	 * Setter WOTS+ signature
-	 * @param signature WOTS+ signature.
-	 */
-	public void setSignature(WOTSPlusSignature signature) {
-		if (signature == null) {
-			throw new NullPointerException("signature == null");
-		}
-		this.signature = signature;
-	}
-
-	/**
-	 * Getter authentication path.
-	 * @return Authentication path.
-	 */
-	public List<XMSSNode> getAuthPath() {
-		return authPath;
-	}
-	
-	/**
-	 * Setter authentication path.
-	 * @param authPath Authentication path.
-	 */
-	public void setAuthPath(List<XMSSNode> authPath) {
-		if (authPath == null) {
-			throw new NullPointerException("authPath == null");
-		}
-		if (authPath.size() != xmss.getParams().getHeight()) {
-			throw new IllegalArgumentException("size of authPath needs to be equal to height of tree");
-		}
-		this.authPath = authPath;
 	}
 }

@@ -23,10 +23,15 @@ public class WOTSPlusSignature {
 		if (signature.length != params.getLen()) {
 			throw new IllegalArgumentException("wrong signature size");
 		}
+		for (int i = 0; i < signature.length; i++) {
+			if (signature[i].length != params.getDigestSize()) {
+				throw new IllegalArgumentException("wrong privateKey format");
+			}
+		}
 		this.signature = signature;
 	}
 	
-	protected byte[][] toByteArray() {
+	public byte[][] toByteArray() {
 		return XMSSUtil.cloneArray(signature);
 	}
 }

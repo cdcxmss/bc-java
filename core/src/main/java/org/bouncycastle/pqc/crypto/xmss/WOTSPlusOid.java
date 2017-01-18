@@ -9,7 +9,7 @@ import java.util.Map;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class WOTSPlusOid {
+public class WOTSPlusOid implements XMSSOidInterface {
 
 	/**
 	 * XMSS OID lookup table.
@@ -74,7 +74,8 @@ public class WOTSPlusOid {
 	 * Getter OID.
 	 * @return OID.
 	 */
-	protected int getOid() {
+	@Override
+	public int getOid() {
 		return oid;
 	}
 

@@ -171,18 +171,15 @@ public class XMSSUtil {
 	 */
 	public static byte[] concat(byte[]... arrays) {
 		int totalLength = 0;
-	    for (int i = 0; i < arrays.length; i++)
-	    {
+	    for (int i = 0; i < arrays.length; i++) {
 	        totalLength += arrays[i].length;
 	    }
 	    byte[] result = new byte[totalLength];
 	    int currentIndex = 0;
-	    for (int i = 0; i < arrays.length; i++)
-	    {
+	    for (int i = 0; i < arrays.length; i++) {
 	        System.arraycopy(arrays[i], 0, result, currentIndex, arrays[i].length);
 	        currentIndex += arrays[i].length;
 	    }
-
 	    return result;
 	}
 	
@@ -272,7 +269,7 @@ public class XMSSUtil {
 			throw new IllegalArgumentException("offset hast to be >= 0");
 		}
 		if ((src.length + offset) > dst.length) {
-			throw new IllegalArgumentException("src length + offset must not be greater then size of destination");
+			throw new IllegalArgumentException("src length + offset must not be greater than size of destination");
 		}
 		for (int i = 0; i < src.length; i++) {
 			dst[offset + i] = src[i];
@@ -336,7 +333,7 @@ public class XMSSUtil {
 	}
 
 	public static int getLeafIndex(long index, int xmssTreeHeight) {
-		return (int) (index & ((1L << xmssTreeHeight) - 1L));
+		return (int)(index & ((1L << xmssTreeHeight) - 1L));
 	}
 	
 	public static long getTreeIndex(long index, int xmssTreeHeight) {

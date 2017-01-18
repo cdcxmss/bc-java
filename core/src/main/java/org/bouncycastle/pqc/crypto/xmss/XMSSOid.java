@@ -8,9 +8,8 @@ import java.util.Map;
  * XMSSOid class.
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
- * @author Niklas Bunzel <niklas.bunzel@gmx.de>
  */
-public class XMSSOid {
+public class XMSSOid implements XMSSOidInterface {
 
 	/**
 	 * XMSS OID lookup table.
@@ -89,6 +88,7 @@ public class XMSSOid {
 	 * Getter OID.
 	 * @return OID.
 	 */
+	@Override
 	public int getOid() {
 		return oid;
 	}

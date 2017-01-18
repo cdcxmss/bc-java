@@ -23,10 +23,15 @@ public class WOTSPlusPublicKey {
 		if (publicKey.length != params.getLen()) {
 			throw new IllegalArgumentException("wrong publicKey size");
 		}
+		for (int i = 0; i < publicKey.length; i++) {
+			if (publicKey[i].length != params.getDigestSize()) {
+				throw new IllegalArgumentException("wrong privateKey format");
+			}
+		}
 		this.publicKey = publicKey;
 	}
 	
-	protected byte[][] toByteArray() {
+	public byte[][] toByteArray() {
 		return XMSSUtil.cloneArray(publicKey);
 	}
 }
