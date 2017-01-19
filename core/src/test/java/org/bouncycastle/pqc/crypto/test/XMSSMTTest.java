@@ -208,4 +208,66 @@ public class XMSSMTTest extends TestCase {
 			fail();
 		}
 	}
+	
+	public void testRandom() {
+		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA512Digest(), new NullPRNG());
+		XMSSMT xmss1 = new XMSSMT(params);
+		xmss1.generateKeys();
+		byte[] publicKey = xmss1.getPublicKey();
+		byte[] message = new byte[1024];
+		
+		for (int i = 0; i < 5; i++) {
+			xmss1.sign(message);
+		}
+		byte[] signature = xmss1.sign(message);
+		assertTrue(XMSSUtil.compareByteArray(publicKey, xmss1.getPublicKey()));
+		try {
+			xmss1.verifySignature(message, signature, publicKey);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		assertTrue(XMSSUtil.compareByteArray(publicKey, xmss1.getPublicKey()));
+		xmss1.sign(message);
+		byte[] privateKey7 = xmss1.getPrivateKey();
+		try {
+			xmss1.verifySignature(message, signature, publicKey);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		assertTrue(XMSSUtil.compareByteArray(privateKey7, xmss1.getPrivateKey()));
+		byte[] signature7 = xmss1.sign(message);
+
+		try {
+			xmss1.importKeys(privateKey7, publicKey);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		byte[] signature7AfterImport = xmss1.sign(message);
+		assertTrue(XMSSUtil.compareByteArray(signature7AfterImport, signature7));
+		
+		XMSSMTParameters params2 = new XMSSMTParameters(20, 10, new SHA512Digest(), new NullPRNG());
+		XMSSMT xmss2 = new XMSSMT(params2);
+		try {
+			boolean valid = xmss2.verifySignature(message, signature7, publicKey);
+			assertTrue(valid);
+			valid = xmss2.verifySignature(message, signature, publicKey);
+			assertTrue(valid);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+		XMSSMT xmss3 = new XMSSMT(params);
+		try {
+			xmss3.importKeys(privateKey7, publicKey);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		byte[] signatureAgain = xmss3.sign(message);
+		assertTrue(XMSSUtil.compareByteArray(signatureAgain, signature7));
+	}
 }

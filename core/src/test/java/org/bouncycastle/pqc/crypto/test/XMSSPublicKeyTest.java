@@ -6,7 +6,6 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
-import org.bouncycastle.pqc.crypto.xmss.XMSSPrivateKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSPublicKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 

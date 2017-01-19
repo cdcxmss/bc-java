@@ -57,26 +57,4 @@ public class XMSSPrivateKeyTest extends TestCase {
 			assertEquals(0x00, pkByte[i]);
 		}
 	}
-	
-	public void testSetIndexPositive() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
-		XMSSPrivateKey pk = new XMSSPrivateKey(params);
-		int leafs = 1 << params.getHeight();
-		try {
-			pk.setIndex(leafs - 1);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			fail();
-		}
-	}
-	
-	public void testSetIndexNegative() {
-		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
-		XMSSPrivateKey pk = new XMSSPrivateKey(params);
-		int leafs = 1 << params.getHeight();
-		try {
-			pk.setIndex(leafs);
-			fail();
-		} catch (Exception ex) { }
-	}
 }

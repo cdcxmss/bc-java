@@ -6,9 +6,6 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTPrivateKey;
-import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
-import org.bouncycastle.pqc.crypto.xmss.XMSSPrivateKey;
-import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 import org.bouncycastle.util.Arrays;
 
 import junit.framework.TestCase;
@@ -58,27 +55,5 @@ public class XMSSMTPrivateKeyTest extends TestCase {
 		for (int i = 0; i < pkByte.length; i++) {
 			assertEquals(0x00, pkByte[i]);
 		}
-	}
-	
-	public void testSetIndexPositive() {
-		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
-		XMSSMTPrivateKey pk = new XMSSMTPrivateKey(params);
-		long leafs = 1L << params.getTotalHeight();
-		try {
-			pk.setIndex(leafs - 1);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			fail();
-		}
-	}
-	
-	public void testSetIndexNegative() {
-		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
-		XMSSMTPrivateKey pk = new XMSSMTPrivateKey(params);
-		long leafs = 1L << params.getTotalHeight();
-		try {
-			pk.setIndex(leafs);
-			fail();
-		} catch (Exception ex) { }
 	}
 }

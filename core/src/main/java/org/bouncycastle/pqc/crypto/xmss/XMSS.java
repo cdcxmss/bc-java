@@ -455,9 +455,6 @@ public class XMSS {
 	 * @return Root of binary tree.
 	 */
 	public byte[] getRoot() {
-		if (privateKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
 		return privateKey.getRoot();
 	}
 	
@@ -471,9 +468,6 @@ public class XMSS {
 	 * @return Index.
 	 */
 	public long getIndex() {
-		if (privateKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
 		return privateKey.getIndex();
 	}
 	
@@ -494,9 +488,6 @@ public class XMSS {
 	 * @return XMSS private key.
 	 */
 	public byte[] getPrivateKey() {
-		if (privateKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
 		return privateKey.toByteArray();
     }
 
@@ -505,9 +496,6 @@ public class XMSS {
 	 * @return XMSS public key.
 	 */
 	public byte[] getPublicKey() {
-		if (publicKey == null) {
-			throw new IllegalStateException("not initialized");
-		}
 		return publicKey.toByteArray();
 	}
 }
