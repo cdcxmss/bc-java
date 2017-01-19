@@ -96,9 +96,6 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	}
 
 	public void setIndex(long index) {
-		if (!XMSSUtil.isIndexValid(params.getTotalHeight(), index)) {
-			throw new IllegalArgumentException("index out of bounds");
-		}
 		this.index = index;
 	}
 

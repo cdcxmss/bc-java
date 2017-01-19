@@ -390,6 +390,7 @@ public class XMSS {
 
 		/* set index */
 		int index = signature.getIndex();
+		int currentIndex = privateKey.getIndex();
 		setIndex(index);
 
 		/* reinitialize WOTS+ object */
@@ -406,6 +407,9 @@ public class XMSS {
 		
 		/* get root from signature */
 		XMSSNode rootNodeFromSignature = getRootNodeFromSignature(messageDigest, signature, otsHashAddress);
+		
+		/* reset index */
+		setIndex(currentIndex);
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
 	}
 	
@@ -442,7 +446,7 @@ public class XMSS {
 	 * Getter WOTS+.
 	 * @return WOTS+ instance.
 	 */
-	public WOTSPlus getWOTSPlus() {
+	protected WOTSPlus getWOTSPlus() {
 		return wotsPlus;
 	}
 	
