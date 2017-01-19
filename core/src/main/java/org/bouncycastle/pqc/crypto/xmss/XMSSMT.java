@@ -122,7 +122,7 @@ public class XMSSMT extends XMSS {
 	
 	@Override
 	public byte[] sign(byte[] message) {
-		long globalIndex = privateKey.getIndex();
+		long globalIndex = getIndex();
 		if (!XMSSUtil.isIndexValid(params.getTotalHeight(), globalIndex)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
@@ -237,6 +237,10 @@ public class XMSSMT extends XMSS {
 		return params;
 	}
 	
+	public long getIndex() {
+		return privateKey.getIndex();
+	}
+
 	public byte[] getPrivateKey() {
 		return privateKey.toByteArray();
 	}

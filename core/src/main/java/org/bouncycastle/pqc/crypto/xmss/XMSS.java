@@ -351,7 +351,7 @@ public class XMSS {
 		
 		for (int k = 0; k < params.getHeight(); k++){
 			hashTreeAddress.setTreeHeight(k);
-			if (Math.floor(getIndex() / (1 << k)) % 2 == 0) {
+			if (Math.floor(privateKey.getIndex() / (1 << k)) % 2 == 0) {
 				hashTreeAddress.setTreeIndex(hashTreeAddress.getTreeIndex() / 2);
 				node[1] = randomizeHash(node[0], signature.getAuthPath().get(k), hashTreeAddress);
 				node[1].setHeight(node[1].getHeight() + 1);
@@ -466,15 +466,15 @@ public class XMSS {
 	 * Getter index.
 	 * @return Index.
 	 */
-	public int getIndex() {
+	public long getIndex() {
 		if (privateKey == null) {
 			throw new IllegalStateException("not initialized");
 		}
 		return privateKey.getIndex();
 	}
 	
-	protected void setIndex(int index) {
-		privateKey.setIndex(index);
+	protected void setIndex(long index) {
+		privateKey.setIndex((int)index);
 	}
 	
 	/**
