@@ -47,4 +47,36 @@ public class XMSSPrivateKeyTest extends TestCase {
 		assertEquals(true, XMSSUtil.compareByteArray(privateKey.getPublicSeed(), privateKey2.getPublicSeed()));
 		assertEquals(true, XMSSUtil.compareByteArray(privateKey.getRoot(), privateKey2.getRoot()));
 	}
+	
+	public void testConstructor() {
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSSPrivateKey pk = new XMSSPrivateKey(params);
+		byte[] pkByte = pk.toByteArray();
+		/* check everything is 0 */
+		for (int i = 0; i < pkByte.length; i++) {
+			assertEquals(0x00, pkByte[i]);
+		}
+	}
+	
+	public void testSetIndexPositive() {
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSSPrivateKey pk = new XMSSPrivateKey(params);
+		int leafs = 1 << params.getHeight();
+		try {
+			pk.setIndex(leafs - 1);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			fail();
+		}
+	}
+	
+	public void testSetIndexNegative() {
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSSPrivateKey pk = new XMSSPrivateKey(params);
+		int leafs = 1 << params.getHeight();
+		try {
+			pk.setIndex(leafs);
+			fail();
+		} catch (Exception ex) { }
+	}
 }

@@ -36,4 +36,14 @@ public class XMSSMTSignatureTest extends TestCase {
 			fail();
 		}
 	}
+	
+	public void testConstructor() {
+		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
+		XMSSMTSignature sig = new XMSSMTSignature(params);
+		byte[] sigByte = sig.toByteArray();
+		/* check everything is 0 */
+		for (int i = 0; i < sigByte.length; i++) {
+			assertEquals(0x00, sigByte[i]);
+		}
+	}
 }

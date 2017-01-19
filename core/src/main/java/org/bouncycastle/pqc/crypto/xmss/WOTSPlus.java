@@ -38,7 +38,10 @@ public class WOTSPlus {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
-		khf = new KeyedHashFunctions(params.getDigest(), params.getDigestSize());
+		int n = params.getDigestSize();
+		khf = new KeyedHashFunctions(params.getDigest(), n);
+		secretKeySeed = new byte[n];
+		publicSeed = new byte[n];
 	}
 
 	/**
@@ -70,7 +73,6 @@ public class WOTSPlus {
 	 * @return WOTS+ signature.
 	 */
 	protected WOTSPlusSignature sign(byte[] messageDigest, OTSHashAddress otsHashAddress) {
-		checkState();
 		if (messageDigest == null) {
 			throw new NullPointerException("messageDigest == null");
 		}
@@ -99,7 +101,9 @@ public class WOTSPlus {
 			otsHashAddress.setChainAddress(i);
 			signature[i] = chain(expandSecretKeySeed(i), 0, baseWMessage.get(i), otsHashAddress);
 		}
-		return new WOTSPlusSignature(params, signature);
+		WOTSPlusSignature wotsPlusSig = new WOTSPlusSignature(params);
+		wotsPlusSig.setSignature(signature);
+		return wotsPlusSig;
 	}
 	
 	/**
@@ -110,7 +114,6 @@ public class WOTSPlus {
 	 * @return true if signature was correct false else.
 	 */
 	protected boolean verifySignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress) {
-		checkState();
 		if (messageDigest == null) {
 			throw new NullPointerException("messageDigest == null");
 		}
@@ -136,7 +139,6 @@ public class WOTSPlus {
 	 * @return WOTS+ public key derived from digest and signature.
 	 */
 	protected WOTSPlusPublicKey getPublicKeyFromSignature(byte[] messageDigest, WOTSPlusSignature signature, OTSHashAddress otsHashAddress) {
-		checkState();
 		if (messageDigest == null) {
 			throw new NullPointerException("messageDigest == null");
 		}
@@ -167,7 +169,9 @@ public class WOTSPlus {
 			otsHashAddress.setChainAddress(i);
 			publicKey[i] = chain(signature.toByteArray()[i], baseWMessage.get(i), params.getWinternitzParameter() - 1 - baseWMessage.get(i), otsHashAddress);
 		}
-		return new WOTSPlusPublicKey(params, publicKey);
+		WOTSPlusPublicKey wotsPlusPublicKey = new WOTSPlusPublicKey(params);
+		wotsPlusPublicKey.setPublicKey(publicKey);
+		return wotsPlusPublicKey;
 	}
 	
 	/**
@@ -179,7 +183,6 @@ public class WOTSPlus {
 	 * @return Value obtained by iterating F for steps times on input startHash, using the outputs of PRF.
 	 */
 	private byte[] chain(byte[] startHash, int startIndex, int steps, OTSHashAddress otsHashAddress) {
-		checkState();
 		int n = params.getDigestSize();
 		if (startHash == null) {
 			throw new NullPointerException("startHash == null");
@@ -223,7 +226,6 @@ public class WOTSPlus {
 	 * @return outLength-length list of base w integers. 
 	 */
 	private List<Integer> convertToBaseW(byte[] messageDigest, int w, int outLength) {
-		checkState();
 		if (messageDigest == null) {
 			throw new NullPointerException("msg == null");
 		}
@@ -248,21 +250,11 @@ public class WOTSPlus {
 	}
 	
 	/**
-	 * Check whether keys are set.
-	 */
-	private void checkState() {
-		if (secretKeySeed == null || publicSeed == null) {
-			throw new IllegalStateException("not initialized");
-		}
-	}
-	
-	/**
 	 * Derive private key at index from secret key seed.
 	 * @param index Index.
 	 * @return Private key at index.
 	 */
 	private byte[] expandSecretKeySeed(int index) {
-		checkState();
 		if (index < 0 || index >= params.getLen()) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
@@ -290,7 +282,6 @@ public class WOTSPlus {
 	 * @return secret key seed.
 	 */
 	protected byte[] getSecretKeySeed() {
-		checkState();
 		return secretKeySeed;
 	}
 
@@ -299,7 +290,6 @@ public class WOTSPlus {
 	 * @return public seed.
 	 */
 	protected byte[] getPublicSeed() {
-		checkState();
 		return publicSeed;
 	}
 	
@@ -308,12 +298,13 @@ public class WOTSPlus {
 	 * @return WOTS+ private key.
 	 */
 	protected WOTSPlusPrivateKey getPrivateKey() {
-		checkState();
 		byte[][] privateKey = new byte[params.getLen()][];
 		for (int i = 0; i < privateKey.length; i++) {
 			privateKey[i] = expandSecretKeySeed(i);
 		}
-		return new WOTSPlusPrivateKey(params, privateKey);
+		WOTSPlusPrivateKey wotsPlusPrivateKey = new WOTSPlusPrivateKey(params);
+		wotsPlusPrivateKey.setPrivateKey(privateKey);
+		return wotsPlusPrivateKey;
 	}
 	
 	/**
@@ -322,7 +313,6 @@ public class WOTSPlus {
 	 * @return WOTS+ public key.
 	 */
 	protected WOTSPlusPublicKey getPublicKey(OTSHashAddress otsHashAddress) {
-		checkState();
 		if (otsHashAddress == null) {
 			throw new NullPointerException("otsHashAddress == null");
 		}
@@ -332,6 +322,8 @@ public class WOTSPlus {
 			otsHashAddress.setChainAddress(i);
 			publicKey[i] = chain(expandSecretKeySeed(i), 0, params.getWinternitzParameter() - 1, otsHashAddress);
 		}
-		return new WOTSPlusPublicKey(params, publicKey);
+		WOTSPlusPublicKey wotsPlusPublicKey = new WOTSPlusPublicKey(params);
+		wotsPlusPublicKey.setPublicKey(publicKey);
+		return wotsPlusPublicKey;
 	}
 }

@@ -7,13 +7,23 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class WOTSPlusPublicKey {
 
+	private WOTSPlusParameters params;
 	private byte[][] publicKey;
 	
-	protected WOTSPlusPublicKey(WOTSPlusParameters params, byte[][] publicKey) {
+	protected WOTSPlusPublicKey(WOTSPlusParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
+		this.params = params;
+		publicKey = new byte[params.getLen()][params.getDigestSize()];
+	}
+	
+	public byte[][] getPublicKey() {
+		return publicKey;
+	}
+	
+	public void setPublicKey(byte[][] publicKey) {
 		if (publicKey == null) {
 			throw new NullPointerException("publicKey == null");
 		}
@@ -25,7 +35,7 @@ public class WOTSPlusPublicKey {
 		}
 		for (int i = 0; i < publicKey.length; i++) {
 			if (publicKey[i].length != params.getDigestSize()) {
-				throw new IllegalArgumentException("wrong privateKey format");
+				throw new IllegalArgumentException("wrong publicKey format");
 			}
 		}
 		this.publicKey = publicKey;

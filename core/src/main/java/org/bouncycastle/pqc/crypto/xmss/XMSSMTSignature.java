@@ -21,8 +21,9 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
-		reducedSignatures = new ArrayList<XMSSReducedSignature>();
 		this.params = params;
+		random = new byte[params.getDigestSize()];
+		reducedSignatures = new ArrayList<XMSSReducedSignature>();
 	}
 
 	@Override

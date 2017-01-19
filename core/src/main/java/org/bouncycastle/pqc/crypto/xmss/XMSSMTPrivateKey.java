@@ -10,7 +10,7 @@ import java.text.ParseException;
 public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	
 	private XMSSMTParameters params;
-	private long globalIndex;
+	private long index;
 	private byte[] secretKeySeed;
 	private byte[] secretKeyPRF;
 	private byte[] publicSeed;
@@ -18,8 +18,16 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	
 	public XMSSMTPrivateKey(XMSSMTParameters params) {
 		super();
+		if (params == null) {
+			throw new NullPointerException("params == null");
+		}
 		this.params = params;
-		globalIndex = 0;
+		index = 0;
+		int n = params.getDigestSize();
+		secretKeySeed = new byte[n];
+		secretKeyPRF = new byte[n];
+		publicSeed = new byte[n];
+		root = new byte[n];
 	}
 	
 	@Override
@@ -35,7 +43,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
-		byte[] indexBytes = XMSSUtil.toBytesBigEndian(globalIndex, indexSize);
+		byte[] indexBytes = XMSSUtil.toBytesBigEndian(index, indexSize);
 		XMSSUtil.copyBytesAtOffset(out, indexBytes, position);
 		position += indexSize;
 		/* copy secretKeySeed */
@@ -69,8 +77,8 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 			throw new ParseException("private key has wrong size", 0);
 		}
 		int position = 0;
-		globalIndex = XMSSUtil.bytesToXBigEndian(in, position, indexSize);
-		if (!XMSSUtil.isIndexValid(totalHeight, globalIndex)) {
+		index = XMSSUtil.bytesToXBigEndian(in, position, indexSize);
+		if (!XMSSUtil.isIndexValid(totalHeight, index)) {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
@@ -83,12 +91,15 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
 	}
 	
-	public long getGlobalIndex() {
-		return globalIndex;
+	public long getIndex() {
+		return index;
 	}
 
-	public void setGlobalIndex(long globalIndex) {
-		this.globalIndex = globalIndex;
+	public void setIndex(long index) {
+		if (!XMSSUtil.isIndexValid(params.getTotalHeight(), index)) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
+		this.index = index;
 	}
 
 	public byte[] getSecretKeySeed() {
@@ -96,6 +107,12 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	}
 
 	public void setSecretKeySeed(byte[] secretKeySeed) {
+		if (secretKeySeed == null) {
+			throw new NullPointerException("secretKeySeed == null");
+		}
+		if (secretKeySeed.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of secretKeySeed needs to be equal size of digest");
+		}
 		this.secretKeySeed = secretKeySeed;
 	}
 
@@ -104,6 +121,12 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	}
 
 	public void setSecretKeyPRF(byte[] secretKeyPRF) {
+		if (secretKeyPRF == null) {
+			throw new NullPointerException("secretKeyPRF == null");
+		}
+		if (secretKeyPRF.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of secretKeyPRF needs to be equal size of digest");
+		}
 		this.secretKeyPRF = secretKeyPRF;
 	}
 
@@ -112,6 +135,12 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	}
 
 	public void setPublicSeed(byte[] publicSeed) {
+		if (publicSeed == null) {
+			throw new NullPointerException("publicSeed == null");
+		}
+		if (publicSeed.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of publicSeed needs to be equal size of digest");
+		}
 		this.publicSeed = publicSeed;
 	}
 
@@ -120,6 +149,12 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	}
 
 	public void setRoot(byte[] root) {
+		if (root == null) {
+			throw new NullPointerException("root == null");
+		}
+		if (root.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of root needs to be equal size of digest");
+		}
 		this.root = root;
 	}
 }

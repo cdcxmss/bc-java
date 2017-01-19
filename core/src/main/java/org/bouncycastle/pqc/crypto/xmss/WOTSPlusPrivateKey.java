@@ -7,13 +7,23 @@ package org.bouncycastle.pqc.crypto.xmss;
  */
 public class WOTSPlusPrivateKey {
 
+	private WOTSPlusParameters params;
 	private byte[][] privateKey;
 	
-	protected WOTSPlusPrivateKey(WOTSPlusParameters params, byte[][] privateKey) {
+	protected WOTSPlusPrivateKey(WOTSPlusParameters params) {
 		super();
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
+		this.params = params;
+		privateKey = new byte[params.getLen()][params.getDigestSize()];
+	}
+	
+	public byte[][] getPrivateKey() {
+		return privateKey;
+	}
+	
+	public void setPrivateKey(byte[][] privateKey) {
 		if (privateKey == null) {
 			throw new NullPointerException("privateKey == null");
 		}
@@ -30,7 +40,7 @@ public class WOTSPlusPrivateKey {
 		}
 		this.privateKey = privateKey;
 	}
-	
+
 	public byte[][] toByteArray() {
 		return XMSSUtil.cloneArray(privateKey);
 	}

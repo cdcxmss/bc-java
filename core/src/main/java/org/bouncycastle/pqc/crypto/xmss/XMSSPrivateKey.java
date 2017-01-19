@@ -41,6 +41,11 @@ public class XMSSPrivateKey implements XMSSStoreableObjectInterface {
 		}
 		this.params = params;
 		index = 0;
+		int n = params.getDigestSize();
+		secretKeySeed = new byte[n];
+		secretKeyPRF = new byte[n];
+		publicSeed = new byte[n];
+		root = new byte[n];
 	}
 	
 	@Override
@@ -108,6 +113,9 @@ public class XMSSPrivateKey implements XMSSStoreableObjectInterface {
 	}
 	
 	public void setIndex(int index) {
+		if (!XMSSUtil.isIndexValid(params.getHeight(), index)) {
+			throw new IllegalArgumentException("index out of bounds");
+		}
 		this.index = index;
 	}
 	

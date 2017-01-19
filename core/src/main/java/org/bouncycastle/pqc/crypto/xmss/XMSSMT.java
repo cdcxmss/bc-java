@@ -17,6 +17,8 @@ public class XMSSMT extends XMSS {
 	public XMSSMT(XMSSMTParameters params) {
 		super(params);
 		this.params = params;
+		privateKey = new XMSSMTPrivateKey(params);
+		publicKey = new XMSSMTPublicKey(params);
 	}
 	
 	@Override
@@ -120,7 +122,7 @@ public class XMSSMT extends XMSS {
 	
 	@Override
 	public byte[] sign(byte[] message) {
-		long globalIndex = privateKey.getGlobalIndex();
+		long globalIndex = privateKey.getIndex();
 		if (!XMSSUtil.isIndexValid(params.getTotalHeight(), globalIndex)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
@@ -179,7 +181,7 @@ public class XMSSMT extends XMSS {
 		}
 		
 		/* update private key */
-		privateKey.setGlobalIndex(globalIndex + 1);
+		privateKey.setIndex(globalIndex + 1);
 		
 		return signature.toByteArray();
 	}

@@ -291,7 +291,6 @@ public class XMSS {
 	 * @return XMSS signature on digest of message.
 	 */
 	public byte[] sign(byte[] message) {
-		checkState();
 		int index = privateKey.getIndex();
 		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
 			throw new IllegalArgumentException("index out of bounds");
@@ -431,15 +430,6 @@ public class XMSS {
 		return khf.PRF(privateKey.getSecretKeySeed(), otsHashAddress.toByteArray());
 	}
 	
-	/**
-	 * Check whether keys are available.
-	 */
-	private void checkState() {
-		if (privateKey == null || publicKey == null || getPublicSeed() == null) {
-			throw new IllegalStateException("not initialized");
-		}
-	}
-
 	/**
 	 * Getter XMSS params.
 	 * @return XMSS params.

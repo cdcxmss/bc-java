@@ -18,8 +18,8 @@ public class XMSSMTParameters extends XMSSParameters {
 
 	public XMSSMTParameters(int totalHeight, int layers, Digest digest, SecureRandom prng) {
 		super(XMSSTreeHeight(totalHeight, layers), digest, prng);
-		this.layers = layers;
 		this.totalHeight = totalHeight;
+		this.layers = layers;
 		oid = XMSSMTOid.lookup(getDigest().getAlgorithmName(), getDigestSize(), getWinternitzParameter(), getWOTSPlus().getParams().getLen(), totalHeight, layers);
 		/*
 		if (oid == null) {
@@ -38,10 +38,6 @@ public class XMSSMTParameters extends XMSSParameters {
 		return totalHeight / layers;
 	}
 
-	public XMSSOidInterface getOid() {
-		return oid;
-	}
-	
 	public int getTotalHeight() {
 		return totalHeight;
 	}

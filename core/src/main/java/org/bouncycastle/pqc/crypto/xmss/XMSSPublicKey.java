@@ -12,10 +12,10 @@ public class XMSSPublicKey implements XMSSStoreableObjectInterface {
 	/**
 	 * XMSS parameters object.
 	 */
-	private XMSSParameters params;
 	private int oid;
 	private byte[] root;
 	private byte[] publicSeed;
+	private XMSSParameters params;
 	
 	public XMSSPublicKey(XMSSParameters params) {
 		super();
@@ -23,7 +23,9 @@ public class XMSSPublicKey implements XMSSStoreableObjectInterface {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
-		//oid = xmssParams.getOid().getOid();
+		int n = params.getDigestSize();
+		root = new byte[n];
+		publicSeed = new byte[n];
 	}
 	
 	@Override

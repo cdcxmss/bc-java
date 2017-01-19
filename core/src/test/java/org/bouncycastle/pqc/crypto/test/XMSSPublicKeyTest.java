@@ -6,6 +6,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
 import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
+import org.bouncycastle.pqc.crypto.xmss.XMSSPrivateKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSPublicKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 
@@ -70,5 +71,15 @@ public class XMSSPublicKeyTest extends TestCase {
 		}
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getRoot(), publicKey2.getRoot()));
 		assertEquals(true, XMSSUtil.compareByteArray(publicKey.getPublicSeed(), publicKey2.getPublicSeed()));
+	}
+	
+	public void testConstructor() {
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSSPublicKey pk = new XMSSPublicKey(params);
+		byte[] pkByte = pk.toByteArray();
+		/* check everything is 0 */
+		for (int i = 0; i < pkByte.length; i++) {
+			assertEquals(0x00, pkByte[i]);
+		}
 	}
 }

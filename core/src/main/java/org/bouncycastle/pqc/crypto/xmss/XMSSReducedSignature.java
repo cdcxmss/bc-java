@@ -35,6 +35,8 @@ public class XMSSReducedSignature implements XMSSStoreableObjectInterface {
 			throw new NullPointerException("params == null");
 		}
 		this.params = params;
+		signature = new WOTSPlusSignature(params.getWOTSPlus().getParams());
+		authPath = new ArrayList<XMSSNode>();
 	}
 
 	@Override
@@ -81,7 +83,8 @@ public class XMSSReducedSignature implements XMSSStoreableObjectInterface {
 			wotsPlusSignature[i] = XMSSUtil.extractBytesAtOffset(in, position, n);
 			position += n;
 		}
-		signature = new WOTSPlusSignature(params.getWOTSPlus().getParams(), wotsPlusSignature);
+		signature = new WOTSPlusSignature(params.getWOTSPlus().getParams());
+		signature.setSignature(wotsPlusSignature);
 		
 		List<XMSSNode> nodeList = new ArrayList<XMSSNode>();
 		for (int i = 0; i < height; i++) {

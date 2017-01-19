@@ -52,4 +52,14 @@ public class XMSSSignatureTest extends TestCase {
 		byte[] sig3 = sig2.toByteArray();
 		assertEquals(true, XMSSUtil.compareByteArray(sig1, sig3));
 	}
+	
+	public void testConstructor() {
+		XMSSParameters params = new XMSSParameters(10, new SHA256Digest(), new NullPRNG());
+		XMSSSignature sig = new XMSSSignature(params);
+		byte[] sigByte = sig.toByteArray();
+		/* check everything is 0 */
+		for (int i = 0; i < sigByte.length; i++) {
+			assertEquals(0x00, sigByte[i]);
+		}
+	}
 }

@@ -40,4 +40,14 @@ public class XMSSMTPublicKeyTest extends TestCase {
 			fail();
 		}
 	}
+	
+	public void testConstructor() {
+		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
+		XMSSMTPublicKey pk = new XMSSMTPublicKey(params);
+		byte[] pkByte = pk.toByteArray();
+		/* check everything is 0 */
+		for (int i = 0; i < pkByte.length; i++) {
+			assertEquals(0x00, pkByte[i]);
+		}
+	}
 }

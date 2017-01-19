@@ -1,6 +1,7 @@
 package org.bouncycastle.pqc.crypto.test;
 
 import java.text.ParseException;
+import java.util.Arrays;
 
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.digests.SHA512Digest;
@@ -127,6 +128,84 @@ public class XMSSMTTest extends TestCase {
 				ex.printStackTrace();
 				fail();
 			}
+		}
+	}
+	
+	public void testImportKeysSHA256() {
+		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
+		XMSSMT xmssMT1 = new XMSSMT(params);
+		xmssMT1.generateKeys();
+		byte[] msg1 = new byte[1024];
+		byte[] msg2 = new byte[2048];
+		byte[] msg3 = new byte[3096];
+		Arrays.fill(msg1, (byte) 0xaa);
+		Arrays.fill(msg2, (byte) 0xbb);
+		Arrays.fill(msg3, (byte) 0xcc);
+		byte[] signature1 = xmssMT1.sign(msg1);
+		byte[] signature2 = xmssMT1.sign(msg2);
+		byte[] exportedPrivateKey = xmssMT1.getPrivateKey();
+		byte[] exportedPublicKey = xmssMT1.getPublicKey();
+		byte[] publicKey = xmssMT1.getPublicKey();
+		byte[] signature3 = xmssMT1.sign(msg3);
+		
+		XMSSMT xmssMT2 = new XMSSMT(params);
+		try {
+			xmssMT2.importKeys(exportedPrivateKey, exportedPublicKey);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+			fail();
+		}
+		byte[] signature4 = xmssMT2.sign(msg3);
+		assertEquals(true, XMSSUtil.compareByteArray(signature3, signature4));
+		xmssMT2.generateKeys();
+		try {
+			assertEquals(true, xmssMT2.verifySignature(msg1, signature1, publicKey));
+			assertEquals(true, xmssMT2.verifySignature(msg2, signature2, publicKey));
+			assertEquals(true, xmssMT2.verifySignature(msg3, signature3, publicKey));
+			assertEquals(false, xmssMT2.verifySignature(msg1, signature3, publicKey));
+			assertEquals(false, xmssMT2.verifySignature(msg2, signature3, publicKey));
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+			fail();
+		}
+	}
+	
+	public void testImportKeysSHA512() {
+		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA512Digest(), new NullPRNG());
+		XMSSMT xmssMT1 = new XMSSMT(params);
+		xmssMT1.generateKeys();
+		byte[] msg1 = new byte[1024];
+		byte[] msg2 = new byte[2048];
+		byte[] msg3 = new byte[3096];
+		Arrays.fill(msg1, (byte) 0xaa);
+		Arrays.fill(msg2, (byte) 0xbb);
+		Arrays.fill(msg3, (byte) 0xcc);
+		byte[] signature1 = xmssMT1.sign(msg1);
+		byte[] signature2 = xmssMT1.sign(msg2);
+		byte[] exportedPrivateKey = xmssMT1.getPrivateKey();
+		byte[] exportedPublicKey = xmssMT1.getPublicKey();
+		byte[] publicKey = xmssMT1.getPublicKey();
+		byte[] signature3 = xmssMT1.sign(msg3);
+		
+		XMSSMT xmssMT2 = new XMSSMT(params);
+		try {
+			xmssMT2.importKeys(exportedPrivateKey, exportedPublicKey);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+			fail();
+		}
+		byte[] signature4 = xmssMT2.sign(msg3);
+		assertEquals(true, XMSSUtil.compareByteArray(signature3, signature4));
+		xmssMT2.generateKeys();
+		try {
+			assertEquals(true, xmssMT2.verifySignature(msg1, signature1, publicKey));
+			assertEquals(true, xmssMT2.verifySignature(msg2, signature2, publicKey));
+			assertEquals(true, xmssMT2.verifySignature(msg3, signature3, publicKey));
+			assertEquals(false, xmssMT2.verifySignature(msg1, signature3, publicKey));
+			assertEquals(false, xmssMT2.verifySignature(msg2, signature3, publicKey));
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+			fail();
 		}
 	}
 }

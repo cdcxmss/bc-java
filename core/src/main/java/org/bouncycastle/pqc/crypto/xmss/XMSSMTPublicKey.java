@@ -20,6 +20,9 @@ public class XMSSMTPublicKey implements XMSSStoreableObjectInterface {
 			throw new NullPointerException("params == null");
 		}	
 		this.params = params;
+		int n = params.getDigestSize();
+		root = new byte[n];
+		publicSeed = new byte[n];
 	}
 	
 	public byte[] toByteArray() {
@@ -75,15 +78,27 @@ public class XMSSMTPublicKey implements XMSSStoreableObjectInterface {
 		return root;
 	}
 	
-	public byte[] getPublicSeed() {
-		return publicSeed;
-	}
-	
-	public void setRoot(byte[] root){
+	public void setRoot(byte[] root) {
+		if (root == null) {
+			throw new NullPointerException("root == null");
+		}
+		if (root.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of root needs to be equal size of digest");
+		}
 		this.root = root;
 	}
 
-	public void setPublicSeed(byte[] seed) {
-		publicSeed = seed;
+	public byte[] getPublicSeed() {
+		return publicSeed;
+	}
+
+	public void setPublicSeed(byte[] publicSeed) {
+		if (publicSeed == null) {
+			throw new NullPointerException("publicSeed == null");
+		}
+		if (publicSeed.length != params.getDigestSize()) {
+			throw new IllegalArgumentException("size of publicSeed needs to be equal size of digest");
+		}
+		this.publicSeed = publicSeed;
 	}
 }

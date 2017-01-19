@@ -1,4 +1,4 @@
-	package org.bouncycastle.pqc.crypto.xmss;
+package org.bouncycastle.pqc.crypto.xmss;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ public class XMSSSignature extends XMSSReducedSignature implements XMSSStoreable
 		if (params == null) {
 			throw new NullPointerException("params == null");
 		}
+		random = new byte[params.getDigestSize()];
 	}
 
 	@Override
@@ -94,7 +95,10 @@ public class XMSSSignature extends XMSSReducedSignature implements XMSSStoreable
 			wotsPlusSignature[i] = XMSSUtil.extractBytesAtOffset(in, position, n);
 			position += n;
 		}
-		setSignature(new WOTSPlusSignature(getParams().getWOTSPlus().getParams(), wotsPlusSignature));
+		WOTSPlusSignature wotsPlusSig = new WOTSPlusSignature(getParams().getWOTSPlus().getParams());
+		wotsPlusSig.setSignature(wotsPlusSignature);
+		setSignature(wotsPlusSig);
+		
 		List<XMSSNode> nodeList = new ArrayList<XMSSNode>();
 		for (int i = 0; i < height; i++) {
 			nodeList.add(new XMSSNode(i, XMSSUtil.extractBytesAtOffset(in, position, n)));
