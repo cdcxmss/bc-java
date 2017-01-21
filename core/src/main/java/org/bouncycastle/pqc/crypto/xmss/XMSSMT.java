@@ -126,6 +126,12 @@ public class XMSSMT {
 	}
 	
 	public byte[] sign(byte[] message) {
+		if (message == null) {
+			throw new NullPointerException("message == null");
+		}
+		/* increase index of private key */
+		privateKey.increaseIndex();
+		
 		long globalIndex = getIndex();
 		int totalHeight = params.getHeight();
 		int xmssHeight = xmss.getParams().getHeight();

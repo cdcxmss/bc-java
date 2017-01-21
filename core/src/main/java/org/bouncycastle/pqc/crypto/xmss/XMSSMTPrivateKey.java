@@ -1,6 +1,10 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.io.IOException;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 /**
  * XMSSMT Private Key.
@@ -9,12 +13,16 @@ import java.text.ParseException;
  */
 public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	
+	private static final int lastUsageByteArraySize = 54;
+	private static final int indexIncreaseCountPerHour = 250;
+	
 	private XMSSMTParameters params;
 	private long index;
 	private byte[] secretKeySeed;
 	private byte[] secretKeyPRF;
 	private byte[] publicSeed;
 	private byte[] root;
+	private ZonedDateTime lastUsage;
 	
 	public XMSSMTPrivateKey(XMSSMTParameters params) {
 		super();
@@ -28,18 +36,19 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		secretKeyPRF = new byte[n];
 		publicSeed = new byte[n];
 		root = new byte[n];
+		lastUsage = ZonedDateTime.now(ZoneOffset.UTC);
 	}
 	
 	@Override
 	public byte[] toByteArray() {
-		/* index || secretKeySeed || secretKeyPRF || publicSeed || root */
+		/* index || secretKeySeed || secretKeyPRF || publicSeed || root || lastUsage */
 		int n = params.getDigestSize();
 		int indexSize = (int)Math.ceil(params.getHeight() / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
 		int rootSize = n;
-		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize;
+		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize + lastUsageByteArraySize;
 		byte[] out = new byte[totalSize];
 		int position = 0;
 		/* copy index */
@@ -57,6 +66,13 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		position += publicSeedSize;
 		/* copy root */
 		XMSSUtil.copyBytesAtOffset(out, root, position);
+		position += rootSize;
+		/* copy last usage */
+		try {
+			XMSSUtil.copyBytesAtOffset(out, XMSSUtil.serialize(lastUsage), position);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return out;
 	}
 	
@@ -72,7 +88,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
 		int rootSize = n;
-		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize;
+		int totalSize = indexSize + secretKeySize + secretKeyPRFSize + publicSeedSize + rootSize + lastUsageByteArraySize;
 		if (in.length != totalSize) {
 			throw new ParseException("private key has wrong size", 0);
 		}
@@ -89,6 +105,20 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 		publicSeed = XMSSUtil.extractBytesAtOffset(in, position, publicSeedSize);
 		position += publicSeedSize;
 		root = XMSSUtil.extractBytesAtOffset(in, position, rootSize);
+		position += rootSize;
+		try {
+			lastUsage = (ZonedDateTime)XMSSUtil.deserialize(XMSSUtil.extractBytesAtOffset(in, position, lastUsageByteArraySize));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void increaseIndex() {
+		ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
+		long differenceHours = Duration.between(lastUsage, currentTime).toHours();
+		setIndex(getIndex() + (differenceHours * indexIncreaseCountPerHour));
 	}
 	
 	public long getIndex() {
@@ -97,6 +127,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 
 	public void setIndex(long index) {
 		this.index = index;
+		lastUsage = ZonedDateTime.now(ZoneOffset.UTC);
 	}
 
 	public byte[] getSecretKeySeed() {
@@ -153,5 +184,13 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 			throw new IllegalArgumentException("size of root needs to be equal size of digest");
 		}
 		this.root = root;
+	}
+	
+	public ZonedDateTime getLastUsage() {
+		return lastUsage;
+	}
+	
+	public void setLastUsage(ZonedDateTime lastUsage) {
+		this.lastUsage = lastUsage;
 	}
 }

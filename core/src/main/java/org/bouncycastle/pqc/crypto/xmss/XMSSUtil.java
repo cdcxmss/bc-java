@@ -1,5 +1,11 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -310,6 +316,9 @@ public class XMSSUtil {
 	 * @return true if index is valid false else.
 	 */
 	public static boolean isIndexValid(int height, long index) {
+		if (index < 0) {
+			throw new IllegalStateException("index must not be negative");
+		}
 		return index < (1L << height);
 	}
 	
@@ -338,5 +347,19 @@ public class XMSSUtil {
 	
 	public static long getTreeIndex(long index, int xmssTreeHeight) {
 		return index >> xmssTreeHeight;
+	}
+	
+	public static byte[] serialize(Object obj) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(obj);
+		oos.flush();
+		return out.toByteArray();
+	}
+	
+	public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+		ByteArrayInputStream in = new ByteArrayInputStream(data);
+		ObjectInputStream is = new ObjectInputStream(in);
+		return is.readObject();
 	}
 }

@@ -294,6 +294,9 @@ public class XMSS {
 	 * @return XMSS signature on digest of message.
 	 */
 	public byte[] sign(byte[] message) {
+		if (message == null) {
+			throw new NullPointerException("message == null");
+		}
 		int index = privateKey.getIndex();
 		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
 			throw new IllegalArgumentException("index out of bounds");

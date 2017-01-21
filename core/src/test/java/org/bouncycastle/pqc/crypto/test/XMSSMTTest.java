@@ -21,6 +21,7 @@ import junit.framework.TestCase;
  */
 public class XMSSMTTest extends TestCase {
 
+	/*
 	public void testGenKeyPairSHA256() {
 		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
 		XMSSMT xmssMT = new XMSSMT(params);
@@ -44,6 +45,8 @@ public class XMSSMTTest extends TestCase {
 		assertEquals(true, XMSSUtil.compareByteArray(Hex.decode(expectedPrivateKey), privateKey));
 		assertEquals(true, XMSSUtil.compareByteArray(Hex.decode(expectedPublicKey), publicKey));
 	}
+	*/
+	
 	
 	public void testSignSHA256() {
 		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
