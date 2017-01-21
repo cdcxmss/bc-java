@@ -33,7 +33,6 @@ public class AllTests
         //suite.addTestSuite(WOTSPlusParametersTest.class);
         //suite.addTestSuite(WOTSPlusTest.class);
         suite.addTestSuite(XMSSAddressTest.class);
-        suite.addTestSuite(XMSSMTParametersTest.class);
         suite.addTestSuite(XMSSMTPrivateKeyTest.class);
         suite.addTestSuite(XMSSMTPublicKeyTest.class);
         suite.addTestSuite(XMSSMTSignatureTest.class);

@@ -34,7 +34,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	public byte[] toByteArray() {
 		/* index || secretKeySeed || secretKeyPRF || publicSeed || root */
 		int n = params.getDigestSize();
-		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getHeight() / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;
 		int publicSeedSize = n;
@@ -66,7 +66,7 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 			throw new NullPointerException("in == null");
 		}
 		int n = params.getDigestSize();
-		int totalHeight = params.getTotalHeight();
+		int totalHeight = params.getHeight();
 		int indexSize = (int)Math.ceil(totalHeight / (double) 8);
 		int secretKeySize = n;
 		int secretKeyPRFSize = n;

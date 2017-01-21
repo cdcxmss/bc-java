@@ -20,15 +20,15 @@ public class XMSS {
 	/**
 	 * WOTS+ instance.
 	 */
-	protected WOTSPlus wotsPlus;
+	private WOTSPlus wotsPlus;
 	/**
 	 * PRNG.
 	 */
-	protected SecureRandom prng;
+	private SecureRandom prng;
 	/**
 	 * Randomization functions.
 	 */
-	protected KeyedHashFunctions khf;
+	private KeyedHashFunctions khf;
 	/**
 	 * XMSS private key.
 	 */
@@ -220,6 +220,7 @@ public class XMSS {
 		Stack<XMSSNode> stack = new Stack<XMSSNode>();
 		for (int i = 0; i < (1 << targetNodeHeight); i++) {
 			otsHashAddress.setOTSAddress(startIndex + i);
+			/* import WOTSPlusSecretKey as its needed to calculate the public key on the fly */
 			wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), getPublicSeed());
 			WOTSPlusPublicKey wotsPlusPublicKey = wotsPlus.getPublicKey(otsHashAddress);
 			lTreeAddress.setLTreeAddress(startIndex + i);
@@ -265,18 +266,20 @@ public class XMSS {
 	 * @param address OTS hash address.
 	 * @return XMSS signature.
 	 */
-	protected XMSSSignature treeSig(byte[] messageDigest, OTSHashAddress address) {
+	protected XMSSSignature treeSig(byte[] messageDigest, OTSHashAddress otsHashAddress) {
 		if (messageDigest.length != params.getDigestSize()) {
 			throw new IllegalArgumentException("size of messageDigest needs to be equal to size of digest");
 		}
-		if (address == null) {
-			throw new NullPointerException("address == null");
+		if (otsHashAddress == null) {
+			throw new NullPointerException("otsHashAddress == null");
 		}
+		/* (re)initialize WOTS+ instance */
+		wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), getPublicSeed());
 		/* create WOTS+ signature */
-		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, address);
+		WOTSPlusSignature wotsSignature = wotsPlus.sign(messageDigest, otsHashAddress);
 		
 		/* add authPath */
-		List<XMSSNode> authPath = buildAuthPath(address);
+		List<XMSSNode> authPath = buildAuthPath(otsHashAddress);
 		
 		/* assemble temp signature */
 		XMSSSignature tmpSignature = new XMSSSignature(params);
@@ -295,18 +298,15 @@ public class XMSS {
 		if (!XMSSUtil.isIndexValid(getParams().getHeight(), index)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
-		/* reinitialize WOTS+ object */
-		OTSHashAddress otsHashAddress = new OTSHashAddress();
-		otsHashAddress.setOTSAddress(index);
 		
-		wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), getPublicSeed());
-
 		/* create (randomized keyed) messageDigest of message */
 		byte[] random = khf.PRF(privateKey.getSecretKeyPRF(), XMSSUtil.toBytesBigEndian(index, 32));
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 		
 		/* create signature for messageDigest */
+		OTSHashAddress otsHashAddress = new OTSHashAddress();
+		otsHashAddress.setOTSAddress(index);
 		XMSSSignature signature = treeSig(messageDigest, otsHashAddress);
 		signature.setIndex(index);
 		signature.setRandom(random);
@@ -388,14 +388,17 @@ public class XMSS {
 		XMSSPublicKey publicKey = new XMSSPublicKey(params);
 		publicKey.parseByteArray(pubKey);
 
-		/* set index */
+		/* save state */
+		int savedIndex = privateKey.getIndex();
+		byte[] savedPublicSeed = privateKey.getPublicSeed();
+		
+		/* set index / public seed */
 		int index = signature.getIndex();
-		int currentIndex = privateKey.getIndex();
 		setIndex(index);
+		setPublicSeed(publicKey.getPublicSeed());
 
 		/* reinitialize WOTS+ object */
-		byte[] publicSeed = publicKey.getPublicSeed();
-		wotsPlus.importKeys(new byte[params.getDigestSize()], publicSeed);
+		wotsPlus.importKeys(new byte[params.getDigestSize()], getPublicSeed());
 		
 		/* create message digest */
 		byte[] concatenated = XMSSUtil.concat(signature.getRandom(), publicKey.getRoot(), XMSSUtil.toBytesBigEndian(index, params.getDigestSize()));
@@ -408,8 +411,9 @@ public class XMSS {
 		/* get root from signature */
 		XMSSNode rootNodeFromSignature = getRootNodeFromSignature(messageDigest, signature, otsHashAddress);
 		
-		/* reset index */
-		setIndex(currentIndex);
+		/* reset state */
+		setIndex(savedIndex);
+		setPublicSeed(savedPublicSeed);
 		return XMSSUtil.compareByteArray(rootNodeFromSignature.getValue(), publicKey.getRoot());
 	}
 	
@@ -450,6 +454,10 @@ public class XMSS {
 		return wotsPlus;
 	}
 	
+	protected KeyedHashFunctions getKhf() {
+		return khf;
+	}
+	
 	/**
 	 * Getter Root.
 	 * @return Root of binary tree.
@@ -467,12 +475,12 @@ public class XMSS {
 	 * Getter index.
 	 * @return Index.
 	 */
-	public long getIndex() {
+	public int getIndex() {
 		return privateKey.getIndex();
 	}
 	
-	protected void setIndex(long index) {
-		privateKey.setIndex((int)index);
+	protected void setIndex(int index) {
+		privateKey.setIndex(index);
 	}
 	
 	/**
@@ -480,7 +488,13 @@ public class XMSS {
 	 * @return Public seed.
 	 */
 	protected byte[] getPublicSeed() {
-		return wotsPlus.getPublicSeed();
+		return privateKey.getPublicSeed();
+	}
+	
+	protected void setPublicSeed(byte[] publicSeed) {
+		privateKey.setPublicSeed(publicSeed);
+		publicKey.setPublicSeed(publicSeed);
+		wotsPlus.importKeys(new byte[params.getDigestSize()], publicSeed);
 	}
 	
 	/**

@@ -8,6 +8,7 @@ import org.bouncycastle.pqc.crypto.xmss.NullPRNG;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMT;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTSignature;
+import org.bouncycastle.pqc.crypto.xmss.XMSSParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSReducedSignature;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
 
@@ -34,7 +35,7 @@ public class XMSSReducedSignatureTest extends TestCase {
 		}
 		XMSSReducedSignature reducedSignature1 = sig2.getReducedSignatures().get(0);
 		byte[] reducedSignatureBinary = reducedSignature1.toByteArray();
-		XMSSReducedSignature reducedSignature2 = new XMSSReducedSignature(params);
+		XMSSReducedSignature reducedSignature2 = new XMSSReducedSignature(new XMSSParameters(4, new SHA256Digest(), new NullPRNG()));
 		try {
 			reducedSignature2.parseByteArray(reducedSignatureBinary);
 		} catch (ParseException e) {
@@ -57,7 +58,7 @@ public class XMSSReducedSignatureTest extends TestCase {
 		}
 		XMSSReducedSignature reducedSignature1 = sig2.getReducedSignatures().get(0);
 		byte[] reducedSignatureBinary = reducedSignature1.toByteArray();
-		XMSSReducedSignature reducedSignature2 = new XMSSReducedSignature(params);
+		XMSSReducedSignature reducedSignature2 = new XMSSReducedSignature(new XMSSParameters(2, new SHA512Digest(), new NullPRNG()));
 		try {
 			reducedSignature2.parseByteArray(reducedSignatureBinary);
 		} catch (ParseException e) {
@@ -68,7 +69,7 @@ public class XMSSReducedSignatureTest extends TestCase {
 	
 	public void testConstructor() {
 		XMSSMTParameters params = new XMSSMTParameters(20, 10, new SHA512Digest(), new NullPRNG());
-		XMSSReducedSignature sig = new XMSSReducedSignature(params);
+		XMSSReducedSignature sig = new XMSSReducedSignature(new XMSSParameters(4, new SHA512Digest(), new NullPRNG()));
 		byte[] sigByte = sig.toByteArray();
 		/* check everything is 0 */
 		for (int i = 0; i < sigByte.length; i++) {

@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.test;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.Arrays;
 
@@ -269,5 +270,38 @@ public class XMSSMTTest extends TestCase {
 		}
 		byte[] signatureAgain = xmss3.sign(message);
 		assertTrue(XMSSUtil.compareByteArray(signatureAgain, signature7));
+	}
+	
+	public void testPublicSeed() {
+		byte[] message = new byte[1024];
+		XMSSMTParameters params1 = new XMSSMTParameters(20, 10, new SHA256Digest(), new SecureRandom());
+		XMSSMT mt1 = new XMSSMT(params1);
+		mt1.generateKeys();
+		byte[] publicKey1 = mt1.getPublicKey();
+		byte[] privateKey1 = mt1.getPrivateKey();
+		byte[] signature1 = mt1.sign(message);
+		
+		XMSSMTParameters params2 = new XMSSMTParameters(20, 10, new SHA256Digest(), new NullPRNG());
+		XMSSMT mt2 = new XMSSMT(params1);
+		mt2.generateKeys();
+		byte[] publicKey2 = mt2.getPublicKey();
+		byte[] privateKey2 = mt2.getPrivateKey();
+		byte[] signature2 = mt2.sign(message);
+		
+		try {
+			mt2.importKeys(privateKey2, publicKey2);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		try {
+			boolean isValid = mt2.verifySignature(message, signature1, publicKey1);
+			assertTrue(isValid);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			fail();
+		}
+		byte[] signature3 = mt2.sign(message);
+		assertTrue(XMSSUtil.compareByteArray(signature2, signature3));
 	}
 }

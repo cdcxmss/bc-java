@@ -41,10 +41,6 @@ public class XMSSParameters {
 		*/
 	}
 	
-	public XMSSOidInterface getOid() {
-		return oid;
-	}
-
 	protected Digest getDigest() {
 		return wotsPlus.getParams().getDigest();
 	}

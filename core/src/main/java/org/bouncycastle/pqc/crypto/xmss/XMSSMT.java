@@ -1,5 +1,6 @@
 package org.bouncycastle.pqc.crypto.xmss;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 
 /**
@@ -7,39 +8,44 @@ import java.text.ParseException;
  * 
  * @author Sebastian Roland <seroland86@gmail.com>
  */
-public class XMSSMT extends XMSS {
+public class XMSSMT {
 	
 	private XMSSMTParameters params;
+	private XMSS xmss;
+	private SecureRandom prng;
+	private KeyedHashFunctions khf;
 	private XMSSMTPrivateKey privateKey;
 	private XMSSMTPublicKey publicKey;
 	
 
 	public XMSSMT(XMSSMTParameters params) {
-		super(params);
+		super();
 		this.params = params;
+		xmss = params.getXMSS();
+		prng = params.getXMSS().getParams().getPRNG();
+		khf = xmss.getKhf();
 		privateKey = new XMSSMTPrivateKey(params);
 		publicKey = new XMSSMTPublicKey(params);
 	}
 	
-	@Override
 	public void generateKeys() {
 		/* generate private key */
 		privateKey = generatePrivateKey();
 		
 		/* init global xmss */
-		XMSSPrivateKey xmssPrivateKey = new XMSSPrivateKey(params);
+		XMSSPrivateKey xmssPrivateKey = new XMSSPrivateKey(xmss.getParams());
 		xmssPrivateKey.setSecretKeySeed(privateKey.getSecretKeySeed());
 		xmssPrivateKey.setSecretKeyPRF(privateKey.getSecretKeyPRF());
 		xmssPrivateKey.setPublicSeed(privateKey.getPublicSeed());
 		xmssPrivateKey.setRoot(new byte[params.getDigestSize()]);
 
-		XMSSPublicKey xmssPublicKey = new XMSSPublicKey(params);
+		XMSSPublicKey xmssPublicKey = new XMSSPublicKey(xmss.getParams());
 		xmssPublicKey.setPublicSeed(privateKey.getPublicSeed());
 		xmssPublicKey.setRoot(new byte[params.getDigestSize()]);
 		
 		/* import to xmss */
 		try {
-			super.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
+			xmss.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -52,16 +58,16 @@ public class XMSSMT extends XMSS {
 		otsHashAddress.setLayerAddress(layerAddress);
 		otsHashAddress.setTreeAddress(0);
 		
-		XMSSNode root = treeHash(0, params.getHeight(), otsHashAddress);
-		setRoot(root.getValue());
+		XMSSNode root = xmss.treeHash(0, xmss.getParams().getHeight(), otsHashAddress);
+		xmss.setRoot(root.getValue());
 		
 		/* set XMSS^MT root */
-		privateKey.setRoot(getRoot());
+		privateKey.setRoot(xmss.getRoot());
 		
 		/* create XMSS^MT public key */
 		publicKey = new XMSSMTPublicKey(params);
-		publicKey.setPublicSeed(getPublicSeed());
-		publicKey.setRoot(getRoot());
+		publicKey.setPublicSeed(xmss.getPublicSeed());
+		publicKey.setRoot(xmss.getRoot());
 	}
 	
 	private XMSSMTPrivateKey generatePrivateKey() {
@@ -80,7 +86,6 @@ public class XMSSMT extends XMSS {
 		return privateKey;
 	}
 	
-	@Override
 	public void importKeys(byte[] privateKey, byte[] publicKey) throws ParseException {
 		if (privateKey == null) {
 			throw new NullPointerException("privateKey == null");
@@ -100,19 +105,19 @@ public class XMSSMT extends XMSS {
 		}
 
 		/* init global xmss */
-		XMSSPrivateKey xmssPrivateKey = new XMSSPrivateKey(params);
+		XMSSPrivateKey xmssPrivateKey = new XMSSPrivateKey(xmss.getParams());
 		xmssPrivateKey.setSecretKeySeed(xmssMTPrivateKey.getSecretKeySeed());
 		xmssPrivateKey.setSecretKeyPRF(xmssMTPrivateKey.getSecretKeyPRF());
 		xmssPrivateKey.setPublicSeed(xmssMTPrivateKey.getPublicSeed());
 		xmssPrivateKey.setRoot(xmssMTPrivateKey.getRoot());
 
-		XMSSPublicKey xmssPublicKey = new XMSSPublicKey(params);
+		XMSSPublicKey xmssPublicKey = new XMSSPublicKey(xmss.getParams());
 		xmssPublicKey.setPublicSeed(xmssMTPrivateKey.getPublicSeed());
 		xmssPublicKey.setRoot(xmssMTPrivateKey.getRoot());
 		
 		/* import to xmss */
 		try {
-			super.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
+			xmss.importKeys(xmssPrivateKey.toByteArray(), xmssPublicKey.toByteArray());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -120,10 +125,11 @@ public class XMSSMT extends XMSS {
 		this.publicKey = xmssMTPublicKey;
 	}
 	
-	@Override
 	public byte[] sign(byte[] message) {
 		long globalIndex = getIndex();
-		if (!XMSSUtil.isIndexValid(params.getTotalHeight(), globalIndex)) {
+		int totalHeight = params.getHeight();
+		int xmssHeight = xmss.getParams().getHeight();
+		if (!XMSSUtil.isIndexValid(totalHeight, globalIndex)) {
 			throw new IllegalArgumentException("index out of bounds");
 		}
 		XMSSMTSignature signature = new XMSSMTSignature(params);
@@ -134,12 +140,14 @@ public class XMSSMT extends XMSS {
 		signature.setRandom(random);
 		byte[] concatenated = XMSSUtil.concat(random, privateKey.getRoot(), XMSSUtil.toBytesBigEndian(globalIndex, params.getDigestSize()));
 		byte[] messageDigest = khf.HMsg(concatenated, message);
-		/* sign compressed message */
 		
 		/* layer 0 */
-		long indexTree = XMSSUtil.getTreeIndex(globalIndex, params.getHeight());
-		int indexLeaf = XMSSUtil.getLeafIndex(globalIndex, params.getHeight());
-		setIndex(indexLeaf);
+		long indexTree = XMSSUtil.getTreeIndex(globalIndex, xmssHeight);
+		int indexLeaf = XMSSUtil.getLeafIndex(globalIndex, xmssHeight);
+		
+		/* reset xmss */
+		xmss.setIndex(indexLeaf);
+		xmss.setPublicSeed(getPublicSeed());
 		
 		/* create signature with XMSS tree on layer 0 */
 
@@ -148,11 +156,10 @@ public class XMSSMT extends XMSS {
 		otsHashAddress.setLayerAddress(0);
 		otsHashAddress.setTreeAddress(indexTree);
 		otsHashAddress.setOTSAddress(indexLeaf);
-		wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), getPublicSeed());
 		
 		/* sign message digest */
-		XMSSSignature tmpSignature = treeSig(messageDigest, otsHashAddress);
-		XMSSReducedSignature reducedSignature = new XMSSReducedSignature(params);
+		XMSSSignature tmpSignature = xmss.treeSig(messageDigest, otsHashAddress);
+		XMSSReducedSignature reducedSignature = new XMSSReducedSignature(xmss.getParams());
 		reducedSignature.setSignature(tmpSignature.getSignature());
 		reducedSignature.setAuthPath(tmpSignature.getAuthPath());
 		signature.getReducedSignatures().add(reducedSignature);
@@ -160,21 +167,20 @@ public class XMSSMT extends XMSS {
 		/* loop over remaining layers */
 		for (int layer = 1; layer < params.getLayers(); layer++) {
 			/* get root of layer - 1*/
-			XMSSNode root = treeHash(0, params.getHeight(), otsHashAddress);
+			XMSSNode root = xmss.treeHash(0, xmssHeight, otsHashAddress);
 
-			indexLeaf = XMSSUtil.getLeafIndex(indexTree, params.getHeight());
-			indexTree = XMSSUtil.getTreeIndex(indexTree, params.getHeight());
-			setIndex(indexLeaf);
+			indexLeaf = XMSSUtil.getLeafIndex(indexTree, xmssHeight);
+			indexTree = XMSSUtil.getTreeIndex(indexTree, xmssHeight);
+			xmss.setIndex(indexLeaf);
 			
 			/* reinitialize WOTS+ object */
 			otsHashAddress.setLayerAddress(layer);
 			otsHashAddress.setTreeAddress(indexTree);
 			otsHashAddress.setOTSAddress(indexLeaf);
-			wotsPlus.importKeys(getWOTSPlusSecretKey(otsHashAddress), getPublicSeed());
 			
 			/* sign root digest of layer - 1 */
-			tmpSignature = treeSig(root.getValue(), otsHashAddress);
-			reducedSignature = new XMSSReducedSignature(params);
+			tmpSignature = xmss.treeSig(root.getValue(), otsHashAddress);
+			reducedSignature = new XMSSReducedSignature(xmss.getParams());
 			reducedSignature.setSignature(tmpSignature.getSignature());
 			reducedSignature.setAuthPath(tmpSignature.getAuthPath());
 			signature.getReducedSignatures().add(reducedSignature);
@@ -186,7 +192,6 @@ public class XMSSMT extends XMSS {
 		return signature.toByteArray();
 	}
 	
-	@Override
 	public boolean verifySignature(byte[] message, byte[] sig, byte[] pubKey) throws ParseException {
 		/* (re)create compressed message */
 		XMSSMTSignature signature = new XMSSMTSignature(params);
@@ -198,27 +203,28 @@ public class XMSSMT extends XMSS {
 		byte[] messageDigest = khf.HMsg(concatenated, message);
 
 		long globalIndex = signature.getIndex();
-		long indexTree = XMSSUtil.getTreeIndex(globalIndex, params.getHeight());
-		int indexLeaf = XMSSUtil.getLeafIndex(globalIndex, params.getHeight());
-		setIndex(indexLeaf);
-
+		int xmssHeight = xmss.getParams().getHeight();
+		long indexTree = XMSSUtil.getTreeIndex(globalIndex, xmssHeight);
+		int indexLeaf = XMSSUtil.getLeafIndex(globalIndex, xmssHeight);
+		
+		/* adjust xmss */
+		xmss.setIndex(indexLeaf);
+		xmss.setPublicSeed(publicKey.getPublicSeed());
+		
 		/* prepare addresses */
 		OTSHashAddress otsHashAddress = new OTSHashAddress();
 		otsHashAddress.setLayerAddress(0);
 		otsHashAddress.setTreeAddress(indexTree);
 		otsHashAddress.setOTSAddress(indexLeaf);
 		
-		/* reinitialize WOTS+ object (only publicSeed needed for verification) */
-		wotsPlus.importKeys(new byte[params.getDigestSize()], publicKey.getPublicSeed());
-
 		/* get root node on layer 0 */
 		XMSSReducedSignature xmssMTSignature = signature.getReducedSignatures().get(0);
-		XMSSNode rootNode = getRootNodeFromSignature(messageDigest, xmssMTSignature, otsHashAddress);
+		XMSSNode rootNode = xmss.getRootNodeFromSignature(messageDigest, xmssMTSignature, otsHashAddress);
 		for (int layer = 1; layer < params.getLayers(); layer++) {
 			xmssMTSignature = signature.getReducedSignatures().get(layer);
-			indexLeaf = XMSSUtil.getLeafIndex(indexTree, params.getHeight());
-			indexTree = XMSSUtil.getTreeIndex(indexTree, params.getHeight());
-			setIndex(indexLeaf);
+			indexLeaf = XMSSUtil.getLeafIndex(indexTree, xmssHeight);
+			indexTree = XMSSUtil.getTreeIndex(indexTree, xmssHeight);
+			xmss.setIndex(indexLeaf);
 			
 			/* adjust address */
 			otsHashAddress.setLayerAddress(layer);
@@ -226,7 +232,7 @@ public class XMSSMT extends XMSS {
 			otsHashAddress.setOTSAddress(indexLeaf);
 			
 			/* get root node */
-			rootNode = getRootNodeFromSignature(rootNode.getValue(), xmssMTSignature, otsHashAddress);
+			rootNode = xmss.getRootNodeFromSignature(rootNode.getValue(), xmssMTSignature, otsHashAddress);
 		}
 		
 		/* compare roots */
@@ -241,6 +247,10 @@ public class XMSSMT extends XMSS {
 		return privateKey.getIndex();
 	}
 
+	protected byte[] getPublicSeed() {
+		return privateKey.getPublicSeed();
+	}
+	
 	public byte[] getPrivateKey() {
 		return privateKey.toByteArray();
 	}

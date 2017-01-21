@@ -31,9 +31,9 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		/* index || random || reduced signatures */
 		int n = params.getDigestSize();
 		int len = params.getWOTSPlus().getParams().getLen();
-		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignatureSizeSingle = (params.getHeight() + len) * n;
+		int reducedSignatureSizeSingle = ((params.getHeight() / params.getLayers()) + len) * n;
 		int reducedSignaturesSizeTotal = reducedSignatureSizeSingle * params.getLayers();
 		int totalSize = indexSize + randomSize + reducedSignaturesSizeTotal;
 		byte[] out = new byte[totalSize];
@@ -61,10 +61,9 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		}
 		int n = params.getDigestSize();
 		int len = params.getWOTSPlus().getParams().getLen();
-		int totalHeight = params.getTotalHeight();
-		int indexSize = (int)Math.ceil(params.getTotalHeight() / (double) 8);
+		int indexSize = (int)Math.ceil(params.getHeight() / (double) 8);
 		int randomSize = n;
-		int reducedSignatureSizeSingle = (params.getHeight() + len) * n;
+		int reducedSignatureSizeSingle = ((params.getHeight() / params.getLayers()) + len) * n;
 		int reducedSignaturesSizeTotal = reducedSignatureSizeSingle * params.getLayers();
 		int totalSize = indexSize + randomSize + reducedSignaturesSizeTotal;
 		if (in.length != totalSize) {
@@ -72,7 +71,7 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		}
 		int position = 0;
 		index = XMSSUtil.bytesToXBigEndian(in, position, indexSize);
-		if (!XMSSUtil.isIndexValid(totalHeight, index)) {
+		if (!XMSSUtil.isIndexValid(params.getHeight(), index)) {
 			throw new ParseException("index out of bounds", 0);
 		}
 		position += indexSize;
@@ -80,7 +79,7 @@ public class XMSSMTSignature implements XMSSStoreableObjectInterface {
 		position += randomSize;
 		reducedSignatures = new ArrayList<XMSSReducedSignature>();
 		while (position < in.length) {
-			XMSSReducedSignature xmssSig = new XMSSReducedSignature(params);
+			XMSSReducedSignature xmssSig = new XMSSReducedSignature(params.getXMSS().getParams());
 			xmssSig.parseByteArray(XMSSUtil.extractBytesAtOffset(in, position, reducedSignatureSizeSingle));
 			reducedSignatures.add(xmssSig);
 			position += reducedSignatureSizeSingle;
