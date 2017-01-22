@@ -118,7 +118,9 @@ public class XMSSMTPrivateKey implements XMSSStoreableObjectInterface {
 	protected void increaseIndex() {
 		ZonedDateTime currentTime = ZonedDateTime.now(ZoneOffset.UTC);
 		long differenceHours = Duration.between(lastUsage, currentTime).toHours();
-		setIndex(getIndex() + (differenceHours * indexIncreaseCountPerHour));
+		if (differenceHours >= 24) {
+			setIndex(getIndex() + (differenceHours * indexIncreaseCountPerHour));
+		}
 	}
 	
 	public long getIndex() {

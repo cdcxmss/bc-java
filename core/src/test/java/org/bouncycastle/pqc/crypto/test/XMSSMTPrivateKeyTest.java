@@ -10,6 +10,7 @@ import org.bouncycastle.pqc.crypto.xmss.XMSSMT;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTParameters;
 import org.bouncycastle.pqc.crypto.xmss.XMSSMTPrivateKey;
 import org.bouncycastle.pqc.crypto.xmss.XMSSUtil;
+import org.bouncycastle.util.encoders.Hex;
 
 import junit.framework.TestCase;
 
@@ -47,7 +48,7 @@ public class XMSSMTPrivateKeyTest extends TestCase {
 			e.printStackTrace();
 		}
 		ZonedDateTime fakedTime = ZonedDateTime.now(ZoneOffset.UTC);
-		fakedTime = fakedTime.minusHours(2);
+		fakedTime = fakedTime.minusHours(26);
 		privateKey.setLastUsage(fakedTime);
 		byte[] privateKeyBinMinusTwoHours = privateKey.toByteArray();
 		try {
@@ -55,13 +56,13 @@ public class XMSSMTPrivateKeyTest extends TestCase {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		/* as key is 2 hours old index will be increased by 500, signature then has index 500 and next private key index 501 */
+		/* as key is 26 hours old index will be increased by 500, signature then has index 500 and next private key index 501 */
 		byte[] signature = mt.sign(new byte[1024]);
 		assertEquals((byte)0x00, signature[0]);
-		assertEquals((byte)0x01, signature[1]);
-		assertEquals((byte)0xf4, signature[2]);
+		assertEquals((byte)0x19, signature[1]);
+		assertEquals((byte)0x64, signature[2]);
 		assertEquals((byte)0x00, mt.getPrivateKey()[0]);
-		assertEquals((byte)0x01, mt.getPrivateKey()[1]);
-		assertEquals((byte)0xf5, mt.getPrivateKey()[2]);
+		assertEquals((byte)0x19, mt.getPrivateKey()[1]);
+		assertEquals((byte)0x65, mt.getPrivateKey()[2]);
 	}
 }
